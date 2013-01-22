@@ -1,0 +1,152 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  Internal Error (safepoint.cpp:615), pid=5976, tid=10900
+#  fatal error: Deadlock in safepoint code.  Should have called back to the VM before blocking.
+#
+# JRE version: 6.0_35-b10
+# Java VM: Java HotSpot(TM) Client VM (20.10-b01 mixed mode windows-x86 )
+# If you would like to submit a bug report, please visit:
+#   http://java.sun.com/webapps/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x18dd9400):  JavaThread "AWT-Windows" daemon [_thread_in_native_trans, id=10900, stack(0x19220000,0x19270000)]
+
+Stack: [0x19220000,0x19270000],  sp=0x1926eb48,  free space=314k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x133d0a]
+V  [jvm.dll+0x12e94d]
+V  [jvm.dll+0x1094d0]
+V  [jvm.dll+0x11712e]
+V  [jvm.dll+0x2b9b]
+V  [jvm.dll+0x91e9b]
+C  [awt.dll+0x6da7a]  Java_sun_awt_windows_WColor_getDefaultColor+0x2ba
+C  [USER32.dll+0x162fa]  gapfnScSendMessage+0x332
+C  [USER32.dll+0x16d3a]  GetThreadDesktop+0xd7
+C  [USER32.dll+0x16de8]  GetThreadDesktop+0x185
+C  [USER32.dll+0x16e44]  GetThreadDesktop+0x1e1
+C  [ntdll.dll+0x1010a]  KiUserCallbackDispatcher+0x2e
+C  [USER32.dll+0x20751]  PeekMessageW+0x197
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+j  sun.awt.windows.WToolkit.eventLoop()V+0
+j  sun.awt.windows.WToolkit.run()V+52
+j  java.lang.Thread.run()V+11
+v  ~StubRoutines::call_stub
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+  0x18e11800 JavaThread "AWT-EventQueue-0" [_thread_blocked, id=4208, stack(0x19920000,0x19970000)]
+  0x00399400 JavaThread "DestroyJavaVM" [_thread_blocked, id=2500, stack(0x002d0000,0x00320000)]
+  0x18e08000 JavaThread "org.netbeans.modules.debugger.jpda.visual AWT Access Loop" daemon [_thread_blocked, id=11260, stack(0x192b0000,0x19300000)]
+=>0x18dd9400 JavaThread "AWT-Windows" daemon [_thread_in_native_trans, id=10900, stack(0x19220000,0x19270000)]
+  0x18dd8c00 JavaThread "AWT-Shutdown" [_thread_blocked, id=3000, stack(0x19150000,0x191a0000)]
+  0x18cecc00 JavaThread "Java2D Disposer" daemon [_thread_blocked, id=8076, stack(0x18fb0000,0x19000000)]
+  0x02531000 JavaThread "Low Memory Detector" daemon [_thread_blocked, id=11316, stack(0x18bd0000,0x18c20000)]
+  0x0252e800 JavaThread "C1 CompilerThread0" daemon [_thread_blocked, id=5536, stack(0x18b40000,0x18b90000)]
+  0x0251ec00 JavaThread "JDWP Command Reader" daemon [_thread_in_native, id=12856, stack(0x18ab0000,0x18b00000)]
+  0x0251dc00 JavaThread "JDWP Event Helper Thread" daemon [_thread_blocked, id=9416, stack(0x18a20000,0x18a70000)]
+  0x0251b000 JavaThread "JDWP Transport Listener: dt_shmem" daemon [_thread_blocked, id=14008, stack(0x18990000,0x189e0000)]
+  0x02511400 JavaThread "Attach Listener" daemon [_thread_blocked, id=6480, stack(0x18900000,0x18950000)]
+  0x0250c400 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=11124, stack(0x18870000,0x188c0000)]
+  0x024e3800 JavaThread "Finalizer" daemon [_thread_blocked, id=9744, stack(0x187e0000,0x18830000)]
+  0x024dec00 JavaThread "Reference Handler" daemon [_thread_blocked, id=13020, stack(0x18750000,0x187a0000)]
+
+Other Threads:
+  0x024d8400 VMThread [stack: 0x186c0000,0x18710000] [id=9760]
+  0x0253e400 WatcherThread [stack: 0x18c60000,0x18cb0000] [id=13432]
+
+VM state:synchronizing (normal execution)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x00397548] Threads_lock - owner thread: 0x024d8400
+[0x00397958] Heap_lock - owner thread: 0x18e11800
+
+Heap
+ def new generation   total 78656K, used 78655K [0x045d0000, 0x09b20000, 0x09b20000)
+  eden space 69952K,  99% used [0x045d0000, 0x08a1fff8, 0x08a20000)
+  from space 8704K, 100% used [0x092a0000, 0x09b20000, 0x09b20000)
+  to   space 8704K,   0% used [0x08a20000, 0x08a20000, 0x092a0000)
+ tenured generation   total 174784K, used 174784K [0x09b20000, 0x145d0000, 0x145d0000)
+   the space 174784K, 100% used [0x09b20000, 0x145d0000, 0x145d0000, 0x145d0000)
+ compacting perm gen  total 12288K, used 7069K [0x145d0000, 0x151d0000, 0x185d0000)
+   the space 12288K,  57% used [0x145d0000, 0x14cb75d0, 0x14cb7600, 0x151d0000)
+No shared spaces configured.
+
+Code Cache  [0x02550000, 0x026a0000, 0x04550000)
+ total_blobs=734 nmethods=542 adapters=136 free_code_cache=32193984 largest_free_block=192
+
+Dynamic libraries:
+0x00400000 - 0x00425000 	C:\Program Files (x86)\Java\jdk1.6.0_35\bin\java.exe
+0x77630000 - 0x777b0000 	C:\Windows\SysWOW64\ntdll.dll
+0x76740000 - 0x76850000 	C:\Windows\syswow64\kernel32.dll
+0x763d0000 - 0x76417000 	C:\Windows\syswow64\KERNELBASE.dll
+0x75070000 - 0x75110000 	C:\Windows\syswow64\ADVAPI32.dll
+0x76cc0000 - 0x76d6c000 	C:\Windows\syswow64\msvcrt.dll
+0x751c0000 - 0x751d9000 	C:\Windows\SysWOW64\sechost.dll
+0x76420000 - 0x76510000 	C:\Windows\syswow64\RPCRT4.dll
+0x74d10000 - 0x74d70000 	C:\Windows\syswow64\SspiCli.dll
+0x74d00000 - 0x74d0c000 	C:\Windows\syswow64\CRYPTBASE.dll
+0x7c340000 - 0x7c396000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\msvcr71.dll
+0x6d8c0000 - 0x6db6f000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\client\jvm.dll
+0x761c0000 - 0x762c0000 	C:\Windows\syswow64\USER32.dll
+0x769f0000 - 0x76a80000 	C:\Windows\syswow64\GDI32.dll
+0x77600000 - 0x7760a000 	C:\Windows\syswow64\LPK.dll
+0x74f30000 - 0x74fcd000 	C:\Windows\syswow64\USP10.dll
+0x715b0000 - 0x715e2000 	C:\Windows\system32\WINMM.dll
+0x766e0000 - 0x76740000 	C:\Windows\system32\IMM32.DLL
+0x76300000 - 0x763cc000 	C:\Windows\syswow64\MSCTF.dll
+0x72940000 - 0x7298c000 	C:\Windows\system32\apphelp.dll
+0x6d870000 - 0x6d87c000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\verify.dll
+0x6d3d0000 - 0x6d3ef000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\java.dll
+0x6d420000 - 0x6d449000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\jdwp.dll
+0x6d740000 - 0x6d746000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\npt.dll
+0x6d8b0000 - 0x6d8bf000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\zip.dll
+0x6d2a0000 - 0x6d2a8000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\dt_shmem.dll
+0x6d0b0000 - 0x6d1fc000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\awt.dll
+0x730c0000 - 0x73111000 	C:\Windows\system32\WINSPOOL.DRV
+0x75fd0000 - 0x7612c000 	C:\Windows\syswow64\ole32.dll
+0x73130000 - 0x732ce000 	C:\Windows\WinSxS\x86_microsoft.windows.common-controls_6595b64144ccf1df_6.0.7601.17514_none_41e6975e2bd6f2b2\COMCTL32.dll
+0x76650000 - 0x766a7000 	C:\Windows\syswow64\SHLWAPI.dll
+0x71270000 - 0x71283000 	C:\Windows\system32\DWMAPI.DLL
+0x71e10000 - 0x71e90000 	C:\Windows\system32\uxtheme.dll
+0x6d2e0000 - 0x6d32f000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\fontmanager.dll
+0x75320000 - 0x75f6a000 	C:\Windows\system32\shell32.dll
+0x6d6b0000 - 0x6d6c3000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\net.dll
+0x762c0000 - 0x762f5000 	C:\Windows\syswow64\WS2_32.dll
+0x75fc0000 - 0x75fc6000 	C:\Windows\syswow64\NSI.dll
+0x74af0000 - 0x74b2c000 	C:\Windows\system32\mswsock.dll
+0x74ad0000 - 0x74ad6000 	C:\Windows\System32\wship6.dll
+0x6d6d0000 - 0x6d6d9000 	C:\Program Files (x86)\Java\jdk1.6.0_35\jre\bin\nio.dll
+0x76c00000 - 0x76c8f000 	C:\Windows\syswow64\OLEAUT32.DLL
+0x75310000 - 0x75315000 	C:\Windows\system32\PSAPI.DLL
+
+VM Arguments:
+jvm_args: -Xdebug -Xrunjdwp:transport=dt_shmem,address=javadebug -Dfile.encoding=UTF-8 -ea 
+java_command: pacman.MyExecutor
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+PATH=C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\WinSCP\
+USERNAME=neznalek
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 15 Stepping 10, GenuineIntel
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows 7 , 64 bit Build 7601 Service Pack 1
+
+CPU:total 2 (2 cores per cpu, 1 threads per core) family 6 model 15 stepping 10, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3
+
+Memory: 4k page, physical 4185400k(2014972k free), swap 8368948k(5548708k free)
+
+vm_info: Java HotSpot(TM) Client VM (20.10-b01) for windows-x86 JRE (1.6.0_35-b10), built on Aug 28 2012 17:31:51 by "java_re" with MS VC++ 7.1 (VS2003)
+
+time: Tue Jan 01 16:46:50 2013
+elapsed time: 457095 seconds
+
