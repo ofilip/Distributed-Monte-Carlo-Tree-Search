@@ -1,2 +1,0 @@
-1	StarterPacMan	40	MovesExchangingGhostAgent(200,0.5)	200	2170
-2	StarterPacMan	40	MovesExchangingGhostAgent(200,0.5)	200	5290
