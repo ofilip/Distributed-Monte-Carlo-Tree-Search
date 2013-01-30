@@ -15,8 +15,7 @@ public abstract class MCTree<M> {
     MySimulator simulator;
     Backpropagator backpropagator;
     double ucb1_coef;
-    MCNode root;
-    
+    MCNode root;    
     
     public MCNode root() {
         return root;
@@ -32,6 +31,14 @@ public abstract class MCTree<M> {
             /* do not extend subtree if pacman was eaten */
             node.parent.backpropagate(node.value);
         }
+    }
+    
+    protected MCTree(MCTree tree, long depth) {
+        this.selector = tree.selector;
+        this.simulator = tree.simulator;
+        this.backpropagator = tree.backpropagator;
+        this.ucb1_coef = tree.ucb1_coef;
+        this.root = tree.root.copy(this, null, depth);
     }
     
     public MCTree(Game game, Selector selector, MySimulator simulator, Backpropagator backpropagator, double ucb1_coef) {

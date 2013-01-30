@@ -1,7 +1,6 @@
 package pacman;
 
-import communication.DummyMessage;
-import communication.Message;
+import communication.messages.Message;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import mcts.distributed.DistributedMCTSController;
 import mcts.distributed.IndependentGhostAgent;
+import mcts.distributed.MoveExchangingGhostAgent;
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
 import pacman.controllers.KeyBoardInput;
@@ -42,6 +42,8 @@ import static pacman.game.Constants.*;
 @SuppressWarnings("unused")
 public class MyExecutor
 {
+    
+       static boolean verbose = true;
        static abstract class CompetitionOptions {
            private int pacman_delay;
            private int ghosts_delay;
@@ -133,30 +135,40 @@ public class MyExecutor
         final static CompetitionOptions STARTER_VS_INDEPENDENT_GHOSTS80_200 = new CompetitionOptions("StarterPacMan", 40, "IndependentGhostAgents(80,0.5)", 200) {                
                 @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
                 @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {
-                    return new DistributedMCTSController<IndependentGhostAgent, DummyMessage>(1, true)
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.BLINKY, 80, 0.5))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.PINKY, 80, 0.5))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.INKY, 80, 0.5))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.SUE, 80, 0.5));
+                    return new DistributedMCTSController<IndependentGhostAgent>(1, true)
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.BLINKY, 80, 0.5, verbose))
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.PINKY, 80, 0.5, verbose))
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.INKY, 80, 0.5, verbose))
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.SUE, 80, 0.5, verbose));
                 };};    
         final static CompetitionOptions STARTER_VS_INDEPENDENT_GHOSTS80_800 = new CompetitionOptions("StarterPacMan", 40, "IndependentGhostAgents(80,0.5)", 800) {                
                 @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
                 @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {
-                    return new DistributedMCTSController<IndependentGhostAgent, DummyMessage>(1, true)
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.BLINKY, 80, 0.5))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.PINKY, 80, 0.5))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.INKY, 80, 0.5))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.SUE, 80, 0.5));
+                    return new DistributedMCTSController<IndependentGhostAgent>(1, true)
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.BLINKY, 80, 0.5, verbose))
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.PINKY, 80, 0.5, verbose))
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.INKY, 80, 0.5, verbose))
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.SUE, 80, 0.5, verbose));
                 };};    
-        final static CompetitionOptions STARTER_VS_INDEPENDENT_GHOSTS200_800 = new CompetitionOptions("StarterPacMan", 40, "IndependentGhostAgents(80,0.5)", 800) {                
+        final static CompetitionOptions STARTER_VS_INDEPENDENT_GHOSTS200_800 = new CompetitionOptions("StarterPacMan", 40, "IndependentGhostAgents(200,0.5)", 800) {                
                 @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
                 @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {
-                    return new DistributedMCTSController<IndependentGhostAgent, DummyMessage>(1, true)
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.BLINKY, 200, 0.5))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.PINKY, 200, 0.5))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.INKY, 200, 0.5))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.SUE, 200, 0.5));
-                };};    
+                    return new DistributedMCTSController<IndependentGhostAgent>(1, true)
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.BLINKY, 200, 0.5, verbose))
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.PINKY, 200, 0.5, verbose))
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.INKY, 200, 0.5, verbose))
+                                .addGhostAgent(new IndependentGhostAgent(GHOST.SUE, 200, 0.5, verbose));
+                };}; 
+        final static CompetitionOptions STARTER_VS_MOVES_EXCHANGING_GHOST80_200 = new CompetitionOptions("StarterPacMan", 40, "MovesExchangingGhostAgent(200,0.5)", 200) {
+                @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
+                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {
+                    return new DistributedMCTSController<IndependentGhostAgent>(10000, true)
+                                .addGhostAgent(new MoveExchangingGhostAgent(GHOST.BLINKY, 200, 0.5, 20, verbose))
+                                .addGhostAgent(new MoveExchangingGhostAgent(GHOST.PINKY, 200, 0.5, 20, verbose))
+                                .addGhostAgent(new MoveExchangingGhostAgent(GHOST.INKY, 200, 0.5, 20, verbose))
+                                .addGhostAgent(new MoveExchangingGhostAgent(GHOST.SUE, 200, 0.5, 20, verbose));
+                };};             
+        
 	/**
 	 * The main method. Several options are listed - simply remove comments to use the option you want.
 	 *
@@ -171,12 +183,13 @@ public class MyExecutor
 //            options_list.add(STARTER_VS_MCTS80_800);
 //            options_list.add(STARTER_VS_MCTS200_800);
 //            options_list.add(MCTS120_800_VS_MCTS200_800);
-            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_200);
-            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_800);
-            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS200_800);            
-            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_200);
-            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_800);
-            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS200_800);
+//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_200);
+//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_800);
+//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS200_800);            
+//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_200);
+//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_800);
+//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS200_800);
+            options_list.add(STARTER_VS_MOVES_EXCHANGING_GHOST80_200);
             
             runCompetition(options_list, 10, true, true);
 	}

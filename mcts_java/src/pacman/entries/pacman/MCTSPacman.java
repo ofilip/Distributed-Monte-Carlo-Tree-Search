@@ -32,6 +32,7 @@ public class MCTSPacman extends MCTSController<PacmanTree, MOVE> {
                 ||game.getCurrentLevel()!=current_level /* new level */
                 ||game.wasPacManEaten() /* pacman eaten */
                 ||Utils.globalReversalHappened(game) /* accidental reversal */
+                ||last_move==MOVE.NEUTRAL /* last getMove() didn't finish in limit */
                 ||last_move!=game.getPacmanLastMoveMade()
                 ) {            
             /* (re)initialize MC-tree and its components */            
@@ -44,6 +45,7 @@ public class MCTSPacman extends MCTSController<PacmanTree, MOVE> {
             EnumMap<Constants.GHOST, Constants.MOVE> last_ghosts_moves = Utils.lastGhostsDecisionMoves(game, previous_game);
             mcTree().advanceTree(game.getPacmanLastMoveMade(), last_ghosts_moves);
         }   
+        last_move = MOVE.NEUTRAL;
     }
 
     @Override

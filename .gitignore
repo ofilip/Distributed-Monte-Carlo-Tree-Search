@@ -1,0 +1,4 @@
+/mcts_java/build/
+*~
+.*.sw?
+test_results/*

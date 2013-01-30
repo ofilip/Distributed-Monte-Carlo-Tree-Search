@@ -1,0 +1,15 @@
+\chapter{Monte-Carlo Tree Search}
+
+This chapter describes Monte-Carlo Tree Search (referred as MCTS (!)) algorithm and discusses its properties.
+The algorithm serves for searching wolrd states in fully visible environment using incrementally growing state tree and stochastic simulations for evaluation of states.
+
+
+
+
+\section{Brief history}
+
+\section{Description}
+
+\section{Upper-Confidence Bound}
+
+

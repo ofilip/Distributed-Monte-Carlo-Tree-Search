@@ -1,9 +1,11 @@
 package communication;
 
-public interface MessageReceiver<M extends Message> {
+import communication.messages.Message;
+
+public interface MessageReceiver {
     public boolean receiveQueueEmpty();
     public long receiveQueueSize();
     public int receiveQueueLength();
-    public M receive();
-    public P2PChannel channel();
+    public Message receive();
+    public Channel channel();
 }

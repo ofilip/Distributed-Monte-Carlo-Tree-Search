@@ -3,6 +3,7 @@ package mcts;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import mcts.Decision;
 import mcts.Decision.DecisionCause;
 import mcts.DecisionNeededFrom;
@@ -31,9 +32,45 @@ public abstract class MCNode implements UCBNode {
     int pacman_decision_gap; /* before how mant ticks happened last pacman decision */    
     DecisionCause decision_cause; /* NONE for "not set" */
     
-    
     /* current game state */
     Game game; /* set only iff expanded()||isRoot() */
+    
+    protected MCNode copy(MCTree tree, MCNode parent) {
+        return copy(tree, parent, -1);
+    }
+    protected abstract MCNode copy(MCTree tree, MCNode parent, long depth);
+    
+    protected MCNode(MCTree tree, MCNode node, MCNode parent, long depth) {
+        this.tree = tree;
+        this.parent = parent;
+        this.game = node.game.copy();
+        this.pacman_decision_gap = node.pacman_decision_gap;
+        this.decision_cause = node.decision_cause;
+        if (depth!=0) {
+            if (node.pacman_children!=null) {
+                this.pacman_children = new EnumMap<MOVE, PacmanNode>(MOVE.class);
+                for (Entry<MOVE, PacmanNode> e: pacman_children.entrySet()) {
+                    this.pacman_children.put(e.getKey(), (PacmanNode)e.getValue().copy(tree, this, Math.max(-1, depth-1)));
+                }
+            }
+            if (node.ghosts_children!=null) {
+                for (Entry<EnumMap<GHOST, MOVE>, GhostsNode> e: ghosts_children.entrySet()) {
+                    this.ghosts_children.put(e.getKey().clone(), (GhostsNode)e.getValue().copy(tree, this, Math.max(-1, depth-1)));
+                }
+            }
+        } else {
+            this.expand(); /* leaves should be always expanded */
+        }
+    }
+    
+    protected MCNode(MCTree tree, MCNode parent, Game game, int initial_ticks, int pacman_decision_gap) {
+        this.tree = tree;
+        this.parent = parent;
+        this.game = game;
+        this.ticks_to_go = initial_ticks;
+        this.pacman_decision_gap = pacman_decision_gap;
+        this.decision_cause = DecisionCause.NONE;
+    }
     
     public boolean expanded() {
         return pacman_children!=null||ghosts_children!=null;
@@ -153,15 +190,6 @@ public abstract class MCNode implements UCBNode {
     @Override
     public int visitCount() {
         return this.visit_count;
-    }   
-    
-    protected MCNode(MCTree tree, MCNode parent, Game game, int initial_ticks, int pacman_decision_gap) {
-        this.tree = tree;
-        this.parent = parent;
-        this.game = game;
-        this.ticks_to_go = initial_ticks;
-        this.pacman_decision_gap = pacman_decision_gap;
-        this.decision_cause = DecisionCause.NONE;
     }
     
     public Iterable<? extends MCNode> children() {

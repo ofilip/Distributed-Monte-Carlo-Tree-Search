@@ -1,10 +1,12 @@
 package communication;
 
-public interface MessageSender<M extends Message> {
+import communication.messages.Message;
+
+public interface MessageSender {
     public boolean sendQueueEmpty();
     public long sendQueueSize();
     public int sendQueueLength();
     public double secondsToSendAll();
-    public void send(M message);
-    public P2PChannel channel();
+    public void send(Message message);
+    public Channel channel();
 }

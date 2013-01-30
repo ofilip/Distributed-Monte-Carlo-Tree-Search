@@ -15,6 +15,16 @@ import pacman.game.Game;
 public class PacmanNode extends MCNode {
     MOVE pacman_move;
     
+    @Override
+    protected MCNode copy(MCTree tree, MCNode parent, long depth) {
+        return new PacmanNode(tree, this, parent, depth);
+    }
+    
+    protected PacmanNode(MCTree tree, PacmanNode node, MCNode parent, long depth) {
+        super(tree, node, parent, depth);
+        this.pacman_move = node.pacman_move;
+    }
+    
     protected PacmanNode(MCTree tree, MCNode parent, Game game, MOVE pacman_move, int initial_ticks, int pacman_decision_gap) {
         super(tree, parent, game, initial_ticks, pacman_decision_gap);
         this.pacman_move = pacman_move;

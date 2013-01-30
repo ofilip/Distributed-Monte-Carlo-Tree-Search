@@ -1,8 +1,8 @@
 package mcts.distributed;
 
-import communication.Message;
-import communication.P2PChannel;
-import communication.P2PNetwork;
+import communication.messages.Message;
+import communication.Channel;
+import communication.Network;
 import java.util.EnumMap;
 import java.util.Map;
 import pacman.controllers.Controller;
@@ -10,9 +10,9 @@ import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
-public class DistributedMCTSController<G extends GhostAgent<M>, M extends Message> extends Controller<EnumMap<GHOST,MOVE>> {
-    protected P2PNetwork<M> network;
-    protected Map<GHOST, GhostAgent<M>> agents = new EnumMap<GHOST, GhostAgent<M>>(GHOST.class);
+public class DistributedMCTSController<G extends GhostAgent> extends Controller<EnumMap<GHOST,MOVE>> {
+    protected Network network;
+    protected Map<GHOST, GhostAgent> agents = new EnumMap<GHOST, GhostAgent>(GHOST.class);
     protected int current_ghost = 0;
     protected EnumMap<GHOST,MOVE> moves = new EnumMap<GHOST,MOVE>(GHOST.class);
     protected boolean verbose;
@@ -21,15 +21,15 @@ public class DistributedMCTSController<G extends GhostAgent<M>, M extends Messag
     protected static final long MILLIS_TO_FINISH = 20; 
     
     public DistributedMCTSController(long channel_transmission_speed, boolean verbose) {        
-        this.network = new P2PNetwork<M>(channel_transmission_speed);
+        this.network = new Network(channel_transmission_speed);
         this.verbose = verbose;
     }
     
     public DistributedMCTSController addGhostAgent(GhostAgent ghost_agent) {
         assert !agents.containsKey(ghost_agent.ghost());
         for (GhostAgent ally: agents.values()) {
-            P2PChannel out_channel = network.openChannel(String.format("%s$%s", ghost_agent.ghostName(), ally.ghostName()));
-            P2PChannel in_channel = network.openChannel(String.format("%s$%s", ally.ghostName(), ghost_agent.ghostName()));
+            Channel out_channel = network.openChannel(String.format("%s$%s", ghost_agent.ghostName(), ally.ghostName()));
+            Channel in_channel = network.openChannel(String.format("%s$%s", ally.ghostName(), ghost_agent.ghostName()));
             ghost_agent.addAlly(out_channel, ally);
             ally.addAlly(in_channel, ghost_agent);
         }
@@ -62,8 +62,8 @@ public class DistributedMCTSController<G extends GhostAgent<M>, M extends Messag
             System.out.printf("MOVE INFO [node_index=%d]: computation time: %.3f s, move: %s\n", 
                     game.getPacmanCurrentNodeIndex(), computation_time, moves);    
             if (timeDue - System.currentTimeMillis()<0) {
-            System.err.printf("Missed turn, delay: %d ms\n", -(timeDue - System.currentTimeMillis()));
-        }    
+                System.err.printf("Missed turn, delay: %d ms\n", -(timeDue - System.currentTimeMillis()));
+            }    
         }
         return moves;
     }

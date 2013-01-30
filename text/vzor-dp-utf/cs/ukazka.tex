@@ -1,0 +1,49 @@
+%%% Ukázka použití některých konstrukcí LaTeXu
+
+\subsection{Ukázka \LaTeX{}u}
+\label{ssec:ukazka}
+
+V~této krátké části ukážeme použití několika základních konstrukcí \LaTeX{}u,
+které by se vám mohly při psaní práce hodit.
+
+Třeba odrážky:
+
+\begin{itemize}
+\item Logo Matfyzu vidíme na obrázku~\ref{fig:mff}.
+\item Tato subsekce má číslo~\ref{ssec:ukazka}.
+\item Odkaz na literaturu~\cite{lamport94}.
+\end{itemize}
+
+Druhy pomlček:
+červeno-černý (krátká),
+strana 16--22 (střední),
+$45-44$ (minus),
+a~toto je --- jak se asi dalo čekat --- vložená věta ohraničená dlouhými pomlčkami.
+(Všimněte si, že jsme za \verb|a| napsali vlnovku místo mezery: to aby se
+tam nemohl rozdělit řádek.)
+
+% Makro na české uvozovky (novější verze LaTeXu ho už mají zabudované)
+\newcommand{\uv}[1]{\quotedblbase #1\textquotedblleft}
+\uv{České uvozovky.}
+
+\newtheorem{theorem}{Věta}
+\newtheorem*{define}{Definice}	% Definice nečíslujeme, proto "*"
+
+\begin{define}
+{\sl Strom} je souvislý graf bez kružnic.
+\end{define}
+
+\begin{theorem}
+Tato věta neplatí.
+\end{theorem}
+
+\begin{proof}
+Neplatné věty nemají důkaz.
+\end{proof}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=30mm]{../img/logo.eps}
+	\caption{Logo MFF UK}
+	\label{fig:mff}
+\end{figure}

@@ -15,6 +15,16 @@ import pacman.game.Game;
 
 public class GhostsNode extends MCNode {
     EnumMap<GHOST, MOVE> ghosts_moves;
+
+    @Override
+    protected MCNode copy(MCTree tree, MCNode parent, long depth) {
+        return new GhostsNode(tree, this, parent, depth);
+    }
+    
+    protected GhostsNode(MCTree tree, GhostsNode node, MCNode parent, long depth) {
+        super(tree, node, parent, depth);
+        this.ghosts_moves = node.ghosts_moves.clone();
+    }
     
     protected GhostsNode(MCTree tree, MCNode parent, Game game, EnumMap<GHOST, MOVE> ghosts_moves, int initial_ticks, int pacman_decision_gap) {
         super(tree, parent, game, initial_ticks, pacman_decision_gap);

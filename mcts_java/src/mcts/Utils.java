@@ -11,7 +11,7 @@ import pacman.game.GameView;
  * Miscellaneous functions.
  */
 public class Utils {
-    private static Random random = new Random(10);
+    static Random random = new Random(10);
     public final static EnumMap<GHOST, MOVE> NEUTRAL_GHOSTS_MOVES = new EnumMap<GHOST, MOVE>(GHOST.class);
     
     static {

@@ -1,5 +1,7 @@
 package communication;
 
+import communication.messages.Message;
+
 public class FullReliability implements Reliability {
     private static FullReliability instance = null;
     

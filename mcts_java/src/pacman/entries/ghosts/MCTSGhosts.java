@@ -35,6 +35,7 @@ public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>>
                 ||game.getCurrentLevel()!=current_level /* new level */
                 ||game.wasPacManEaten() /* pacman eaten */
                 ||Utils.globalReversalHappened(game) /* accidental reversal */
+                ||last_move==null /* last getMove() didn't finish in limit */
                 ||!Utils.compareGhostsMoves(last_move, Utils.lastGhostsMoves(game))
                 ) {            
             /* (re)initialize MC-tree and its components */            
@@ -51,7 +52,8 @@ public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>>
             } else {
                 mcTree().advanceTree(game.getPacmanLastMoveMade(), last_ghosts_moves);
             }
-        }   
+        }
+        last_move = null;
     }
 
     @Override
