@@ -2,3 +2,10 @@
 *~
 .*.sw?
 test_results/*
+text/*.aux
+text/*.toc
+text/*.pdf
+text/*.dvi
+text/*.log
+text/*.out
+text/*.ps
