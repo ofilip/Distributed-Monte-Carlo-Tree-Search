@@ -1,10 +1,24 @@
 %%% Seznam použité literatury je zpracován podle platných standardů. Povinnou citační
 %%% normou pro diplomovou práci je ISO 690. Jména časopisů lze uvádět zkráceně, ale jen
 %%% v kodifikované podobě. Všechny použité zdroje a prameny musí být řádně citovány.
+%
+%def\bibname{Bibliography}
+%begin{thebibliography}{99}
+%addcontentsline{toc}{chapter}{\bibname}
 
-\def\bibname{Bibliography}
-\begin{thebibliography}{99}
-\addcontentsline{toc}{chapter}{\bibname}
+%\bibliography{bibliography}
+%\bibliography{plain}
+%\nocite{Chaslot2008}
+%\nocite{Nguyen2011}
+
+%Jen zkr�cen� bibliografie
+
+%\bibitem{mas2008} 
+%{\sc Shoham} Yoav, {\sc Leyton-Brown} Kevin.
+%\emph{Multiagent Systems: Algorithmic, Game-Theoretic, and Logical Foundations}
+%Revision 1.1
+%Cambridge University Press, 2008.
+
 
 %\bibitem{lamport94}
 %  {\sc Lamport,} Leslie.
@@ -13,4 +27,11 @@
 %  Massachusetts: Addison Wesley, 1994.
 %  ISBN 0-201-52983-1.
 
-\end{thebibliography}
+%\chapter{Pokus}
+Reference na \cite{Chaslot2008}.
+\nocite{Nguyen2011}
+
+\bibliographystyle{apacite}
+\bibliography{references}
+
+%end{thebibliography}

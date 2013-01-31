@@ -144,7 +144,7 @@ public abstract class MCNode implements UCBNode {
         double best_val = Double.NEGATIVE_INFINITY;
         
         for (MCNode child: pacman_children.values()) {
-            double curr_val = child.value();
+            double curr_val = child.visit_count;//child.value();
             
             if (curr_val>best_val) {
                 best_val = curr_val;
@@ -160,7 +160,7 @@ public abstract class MCNode implements UCBNode {
         double best_val = Double.NEGATIVE_INFINITY;
         
         for (MCNode child: ghosts_children.values()) {
-            double curr_val = -child.value();
+            double curr_val = 1/(double)child.visit_count;//-child.value();
             
             if (curr_val>best_val) {
                 best_val = curr_val;

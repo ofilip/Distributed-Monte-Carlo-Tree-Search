@@ -11,9 +11,11 @@ thesis.ps: thesis.dvi
 	dvips -o $@ -D600 -t a4 $<
 
 # LaTeX je potreba spustit dvakrat, aby spravne spocital odkazy
-thesis.dvi: thesis.tex $(wildcard *.tex)
+thesis.dvi: thesis.tex $(wildcard *.tex) 
+	cslatex $<
+	bibtex thesis
 	cslatex $<
 	cslatex $<
 
 clean:
-	rm -f *.{log,dvi,aux,toc,lof,out} thesis.ps thesis.pdf
+	rm -f *.{log,dvi,aux,toc,lof,out,bbl,~,blg} thesis.ps thesis.pdf

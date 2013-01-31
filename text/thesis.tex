@@ -32,12 +32,15 @@
 \usepackage{graphicx}
 \usepackage{amsthm}
 
+
 %% Balíček hyperref, kterým jdou vyrábět klikací odkazy v PDF,
 %% ale hlavně ho používáme k uložení metadat do PDF (včetně obsahu).
 %% POZOR, nezapomeňte vyplnit jméno práce a autora.
 \usepackage[ps2pdf,unicode]{hyperref}   % Musí být za všemi ostatními balíčky
 \hypersetup{pdftitle=Název práce}
 \hypersetup{pdfauthor=Jméno Příjmení}
+
+\usepackage{apacite}
 
 %%% Drobné úpravy stylu
 
@@ -245,6 +248,7 @@ Keywords:
 
 %%% Seznam použité literatury
 \include{bibliography}
+%\include{bibl}
 
 %%% Tabulky v diplomové práci, existují-li.
 \chapwithtoc{List of Tables}

@@ -9,3 +9,4 @@ text/*.dvi
 text/*.log
 text/*.out
 text/*.ps
+text/*.bbl

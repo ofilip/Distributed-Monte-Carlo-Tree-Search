@@ -17,14 +17,13 @@ public class ValuedMovesMessage extends Message {
     @Override
     public long length() {
         long length = 1;
-        if (valued_moves_tree.root().pacmanOnTurn()) {
-            
-        }
+        if (valued_moves?
 //        return valued_moves.size
         //return 1; /* 4x2 bits for moves */
     }
     
-    public EnumMap<GHOST, MOVE> move() {
-        return move;
+//    public EnumMap<GHOST, MOVE> move() {
+//        return move;
+    
     }
 }
