@@ -32,15 +32,32 @@
 \usepackage{graphicx}
 \usepackage{amsthm}
 
+\usepackage[nottoc]{tocbibind}
+
+%% TODO: Zjistit, jestli je nutné mít v referencích url nebo doi
+\usepackage[backend=bibtex8,babel=hyphen,url=false,doi=false]{biblatex}
+\addbibresource{my.bib}
+\addbibresource{mendeley.bib}
+
+%%
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+
+%%Moje definované příkazy
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
 
 %% Balíček hyperref, kterým jdou vyrábět klikací odkazy v PDF,
 %% ale hlavně ho používáme k uložení metadat do PDF (včetně obsahu).
 %% POZOR, nezapomeňte vyplnit jméno práce a autora.
 \usepackage[ps2pdf,unicode]{hyperref}   % Musí být za všemi ostatními balíčky
-\hypersetup{pdftitle=Název práce}
-\hypersetup{pdfauthor=Jméno Příjmení}
+\hypersetup{pdftitle=Distributed Monte-Carlo Tree Search for Games with Team of Cooperative Agents}
+\hypersetup{pdfauthor=Ondřej Filip}
 
-\usepackage{apacite}
+\renewcommand\bibname{References}
+
+%\usepackage{apacite}
 
 %%% Drobné úpravy stylu
 
@@ -66,6 +83,7 @@
 \chapter*{#1}
 \addcontentsline{toc}{chapter}{#1}
 }
+
 
 \begin{document}
 
@@ -118,7 +136,8 @@ Supervisor of the master thesis: & Mgr. Viliam Lisý, MSc. \\
 \noalign{\vspace{2mm}}
 Study programme: & Theoretical Computer Science \\
 \noalign{\vspace{2mm}}
-Specialization: & Neprocedural Programming and Artifitial Inteligence \\
+Specialization: & Nonprocedural Programming and \\
+                & Artifitial Inteligence \\
 \end{tabular}
 
 \vfill
@@ -240,6 +259,7 @@ Keywords:
 \include{chap1}
 \include{chap2}
 \include{chap3}
+\include{chap4}
 
 % Ukázka použití některých konstrukcí LateXu (odkomentujte, chcete-li)
 % \include{example}
@@ -249,6 +269,9 @@ Keywords:
 %%% Seznam použité literatury
 \include{bibliography}
 %\include{bibl}
+
+\chapwithtoc{List of Algorithms}
+\listofalgorithms
 
 %%% Tabulky v diplomové práci, existují-li.
 \chapwithtoc{List of Tables}

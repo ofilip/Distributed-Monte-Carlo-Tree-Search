@@ -10,3 +10,7 @@ text/*.log
 text/*.out
 text/*.ps
 text/*.bbl
+text/*.bcf
+text/*.loa
+text/*.run.xml
+text/thesis-blx.bib

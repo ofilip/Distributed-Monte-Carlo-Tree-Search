@@ -1,15 +1,151 @@
 \chapter{Monte-Carlo Tree Search}
+\label{chap_mcts}
 
-This chapter describes Monte-Carlo Tree Search (referred as MCTS (!)) algorithm and discusses its properties.
-The algorithm serves for searching wolrd states in fully visible environment using incrementally growing state tree and stochastic simulations for evaluation of states.
+Mone-Carlo Tree Search (MCTS) is an iterative best-first search algorithm with stochastic positional
+evaluation, anytime property and fast convergence. As \citeauthor{ChaslotPhd2010} summed up in 
+\cite{ChaslotPhd2010}, MCTS was simultaneously developed
+in three variants (\cites{Chaslot2006}{Coulom2006}{Kocsis2006}) in 2006. Specific variant used in
+this thesis along with all important details and explanation of the properties is discussed in this
+chapter.
+
+
+\section{Algorithm Description}
+
+\citeauthor{Chaslot2008} provides good description of the Monte-Carlo Tree Search algorithm in
+\cite{Chaslot2008}. Variant of MCTS as well as the terminology used in this thesis are based mainly
+on this paper.
+
+Monte-Carlo Tree Search is iteratively building the search tree as depicted by picture
+\emph{TODO}%\ref{fig_mcts_phases}
+ and algorithm \ref{alg_mcts_loop}. Nodes of the tree contains at least two values - visit count
+ saying how many random evaluations of positions in node's subtree have been executed and actual
+ value which aggregates actual values from node's subtree (usually the average).
+
+Each iteration of MCTS consists of four
+phases - \emph{selection}, \emph{expansion}, \emph{simulation} and \emph{backpropagation}. During
+the selection phase the 
+algorithm passes through the tree to a particular leaf where better-evaluated but less-visited nodes
+are preferred. Appropriate balance between these contradictory claims is main objective of this
+phase. Once a leaf node is selected the expansion phase follows and all children nodes reachable
+from the leaf node with one valid move are added to the leaf and one of these children is chosen.
+The next phase, simulation (also called playout), plays a random game (or several ones) starting
+in position defined by expanded node halting on some conditions (e.g. after certain moves are
+played, the end of the game is reached). Results from the simulations are then backpropagated to all
+expanded node's ancestors during the fourth phase (backpropagation). The phases of the algorithm are
+further discussed in subsequent sections.
+
+\begin{algorithm}
+\DontPrintSemicolon
+\caption{Monte-Carlo Tree Search\label{sec_mcts_description}}
+\label{alg_mcts_loop}
+$tree \leftarrow new\,McTree()$ \tcp*[h]{Initialize empty tree}\;
+$root \leftarrow Root(tree)$\;
+\While(\tcp*[h]{Main MCTS loop}){$EnoughTime()$}{
+    $last\_node \leftarrow root$ \tcp*[h]{Phase 1: Selection}\;
+    \While{$curr\_node \in tree$}{
+        $last\_node \leftarrow curr\_node$\;
+        $curr\_node \leftarrow Select(curr\_node)$\;
+    }
+    $last\_node \leftarrow Expand(last\_node)$ \tcp*[h]{Phase 2: Expansion}\;
+    $reward \leftarrow Playout(last\_node)$ \tcp*[h]{Phase 3: Simulation}\;
+    \While(\tcp*[h]{Phase 4: Backpropagation}){$curr\_node \in tree$}{
+        $reward \leftarrow Backpropagate(curr\_node,\:reward)$\;
+        $N_{curr\_node} \leftarrow N_{curr\_node}+1$ \tcp*[h]{Increase node's visit count}\;
+        $curr\_node \leftarrow Parent(curr\_node)$\;
+    }
+}
+\Return{$\argmax\limits_{n \in Children(root)}(N_{n})$} \tcp*[h]{Return most visited child}\;
+\end{algorithm}
+
+
+\subsection{Selection}
+
+The process of selection consists of selection steps passing from a node to one of it's children.
+Each such a step meets exploration-exploitation contradiction where exploitation tends to choose the
+best node (one with the greatest current value) and exploration on the other side promotes
+undiscovered ways in the tree. This problem is well-known as the Multi-Armed Bandit Problem (MAB)
+\cites{Auer2002}{Kocsis2006}. 
+
+\emph{XXX: Vadí (téměř) doslovný přepis definice?}
+
+\begin{samepage}
+\newtheorem*{defmab}{Definition}
+\begin{defmab}[K-armed bandit problem ] 
+
+Let us have independent random variables $X_{i,n}$ for $1 \le i \le K$ and $n \ge 1$. Each $i$ is
+the index of a gambling machine and $X_{i,1}$, $X_{i,2}$,\ldots are identically distributed rewards
+with unknown expected value $\mu_i$ yielded by successive plays of machine $i$. For the simplicity
+the rewards are bounded to $[0,1]$.
+
+A policy $A$ is an algorithm that chooses the next machine to play based on the sequence of
+past plays and obtained rewards. Let $T_i(n)$ be the number of times machine $i$ has been played by
+$A$ during the first $n$ plays and $I_i^A$ be the index of a machine played in nth play. Then the
+regret of A after n plays is defined as
+
+\begin{equation}
+R_n^A = n \mu^* - \sum_{j=1}^K T_j(n) \mu_j \mathrm{,\;where}\;\mu^* \stackrel{\mathrm{def}}{=}
+\max_{1 \le i \le K} \mu_i
+\end{equation}
+
+thus the regret $R_n^A$ is the loss caused by the policy not always playing the best machine.
+
+K-armed bandit problem consists in finding optimal policy $A^*$ minimizing
+expected regret $R_n^A$.
+
+\end{defmab}
+\end{samepage}
+
+\emph{TODO: co citovat? Originální knížku z roku 85 nebo \cite{Auer2002}, kde se na ní odkazují?}
+\emph{TODO: až se vyřeší citace, doplnit zmínku o tom, že optimální policy má regret  ~$O(log(n))$,
+ale že je výpočetně náročná}
+
+\Citeauthor{Auer2002} introduced computationaly effective optimal policy UCB1 (\cite{Auer2002}) having
+regret bounded to $O(log(n))$ defined as:
+
+\begin{equation}
+ I_{UCB1}(n+1) = \argmax\limits_{i\in{1,\ldots,K}} \left({\bar{X}_{i,T_i(n)} 
++ \sqrt{{2 \log (n)} \over T_i(n)}}\right)
+ \end{equation}.
+
+Abbreviation UCB stands for \emph{Upper-Confidence Bound} and refers to value maximized by the
+policy. UCB consists of average of previous rewards and a bias growing decreasing with number of the
+machine's plays. In addition significance of the bias is growing with the total number of plays what
+leads to increase of exploration.
+
+UCB applied to Trees \cite{Kocsis2006} is derived from UCB using values $v_i$ and $n_i$ stored in
+particular node $i$. In addition bias coefficient C is introduced in \cite{Chaslot2008} so the form of
+UCT1 describing selection on node $p$ is:
+
+\begin{equation}
+I_{UCT1}^p = \argmax\limits_{i \in Children(j)} \left( v_i + C \sqrt{\log{n_p} \over{n_i}}\right)
+\end{equation}
+
+where 
+
+ adopting a piece of
+generalization in form 
+
+\subsection{Expansion}
+
+
+\subsection{Simulation}
+
+
+\subsection{Backpropagation}
+
+
+
+\section{Convergence to Minimax algorithm}
+\label{sec_minimax_convergence}
+
+\section{MCTS for Two-Player Games}
+\emph{Discussion about simultaneous v. turn-based games and its convergence}
+
+\section{Parallel Monte-Carlo Tree Search}
 
 
 
 
-\section{Brief history}
 
-\section{Description}
-
-\section{Upper-Confidence Bound}
 
 
