@@ -14,3 +14,4 @@ text/*.bcf
 text/*.loa
 text/*.run.xml
 text/thesis-blx.bib
+text/*.blg

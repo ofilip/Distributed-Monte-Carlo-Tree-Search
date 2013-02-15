@@ -1,7 +1,7 @@
 \chapter{Monte-Carlo Tree Search}
 \label{chap_mcts}
 
-Mone-Carlo Tree Search (MCTS) is an iterative best-first search algorithm with stochastic positional
+Monte-Carlo Tree Search (MCTS) is an iterative best-first search algorithm with stochastic positional
 evaluation, anytime property and fast convergence. As \citeauthor{ChaslotPhd2010} summed up in 
 \cite{ChaslotPhd2010}, MCTS was simultaneously developed
 in three variants (\cites{Chaslot2006}{Coulom2006}{Kocsis2006}) in 2006. Specific variant used in
@@ -15,30 +15,37 @@ chapter.
 \cite{Chaslot2008}. Variant of MCTS as well as the terminology used in this thesis are based mainly
 on this paper.
 
-Monte-Carlo Tree Search is iteratively building the search tree as depicted by picture
+Monte-Carlo Tree Search is iteratively building the search tree as depicted by figure
 \emph{TODO}%\ref{fig_mcts_phases}
- and algorithm \ref{alg_mcts_loop}. Nodes of the tree contains at least two values - visit count
- saying how many random evaluations of positions in node's subtree have been executed and actual
- value which aggregates actual values from node's subtree (usually the average).
+and algorithms \ref{alg_mcts_loop_general} and \ref{alg_mcts_loop_full_detailed}.
+The figure and former algorithm
+follows MCTS in its generality, whereas latter algorithm containts details of chosen variant and
+decisions discussed in following sections.
+  
+Nodes of the tree contains at least two values - visit count
+saying how many random evaluations of positions in node's subtree have been executed and actual
+value which aggregates actual values from node's subtree (usually the average).
 
 Each iteration of MCTS consists of four
 phases - \emph{selection}, \emph{expansion}, \emph{simulation} and \emph{backpropagation}. During
 the selection phase the 
 algorithm passes through the tree to a particular leaf where better-evaluated but less-visited nodes
 are preferred. Appropriate balance between these contradictory claims is main objective of this
-phase. Once a leaf node is selected the expansion phase follows and all children nodes reachable
-from the leaf node with one valid move are added to the leaf and one of these children is chosen.
+phase. Once a leaf node is selected the expansion phase follows when the node itself or one of its
+virtual children reachable from the leaf node with one valid move is chosen accordingly to a certain
+condition. Usually condition on node's visit count is used.
 The next phase, simulation (also called playout), plays a random game (or several ones) starting
 in position defined by expanded node halting on some conditions (e.g. after certain moves are
 played, the end of the game is reached). Results from the simulations are then backpropagated to all
 expanded node's ancestors during the fourth phase (backpropagation). The phases of the algorithm are
-further discussed in subsequent sections.
+further discussed in subsequent sections and depicted by algorithm
+\ref{alg_mcts_loop_detailed}.
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{Monte-Carlo Tree Search\label{sec_mcts_description}}
-\label{alg_mcts_loop}
-$tree \leftarrow new\,McTree()$ \tcp*[h]{Initialize empty tree}\;
+\caption{Monte-Carlo Tree Search (general pseudocode)\label{sec_mcts_description}}
+\label{alg_mcts_loop_general}
+$tree \leftarrow new\,McTree$ \tcp*[h]{Initialize empty tree}\;
 $root \leftarrow Root(tree)$\;
 \While(\tcp*[h]{Main MCTS loop}){$EnoughTime()$}{
     $last\_node \leftarrow root$ \tcp*[h]{Phase 1: Selection}\;
@@ -49,7 +56,7 @@ $root \leftarrow Root(tree)$\;
     $last\_node \leftarrow Expand(last\_node)$ \tcp*[h]{Phase 2: Expansion}\;
     $reward \leftarrow Playout(last\_node)$ \tcp*[h]{Phase 3: Simulation}\;
     \While(\tcp*[h]{Phase 4: Backpropagation}){$curr\_node \in tree$}{
-        $reward \leftarrow Backpropagate(curr\_node,\:reward)$\;
+        $reward \leftarrow Backpropagate(curr\_node,\:reward,\:1)$\;
         $N_{curr\_node} \leftarrow N_{curr\_node}+1$ \tcp*[h]{Increase node's visit count}\;
         $curr\_node \leftarrow Parent(curr\_node)$\;
     }
@@ -63,10 +70,8 @@ $root \leftarrow Root(tree)$\;
 The process of selection consists of selection steps passing from a node to one of it's children.
 Each such a step meets exploration-exploitation contradiction where exploitation tends to choose the
 best node (one with the greatest current value) and exploration on the other side promotes
-undiscovered ways in the tree. This problem is well-known as the Multi-Armed Bandit Problem (MAB)
-\cites{Auer2002}{Kocsis2006}. 
-
-\emph{XXX: Vadí (téměř) doslovný přepis definice?}
+undiscovered ways in the tree. This problem is well-known as the Multi-Armed Bandit Problem (MAB).
+Following definition is adopted from \cite{Auer2002} and \cite{Kocsis2006}.
 
 \begin{samepage}
 \newtheorem*{defmab}{Definition}
@@ -96,15 +101,15 @@ expected regret $R_n^A$.
 \end{samepage}
 
 \emph{TODO: co citovat? Originální knížku z roku 85 nebo \cite{Auer2002}, kde se na ní odkazují?}
-\emph{TODO: až se vyřeší citace, doplnit zmínku o tom, že optimální policy má regret  ~$O(log(n))$,
+\emph{TODO: až se vyřeší citace, doplnit zmínku o tom, že optimální policy má regret  ~$O(\log{n})$,
 ale že je výpočetně náročná}
 
 \Citeauthor{Auer2002} introduced computationaly effective optimal policy UCB1 (\cite{Auer2002}) having
-regret bounded to $O(log(n))$ defined as:
+regret bounded to $O(\log{n})$ defined as:
 
 \begin{equation}
  I_{UCB1}(n+1) = \argmax\limits_{i\in{1,\ldots,K}} \left({\bar{X}_{i,T_i(n)} 
-+ \sqrt{{2 \log (n)} \over T_i(n)}}\right)
++ \sqrt{{2 \log{n}} \over T_i(n)}}\right)
  \end{equation}.
 
 Abbreviation UCB stands for \emph{Upper-Confidence Bound} and refers to value maximized by the
@@ -113,35 +118,249 @@ machine's plays. In addition significance of the bias is growing with the total 
 leads to increase of exploration.
 
 UCB applied to Trees \cite{Kocsis2006} is derived from UCB using values $v_i$ and $n_i$ stored in
-particular node $i$. In addition bias coefficient C is introduced in \cite{Chaslot2008} so the form of
-UCT1 describing selection on node $p$ is:
+particular node $i$. In addition the bias coefficient C is introduced in \cite{Chaslot2008} so the form of
+UCT1 describing selection applied in node $p$ is:
 
 \begin{equation}
-I_{UCT1}^p = \argmax\limits_{i \in Children(j)} \left( v_i + C \sqrt{\log{n_p} \over{n_i}}\right)
-\end{equation}
+I_{UCT1}^p = \argmax\limits_{i \in \mathrm{Children}(j)} \left( v_i + C \sqrt{\log{n_p} \over{n_i}}\right)
+\end{equation}.
 
-where 
+As mentioned in \cite{Chaslot2008}, the experiments show that UCT1 does not perform well until visit
+count $v_i$ is small and insufficient simulations in node's subtree is played. Therefore to overcome this
+empirical finding, simulation steps led stochastically by domain-specific information (so-called
+\emph{simulation strategy} described in 
+\ref{sec_simulation}) instead of selection steps are performed until some threshold $T$ of $v_i$
+is reached. For example in \cite{Chaslot2008} the contstants are set to $C=0.7$ and $T=30$.
 
- adopting a piece of
-generalization in form 
 
 \subsection{Expansion}
+\label{sec_expansion}
+
+The expansion decides whether or not will be the selected leaf expanded and so if the simulation
+will begin in the leaf itself or in one of its children. The most common variant used also in our
+thesis is that the node is
+expanded once it reaches a particular visit count $S$. Greater value in such a condition causes higher
+simulation count in each node and so stronger evaluation. On the other hand the process of building
+tree is slowed. With $S=1$ the expansion becomes even simplier and the leaf is simply expanded
+always.
 
 
 \subsection{Simulation}
+\label{sec_simulation}
+
+The simulation, or \emph{playout}, performs random play starting in the position defined in the
+node returned by expansion. Simulation steps can be plain random moves or, to improve the strength of
+simulation, the simulation can follow a pseudo-random \emph{simulation strategy} designed accordingly to
+domain-specific information. The stochasticity of chosen simulation strategy determines the strength
+of simulation. If the strategy is too stochastic, or on the contrary too deterministic, the
+simulation strenght is decreasing and it is difficult to choose adequate compromise.
+
+Simulation is terminated if a certain condition is encountered (e.g. limit on number of simulation
+steps or the end of the round is reached) and player's position score from interval $[0;1]$ is
+returned. Additionally, to speed up the simulation the simulation steps can be performed in
+simplified game environment.
 
 
 \subsection{Backpropagation}
 
+The last phase of the MCTS iteration is the backpropagation. The task of this phase is to propagate
+evaluation provided by the simulation to all node's precedessors. Various backpropagation strategies
+may, however, the plain average is crucial for good properties of UCT1 and performs well in
+practise. Hence the result $r$ obtained by simulation is figured to the node's value containing
+average of simulations performed in its subtree what leads to the following update formula for node
+$p$:
 
+\begin{align}
+    &\begin{aligned}
+        v_p &\leftarrow {{v_p n_p + r} \over{n_p + 1}}
+    \end{aligned}\\
+    &\begin{aligned}
+        n_p &\leftarrow n_p + 1
+    \end{aligned}
+\end{align}
+
+
+
+
+\begin{algorithm}
+\DontPrintSemicolon
+\caption{Monte-Carlo Tree Search (detailed pseudocode)}
+\label{alg_mcts_loop_detailed}
+\emph{TODO}\;
+$tree \leftarrow new\,McTree$ \tcp*[h]{Initialize empty tree}\;
+$root \leftarrow Root(tree)$\;
+\While(\tcp*[h]{Main MCTS loop}){$EnoughTime()$}{
+    $last\_node \leftarrow root$ \tcp*[h]{Phase 1: Selection}\;
+    \While{$curr\_node \in tree$}{
+        $last\_node \leftarrow curr\_node$\;
+        $curr\_node \leftarrow Select(curr\_node)$\;
+    }
+    $last\_node \leftarrow Expand(last\_node)$ \tcp*[h]{Phase 2: Expansion}\;
+    $reward \leftarrow Playout(last\_node)$ \tcp*[h]{Phase 3: Simulation}\;
+    \While(\tcp*[h]{Phase 4: Backpropagation}){$curr\_node \in tree$}{
+        $reward \leftarrow Backpropagate(curr\_node,\:reward,\:1)$\;
+        $N_{curr\_node} \leftarrow N_{curr\_node}+1$ \tcp*[h]{Increase node's visit count}\;
+        $curr\_node \leftarrow Parent(curr\_node)$\;
+    }
+}
+\Return{$\argmax\limits_{n \in Children(root)}(N_{n})$} \tcp*[h]{Return most visited child}\;
+\end{algorithm}
 
 \section{Convergence to Minimax algorithm}
 \label{sec_minimax_convergence}
 
+
+
 \section{MCTS for Two-Player Games}
 \emph{Discussion about simultaneous v. turn-based games and its convergence}
 
+However it has been shown that MCTS converges to... \emph{TODO: Načíst jak je to s konvergencí k
+minimax stromu a pure nash equilibrium strategii a opravit podle toho předchozí text}
+
+
 \section{Parallel Monte-Carlo Tree Search}
+
+Several publications dealing with parallelization of Monte-Carlo Tree Search have been published
+recently \cites{Cazenave2007}{Chaslot2008}{Teytaud2008}. Two kinds of the parallelization are
+discussed in these papers - multi-core parallelization and cluster parallelization.
+
+Multi-core parallelization refers to computation on a symmetric multiprocessor computer (SMP). In
+this case memory is shared among all processor cores and access to this memory is the same and low.
+Access synchronization have to be managed using a mutex mechanism. Two techniques for
+parallelization with no need for locking (\emph{leaf parallelization}, \emph{root parallelization},
+\emph{simulation results passing}),
+and two variants of parallelization with locking (\emph{tree parallelization}) have been proposed so
+far. 
+
+Cluster parallelization is more generalized approach to parallelization. Memory is not shared
+between parallel processes and so the inter-process communication is realized by \emph{message
+passing}. Latencies in inter-process communication have to be taken in consideration but on the
+other hand no memory locking is necessary. Algorithms mentioned as not using memory locking in
+previous paragraph are suitable also for cluster parallelization.
+
+For the simplicity and due to fact that all algorithms can be used in multi-core environment, we 
+use multi-core terminology in descriptions of algorithms, so parallel
+computational flows will be referred as \emph{threads} and computational nodes as \emph{cores}.
+
+\subsection{Leaf Parallelization}
+
+\emph{Leaf parallelization} is simple algorithm originally introduced in \cite{Cazenave2007} as
+\emph{at-the-leaves parallelization}. Parallelization is used only during simulation phase where
+multiple simulations are executed what leads to the following algorithm depicted by algorithm
+\ref{alg_leaf_parallelization}.
+
+\begin{algorithm}
+\DontPrintSemicolon
+\caption{Leaf Parallelization}
+\label{alg_leaf_parallelization}
+\label{alg_mcts_loop_general}
+$tree \leftarrow new\,McTree$ \tcp*[h]{Initialize empty tree}\;
+$root \leftarrow Root(tree)$\;
+\While(\tcp*[h]{Main MCTS loop}){$EnoughTime()$}{
+    $last\_node \leftarrow root$ \tcp*[h]{Phase 1: Selection}\;
+    \While{$curr\_node \in tree$}{
+        $last\_node \leftarrow curr\_node$\;
+        $curr\_node \leftarrow Select(curr\_node)$\;
+    }
+    $last\_node \leftarrow Expand(last\_node)$ \tcp*[h]{Phase 2: Expansion}\;
+    $threads \leftarrow new\,Set<Thread>$ \tcp*[h]{Phase 3: Parallel simulations}\;
+    \ForEach{available processor core $C$}{
+        $thread \leftarrow new\,PlayoutThread$\;
+        $threads.add(thread)$\;
+        $Run(thread)$
+    }
+    \While(wait for simulations){$AnyThreadRunning(threads)$}{
+        $Wait()$\;
+    }
+    $reward \leftarrow AveragePlayoutReward(threads)$\;
+    \While(\tcp*[h]{Phase 4: Backpropagation}){$curr\_node \in tree$}{
+        $reward \leftarrow Backpropagate(curr\_node,\:reward,\:Count(threads))$\;
+        $N_{curr\_node} \leftarrow N_{curr\_node}+Count(threads)$ \tcp*[h]{Increase node's visit count}\;
+        $curr\_node \leftarrow Parent(curr\_node)$\;
+    }
+}
+\Return{$\argmax\limits_{n \in Children(root)}(N_{n})$} \tcp*[h]{Return most visited child}\;
+\end{algorithm}
+
+Master thread traverses the root to the leaf according to selection strategy and expands selected
+leaf at first. Then for each available processor core, one simulation is performed from position
+defined by leaf. Master thread then waits until all simulations are finished and backpropagates
+their results up through tree.
+
+This approach is very easy to implement since no complicated synchronization is used
+what is its main advantage. However, several disadvantages have to be mentioned. First, cores are
+not fully loaded for two obvious reasons. Algorithm is single-threaded during selection, expansion
+and backpropagation phases and so slave threads are sleeping. In addition, running time of
+simulation threads differ due to their high unpredictability and threads which already finished
+simulation have to wait for the last one. Second disadvantage is one that leaf parallelization
+forces multiple simulations
+per position what leads to better position evaluation but slows the speed of tree building. Last
+disadvantage is that in comparison with plain MCTS which performs selection after each simulation,
+the leaf parallelization have to perform full set of simulations per each node and so some of
+unnecessary simulations are uselessly performed because first few of them can serve as good evidence
+for considering the position as a bad candidate for further exploration. This can be worked around
+if simulation threads are terminated once such a consideration is made according to already finished
+simulations.
+
+Leaf parallelization is suitable for using in both multi-core and cluster environment.
+
+
+\subsection{Root Parallelization}
+
+\emph{TODO: pseudocode?}
+
+Another approach first proposed in \cite{Cazenave2007} is \emph{root parallelization} being
+originally named as \emph{single-run parallelization}. In root parallelization, independent
+MCTS instance is executed for each core with different random-seeds so the trees built by individual
+instances differ. Finally, roots with their children from all instances are collected in master
+thread and merged. The result is set of nodes containing information from all MCTS instances which
+are used for selecting the best action to perform. Main advantages are simple implementation and a
+minimal amount of communication so root parallelization can be successfully used in cluster
+or in multi-core environment.
+
+There is also a significant disadvantage resulting from missing communication during running of MCTS
+instances. Because each MCTS tree is built separately each instance have to perform similar
+exploration or in other words same set of positions have to be evaluated before for interesting
+positions can be inspected. Because of this advantage plain MCTS having proportionally more time for
+running would still probably perform better because no duplicit exploration have to be done and such
+a saved time can be used for deeper exploitation.
+
+\subsection{Tree Parallelization}
+
+The reasons why leaf parallelization wastes too much time leaving cores in sleep are removed by
+\emph{tree parallelization}. It is done by effective tree locking so individual threads can access
+and modify the tree on their own and so particular simulations follow independent selections and
+need not to wait for the end of other simulations. The tree can be locked with \emph{global mutex}
+or with \emph{local mutexes} placed all nodes. The global mutex is simplier method saving costs
+associated with locking but the maximum speedup is significantly reduced because the average
+percentage of time spent in the tree (denoted as $x$ for now) is relatively high ($25\%-50\%$) and
+so it is not possible to reach speedup higher than $100/x$. This is because if each of $n$ threads are
+accessing the tree  strictly mutually and no one have to sleep, percentage time spent in tree is
+equal to $n x$ and so $n \le \lfloor {100 \over{x}} \rfloor$. Due to this limitation, local mutexes
+are necessary for systems with greater number of cores. To beat the fact of high cost of locking and
+unlocking, fast-access mutexes should be used (i.e. spinlocks).
+
+One more disadvantage of leaf parallelization should be handled which is parallel evaluation of a
+single node when multiple evaluations are performed even if the first one may mark the node badly
+and so not recomment for further exploitation. To prevent additional evaluations before previous
+ones are currently running we add one \emph{virtual loss} to the value of the node being evaluated
+and remove it then during backpropagation.
+If the virtual loss is chosen properly, further evaluations are performed only in case when the
+node's value is good enough even after adding the virtual loss and so weak nodes are not paralelly
+evaluated.
+
+\subsection{Simulation Results Passing}
+
+\emph{Simulation results passing} can be viewed as trial of adaptation of \emph{tree
+parallelization} to cluster environment. These two algorithms share the property of high amount of
+communication. \emph{TODO}
+
+
+
+
+\subsection{Comparison and Conclusion}
+
+
 
 
 
