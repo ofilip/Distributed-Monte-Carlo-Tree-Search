@@ -6,7 +6,8 @@ evaluation, anytime property and fast convergence. As \citeauthor{ChaslotPhd2010
 \cite{ChaslotPhd2010}, MCTS was simultaneously developed
 in three variants (\cites{Chaslot2006}{Coulom2006}{Kocsis2006}) in 2006. Specific variant used in
 this thesis along with all important details and explanation of the properties is discussed in this
-chapter.
+chapter. In addition, section \ref{sec_parallel_mcts} sumarizes current approaches to paralelization
+of MCTS.
 
 
 \section{Algorithm Description}
@@ -219,6 +220,7 @@ minimax stromu a pure nash equilibrium strategii a opravit podle toho p≈ôedchoz√
 
 
 \section{Parallel Monte-Carlo Tree Search}
+\label{sec_parallel_mcts}
 
 Several publications dealing with parallelization of Monte-Carlo Tree Search have been published
 recently \cites{Cazenave2007}{Chaslot2008}{Teytaud2008}. Two kinds of the parallelization are
@@ -253,7 +255,6 @@ multiple simulations are executed what leads to the following algorithm depicted
 \DontPrintSemicolon
 \caption{Leaf Parallelization}
 \label{alg_leaf_parallelization}
-\label{alg_mcts_loop_general}
 $tree \leftarrow new\,McTree$ \tcp*[h]{Initialize empty tree}\;
 $root \leftarrow Root(tree)$\;
 \While(\tcp*[h]{Main MCTS loop}){$EnoughTime()$}{
@@ -353,12 +354,66 @@ evaluated.
 
 \emph{Simulation results passing} can be viewed as trial of adaptation of \emph{tree
 parallelization} to cluster environment. These two algorithms share the property of high amount of
-communication. \emph{TODO}
+communication what is naturally bigger problem in distributed environment.
 
+\begin{algorithm}
+\DontPrintSemicolon
+\caption{Simulation Results Passing}
+\label{alg_simulation_results_passing}
+\emph{TODO}\;
+\end{algorithm}
 
+Unlike tree parallelization, the simulation results passing is building search tree separately in
+each thread and synchronize these trees by broadcasting messages containing identification of
+expanded node and resulting value of performed simulation. This value is then backpropagated in
+trees of receiving threads. Master thread finally returns best move accordingly to its tree.
+Simulation results passing is depicted by algorithm \ref{alg_simulation_results_passing}.
+
+This algorithm relies on high throughput of the cluster environment. Requirements on the throughput
+grows with number of parallel threads so algorithm is not suitable for massive parallelism. The
+algorithm is designed for usage in cluster environment but can be of course used also in multi-core
+environment.
 
 
 \subsection{Comparison and Conclusion}
+
+We have sumarized known algorithms for parallelization of MCTS in both multi-core and cluster
+environment. Three of them - leaf parallelization, root parallelization and tree parallelization -
+have been experimentally evaluated in \cite{Chaslot2008} in context of playing Go in multi-core
+environment. For this purpose the \emph{strength speedup} measure has been used. It is equal to
+ the ratio of time needed for plain
+MCTS to reach the same strength. Brief summary of results is covered by table
+\ref{tab_parallel_mcts_comparison}. The winner of comparison is root parallelization performing even
+better than single-threaded MCTS in case of 2 and 4 parallel threads. This is interpreted as 
+parallel MCTS algorithms with different random seeds exploit different local optima so better one
+can be finally chosen. Second best performance showed tree parallelization using virtual loss. Other
+algorithms performed very poorly especially in case of higher number of threads.
+
+\begin{tabular}{lrr}
+\hline
+Algorithm & Thread count & strength speedup\\
+\hline
+Leaf parallelization & 2  & 1.2\\
+Leaf parallelization & 4  & 1.7\\
+Leaf parallelization & 16 & 2.4\\
+\hline
+Root parallelization & 2  & 3.0\\
+Root parallelization & 4  & 6.5\\
+Root parallelization & 16 & 14.9\\
+\hline
+Tree parallelization (global mutex) & 2  & 1.6\\
+Tree parallelization (global mutex) & 4  & 3.0\\
+Tree parallelization (global mutex) & 16 & 2.6\\
+\hline
+Tree parallelization (local mutex) & 2  & 1.9\\
+Tree parallelization (local mutex) & 4  & 3.0\\
+Tree parallelization (local mutex) & 16 & 3.3\\
+\hline
+Tree parallelization (virtual loss) & 2  & 2.0\\
+Tree parallelization (virtual loss) & 2  & 3.6\\
+Tree parallelization (virtual loss) & 2  & 8.5\\
+\hline
+\end{tabular}
 
 
 
