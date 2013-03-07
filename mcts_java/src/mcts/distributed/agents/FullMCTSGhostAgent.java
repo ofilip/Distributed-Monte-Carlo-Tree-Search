@@ -1,4 +1,4 @@
-package mcts.distributed;
+package mcts.distributed.agents;
 
 import java.util.EnumMap;
 import mcts.AvgBackpropagator;
@@ -6,6 +6,7 @@ import mcts.GhostsTree;
 import mcts.MySimulator;
 import mcts.UCBSelector;
 import mcts.Utils;
+import mcts.distributed.DistributedMCTSController;
 import pacman.game.Constants;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
@@ -18,8 +19,8 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
     protected int current_level;
     protected EnumMap<GHOST, MOVE> last_full_move;
     
-    public FullMCTSGhostAgent(GHOST ghost, int simulation_depth, double ucb_coef, boolean verbose) {
-        super(ghost, simulation_depth, ucb_coef, verbose);
+    public FullMCTSGhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, boolean verbose) {
+        super(controller, ghost, simulation_depth, ucb_coef, verbose);
     }
     
     private void initializeTree(Game game) {

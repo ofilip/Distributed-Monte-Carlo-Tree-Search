@@ -42,11 +42,15 @@
 %%
 \usepackage{amsmath}
 \usepackage{amsfonts}
-\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\usepackage{amssymb}
+\usepackage[ruled,vlined,linesnumbered,algochapter]{algorithm2e}
+\numberwithin{algocf}{chapter} % lepší číslování algoritmů
+\usepackage{todonotes}
 
 %%Moje definované příkazy
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
+
 
 %% Balíček hyperref, kterým jdou vyrábět klikací odkazy v PDF,
 %% ale hlavně ho používáme k uložení metadat do PDF (včetně obsahu).
@@ -213,6 +217,8 @@ Abstrakt:
 
 Klíčová slova:
 % 3 až 5 klíčových slov
+Multi-agentní systémy, Monte-Carlo Tree Search, distribuované algoritmy
+
 
 \vss}\nobreak\vbox to 0.49\vsize{
 \setlength\parindent{0mm}
@@ -240,6 +246,7 @@ Abstract:
 
 Keywords:
 % 3 až 5 klíčových slov v angličtině
+Multi-agent systems, Monte-Carlo Tree Search, distributed algorithms
 
 \vss}
 
@@ -253,6 +260,8 @@ Keywords:
 \pagestyle{plain}
 \setcounter{page}{1}
 \tableofcontents
+
+\listoftodos
 
 %%% Jednotlivé kapitoly práce jsou pro přehlednost uloženy v samostatných souborech
 \include{preface}

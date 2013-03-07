@@ -18,4 +18,4 @@ thesis.dvi: thesis.tex $(wildcard *.tex)
 	cslatex $<
 
 clean:
-	rm -f *.{log,dvi,aux,toc,lof,out,bbl,~,blg} thesis.ps thesis.pdf
+	rm -f *.{log,dvi,aux,toc,lof,out,bbl,~,blg,run.xml,bcf,loa,tdo} thesis-blx.bib thesis.ps thesis.pdf

@@ -18,8 +18,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import mcts.distributed.DistributedMCTSController;
-import mcts.distributed.IndependentGhostAgent;
-import mcts.distributed.MoveExchangingGhostAgent;
+import mcts.distributed.agents.DummyGhostAgent;
+import mcts.distributed.agents.JointActionExchangingAgent;
+import mcts.distributed.controller_generators.DummyGhostsGenerator;
+import mcts.distributed.controller_generators.JointActionExchangingGhostsGenerator;
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
 import pacman.controllers.KeyBoardInput;
@@ -28,6 +30,7 @@ import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.examples.StarterPacMan;
 import pacman.entries.ghosts.MCTSGhosts;
 import pacman.entries.pacman.*;
+import pacman.entries.pacman.generators.StarterPacManGenerator;
 import pacman.game.Game;
 import pacman.game.GameView;
 
@@ -44,30 +47,7 @@ public class MyExecutor
 {
     
        static boolean verbose = true;
-       static abstract class CompetitionOptions {
-           private int pacman_delay;
-           private int ghosts_delay;
-           private String pacman_name;
-           private String ghost_name;
-           public CompetitionOptions(String pacman_name, int pacman_delay, String ghost_name, int ghosts_delay) {
-               this.pacman_delay = pacman_delay;
-               this.ghosts_delay = ghosts_delay;
-               this.pacman_name = pacman_name;
-               this.ghost_name = ghost_name;
-           }
-           public abstract Controller<MOVE> pacmanController();
-           public abstract Controller<EnumMap<GHOST,MOVE>> ghostController();
-           public int pacmanDelay() {
-               return pacman_delay;
-           }
-           public int ghostsDelay() {
-               return ghosts_delay;
-           }
-           public String pacmanName() { return pacman_name; }
-           public String ghostName() { return ghost_name; }
-       }
-    
-        public static void runCompetition(List<CompetitionOptions> options_list, int trials, boolean visual, boolean recorded) {
+               public static void runCompetition(List<CompetitionOptions> options_list, int trials, boolean visual, boolean recorded) {
             try {
                 MyExecutor exec = new MyExecutor();
                 String date_string = new SimpleDateFormat("yyMMdd-hhmmss").format(new Date());
@@ -110,65 +90,7 @@ public class MyExecutor
                 e.printStackTrace();
             }
         }
-        
-        final static CompetitionOptions STARTER_VS_LEGACY = new CompetitionOptions("StarterPacMan", 40, "Legacy", 40) {                
-                @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
-                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {return new Legacy();}};
-        final static CompetitionOptions STARTER_VS_LEGACY2THERECKONING = new CompetitionOptions("StarterPacMan", 40, "Legacy2TheReckoning", 40) {                
-                @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
-                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {return new Legacy2TheReckoning();};};
-        final static CompetitionOptions STARTER_VS_MCTS80 = new CompetitionOptions("StarterPacMan", 40, "MCTSGhosts(80,0.5)", 40) {                
-                @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
-                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {return new MCTSGhosts(80, 0.5, false);};};
-        final static CompetitionOptions STARTER_VS_MCTS80_200 = new CompetitionOptions("StarterPacMan", 40, "MCTSGhosts(80,0.5)", 200) {                
-                @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
-                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {return new MCTSGhosts(80, 0.5, false);};};
-        final static CompetitionOptions STARTER_VS_MCTS80_800 = new CompetitionOptions("StarterPacMan", 40, "MCTSGhosts(80,0.5)", 800) {                
-                @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
-                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {return new MCTSGhosts(80, 0.5, false);};};
-        final static CompetitionOptions STARTER_VS_MCTS200_800 = new CompetitionOptions("StarterPacMan", 40, "MCTSGhosts(200,0.5)", 800) {                
-                @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
-                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {return new MCTSGhosts(200, 0.5, false);};};
-        final static CompetitionOptions MCTS120_800_VS_MCTS200_800 = new CompetitionOptions("MCTSPacman(120,0.5)", 800, "MCTSGhosts(200,0.5)", 800) {                
-                @Override public Controller<MOVE> pacmanController() {return new MCTSPacman(200, 0.5, false);}
-                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {return new MCTSGhosts(200, 0.5, false);};};
-        final static CompetitionOptions STARTER_VS_INDEPENDENT_GHOSTS80_200 = new CompetitionOptions("StarterPacMan", 40, "IndependentGhostAgents(80,0.5)", 200) {                
-                @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
-                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {
-                    return new DistributedMCTSController<IndependentGhostAgent>(1, true)
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.BLINKY, 80, 0.5, verbose))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.PINKY, 80, 0.5, verbose))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.INKY, 80, 0.5, verbose))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.SUE, 80, 0.5, verbose));
-                };};    
-        final static CompetitionOptions STARTER_VS_INDEPENDENT_GHOSTS80_800 = new CompetitionOptions("StarterPacMan", 40, "IndependentGhostAgents(80,0.5)", 800) {                
-                @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
-                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {
-                    return new DistributedMCTSController<IndependentGhostAgent>(1, true)
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.BLINKY, 80, 0.5, verbose))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.PINKY, 80, 0.5, verbose))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.INKY, 80, 0.5, verbose))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.SUE, 80, 0.5, verbose));
-                };};    
-        final static CompetitionOptions STARTER_VS_INDEPENDENT_GHOSTS200_800 = new CompetitionOptions("StarterPacMan", 40, "IndependentGhostAgents(200,0.5)", 800) {                
-                @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
-                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {
-                    return new DistributedMCTSController<IndependentGhostAgent>(1, true)
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.BLINKY, 200, 0.5, verbose))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.PINKY, 200, 0.5, verbose))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.INKY, 200, 0.5, verbose))
-                                .addGhostAgent(new IndependentGhostAgent(GHOST.SUE, 200, 0.5, verbose));
-                };}; 
-        final static CompetitionOptions STARTER_VS_MOVES_EXCHANGING_GHOST80_200 = new CompetitionOptions("StarterPacMan", 40, "MovesExchangingGhostAgent(200,0.5)", 200) {
-                @Override public Controller<MOVE> pacmanController() {return new StarterPacMan();}
-                @Override public Controller<EnumMap<GHOST, MOVE>> ghostController() {
-                    return new DistributedMCTSController<IndependentGhostAgent>(10000, true)
-                                .addGhostAgent(new MoveExchangingGhostAgent(GHOST.BLINKY, 200, 0.5, 20, verbose))
-                                .addGhostAgent(new MoveExchangingGhostAgent(GHOST.PINKY, 200, 0.5, 20, verbose))
-                                .addGhostAgent(new MoveExchangingGhostAgent(GHOST.INKY, 200, 0.5, 20, verbose))
-                                .addGhostAgent(new MoveExchangingGhostAgent(GHOST.SUE, 200, 0.5, 20, verbose));
-                };};             
-        
+               
 	/**
 	 * The main method. Several options are listed - simply remove comments to use the option you want.
 	 *
@@ -176,20 +98,18 @@ public class MyExecutor
 	 */
 	public static void main(String[] args)	{
             List<CompetitionOptions> options_list = new ArrayList<CompetitionOptions>();
-//            options_list.add(STARTER_VS_LEGACY);
-//            options_list.add(STARTER_VS_LEGACY2THERECKONING);
-//            options_list.add(STARTER_VS_MCTS80);
-//            options_list.add(STARTER_VS_MCTS80_200);
-//            options_list.add(STARTER_VS_MCTS80_800);
-//            options_list.add(STARTER_VS_MCTS200_800);
-//            options_list.add(MCTS120_800_VS_MCTS200_800);
-//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_200);
-//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_800);
-//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS200_800);            
-//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_200);
-//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS80_800);
-//            options_list.add(STARTER_VS_INDEPENDENT_GHOSTS200_800);
-            options_list.add(STARTER_VS_MOVES_EXCHANGING_GHOST80_200);
+            
+            for (int ghosts_simulation_depth: new int[]{200}) {
+                for (int ghosts_delay: new int[]{80, 200}) {
+                    for (PacmanControllerGenerator pacman_generator: new PacmanControllerGenerator[]{new StarterPacManGenerator()}) {
+                        options_list.add(new CompetitionOptions(pacman_generator, 40, 
+                                            new DummyGhostsGenerator(ghosts_simulation_depth, 0.7), ghosts_delay));
+                        options_list.add(new CompetitionOptions(pacman_generator, 40, 
+                                            new JointActionExchangingGhostsGenerator(ghosts_simulation_depth, 0.7, 1), ghosts_delay));
+                    }
+                }
+                
+            }
             
             runCompetition(options_list, 10, true, true);
 	}
@@ -204,7 +124,7 @@ public class MyExecutor
      * @param ghostController The Ghosts controller
      * @param trials The number of trials to be executed
      */
-    public void runExperiment(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
+    public void runExperiment(Controller<MOVE> pacManController, Controller<EnumMap<GHOST,MOVE>> ghostController, int trials)
     {
     	double avgScore=0;
     	

@@ -1,5 +1,6 @@
 package mcts.distributed;
 
+import mcts.distributed.agents.GhostAgent;
 import communication.messages.Message;
 import communication.Channel;
 import communication.Network;
@@ -10,7 +11,7 @@ import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
-public class DistributedMCTSController<G extends GhostAgent> extends Controller<EnumMap<GHOST,MOVE>> {
+public class DistributedMCTSController<G extends GhostAgent> extends Controller<EnumMap<GHOST,MOVE>> implements VirtualTimer {
     protected Network network;
     protected Map<GHOST, GhostAgent> agents = new EnumMap<GHOST, GhostAgent>(GHOST.class);
     protected int current_ghost = 0;
@@ -35,6 +36,11 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
         }
         agents.put(ghost_agent.ghost(), ghost_agent);
         return this;
+    }
+    
+    @Override
+    public long currentVirtualMillis() {
+        return System.currentTimeMillis()/agents.size();
     }
 
     @Override

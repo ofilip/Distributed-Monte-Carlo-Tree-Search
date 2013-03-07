@@ -1,4 +1,4 @@
-package mcts.distributed;
+package mcts.distributed.agents;
 
 import communication.messages.Message;
 import communication.MessageReceiver;
@@ -13,6 +13,7 @@ import mcts.Backpropagator;
 import mcts.MySimulator;
 import mcts.Selector;
 import mcts.UCBSelector;
+import mcts.distributed.DistributedMCTSController;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
@@ -30,9 +31,11 @@ public abstract class GhostAgent {
     protected double ucb_coef;
     protected boolean verbose;
     protected Map<Class<?>, MessageHandler> message_handlers = new  HashMap<Class<?>, MessageHandler>();
+    protected DistributedMCTSController controller;
      
     
-    public GhostAgent(GHOST ghost, int simulation_depth, double ucb_coef, boolean verbose) {
+    public GhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, boolean verbose) {
+        this.controller = controller;
         this.ghost = ghost;
         this.my_simulator = new MySimulator(simulation_depth);        
         this.ucb_selector = new UCBSelector(30, my_simulator);
@@ -74,5 +77,19 @@ public abstract class GhostAgent {
                 handler.handleMessage(ally, message);                
             }
         }        
+    }
+    
+    protected void broadcastMessage(Message message) {
+        for (MessageSender sender: message_senders.values()) {
+            sender.send(message);
+        }
+    }
+    
+    protected void broadcastMessageIfLowBuffer(Message message, long sending_interval) {
+        for (MessageSender sender: message_senders.values()) {
+            if (sender.secondsToSendAll()<sending_interval) {
+                sender.send(message);
+            }
+        }
     }
 }

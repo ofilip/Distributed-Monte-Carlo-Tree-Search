@@ -1,7 +1,47 @@
-\chapter{Distributed Monte-Carlo Tree Search Algorithms}
+\chapter{Distributed MCTS Algorithms for Cooperating Teams}
+\label{chap_dmcts_design}
 
-\section{Motivation and Related Work}
+\section{Motivation and Problem Definition}
 
-\section{Name of Algorithm 1}
-\section{Name of Algorithm 2}
-\section{Name of Algorithm 3}
+\todo{Upravit podle toho, co bude skutečně v kapitole \ref{chap_mas}}
+
+We have already reviewed the Monte-Carlo Tree Search algorithm and its parallelization in
+ Chapter \ref{chap_mcts} and distributed coordination algorithms and in Chapter \ref{chap_mas}.
+
+
+
+
+\section{Comparison Measures}
+\label{sec_measures_distributed}
+
+We have already described measures suitable for plain Monte-Carlo Tree Search and parallel
+Monte-Carlo Tree Search in Section \ref{sec_measures_parallel}. We will show that these
+measures are also suitable for comparison of distributed MCTS algorithms for games with team
+of cooperating agents. In addition, we will compare the amount of communication needed by the
+algorithms and the robustness of the algorithms against communication failures. For such
+comparisons, we will evaluate strength measures depending on the amount of communication and
+its robustness. The amount of communication will be simply the total length of messages
+exchanged. Some environments (e.g. radio transmissions or Ethernet over coax) provide the 
+possibility of broadcasting messages for the cost of passing single message whereas others 
+don't so the cost of broadcasted message equals to the cost of separate messages to all
+receivers. We will distinguish between these
+environments since some of the algorithms advantage from cheap message broadcasting.
+
+We have described two classes of measures for parallel MCTS, \emph{strength-} and
+\emph{simulations-per second-}based measures. Former one works with score obtained at the end
+of a game and latter one counts number of MCTS iterations handled per time unit. Details of
+these measures are discussed in Section \ref{sec_measures_parallel}. Obviously we can use
+simulations-per-second measures, distribution is not obstacle, simulations are still performed
+and these measures show the computational costs of distribution of computation. Similar is the
+case of strength measures where the only difference is that agents decide the actions
+independently but from outer point of view the joint action is the same as if plain or parallel
+MCTS calculate action. Strength measures say how strong is team guided by an algorithm.
+\todo{Jak budou simulovány communicatin failures?}
+
+\section{Proposed Algorithms}
+
+\subsection{Independent Agents}
+\subsection{Joint Action Exchange}
+\subsection{Root Exchange}
+\subsection{Simulation Results Passing}
+\subsection{Tree Cut Exchange}

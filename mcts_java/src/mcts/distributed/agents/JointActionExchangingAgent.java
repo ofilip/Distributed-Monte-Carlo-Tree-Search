@@ -1,4 +1,4 @@
-package mcts.distributed;
+package mcts.distributed.agents;
 
 import communication.messages.Message;
 import communication.MessageReceiver;
@@ -15,13 +15,14 @@ import mcts.GhostsTree;
 import mcts.MySimulator;
 import mcts.UCBSelector;
 import mcts.Utils;
+import mcts.distributed.DistributedMCTSController;
 import pacman.game.Constants;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 import utils.Pair;
 
-public class MoveExchangingGhostAgent extends FullMCTSGhostAgent {   
+public class JointActionExchangingAgent extends FullMCTSGhostAgent {   
     private Map<GHOST, MoveMessage> received_moves = new EnumMap<GHOST, MoveMessage>(GHOST.class);
     private int moves_message_interval;
     private long last_message_sending_time = 0;
@@ -50,32 +51,29 @@ public class MoveExchangingGhostAgent extends FullMCTSGhostAgent {
         }            
     };
     
-    public MoveExchangingGhostAgent(final GHOST ghost, int simulation_depth, double ucb_coef, int moves_message_interval, boolean verbose) {
-        super(ghost, simulation_depth, ucb_coef, verbose);
+    public JointActionExchangingAgent(DistributedMCTSController controller, final GHOST ghost, int simulation_depth, double ucb_coef, int moves_message_interval, boolean verbose) {
+        super(controller, ghost, simulation_depth, ucb_coef, verbose);
         hookMessageHandler(MoveMessage.class, new MessageHandler() {
             @Override
             public void handleMessage(GhostAgent agent, Message message) {
                 MoveMessage moves_message = (MoveMessage)message;
-                System.err.print(ghost+": "+"message received from "+agent.ghost+": "+message);
                 received_moves.put(agent.ghost(), moves_message);
             }            
         });
         this.moves_message_interval = moves_message_interval;
     }
     
-    public MoveExchangingGhostAgent(GHOST ghost, int simulation_depth, double ucb_coef, int moves_message_interval) {
-        this(ghost, simulation_depth, ucb_coef, moves_message_interval, false);
+    public JointActionExchangingAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, int moves_message_interval) {
+        this(controller, ghost, simulation_depth, ucb_coef, moves_message_interval, false);
     }
     
     private void sendMessages() {
-        long current_time = System.currentTimeMillis();
+        long current_time = controller.currentVirtualMillis();
         EnumMap<GHOST, MOVE> best_move = mctree.bestMove(current_game);
         MoveMessage message = new MoveMessage(best_move);
         
         if (current_time-last_message_sending_time>moves_message_interval) {
-            for (MessageSender sender: message_senders.values()) {
-                sender.send(message);
-            }
+            broadcastMessage(message);
             last_message_sending_time = current_time;
         }        
     }
