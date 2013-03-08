@@ -35,7 +35,7 @@ public class PacmanNode extends MCNode {
         //TODO: 
 //        this.game.updatePacMan(pacman_move);
 //        this.game.updateGame();
-        this.dbg_halfstep = true;
+        this.halfstep = true;
         decision_cause = DecisionCause.CROSSROAD_REACHED;
         ghosts_children = new HashMap<EnumMap<GHOST, MOVE>, GhostsNode>();
         MOVE[] blinky_moves = possible_ghosts_moves.get(Constants.GHOST.BLINKY);        

@@ -31,7 +31,7 @@ import utils.Pair;
 public class RootExchangingAgent extends FullMCTSGhostAgent {   
     private Map<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>> received_roots = new EnumMap<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>>(GHOST.class);    
     private IntervalHistory interval_history = new IntervalHistory(5);
-    private long last_message_sending_time = controller.currentVirtualMillis();
+    private long last_message_sending_time = 0;
      
     private Comparator<Entry<EnumMap<GHOST,MOVE>, Pair<Integer,GHOST>>> move_strength_entry_comparator = new Comparator<Entry<EnumMap<GHOST,MOVE>, Pair<Integer,GHOST>>>() {
         @Override
@@ -58,7 +58,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         }            
     };
     
-    public RootExchangingAgent(DistributedMCTSController controller, final GHOST ghost, int simulation_depth, double ucb_coef, int moves_message_interval, boolean verbose) {
+    public RootExchangingAgent(DistributedMCTSController controller, final GHOST ghost, int simulation_depth, double ucb_coef, boolean verbose) {
         super(controller, ghost, simulation_depth, ucb_coef, verbose);
         hookMessageHandler(MoveMessage.class, new MessageHandler() {
             @Override
@@ -69,8 +69,8 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         });
     }
     
-    public RootExchangingAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, int moves_message_interval) {
-        this(controller, ghost, simulation_depth, ucb_coef, moves_message_interval, false);
+    public RootExchangingAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef) {
+        this(controller, ghost, simulation_depth, ucb_coef, false);
     }
     
     private Map<EnumMap<GHOST, MOVE>, Long> extractRoot(MCNode subtree) {
@@ -90,12 +90,15 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         
         if (mctree.root().ghostsOnTurn()) {
             roots.put(MOVE.NEUTRAL, extractRoot(mctree.root()));
-        } else {
+        } else if (mctree.root().halfstep()){
             for (MCNode subtree: mctree.root().children()) {
+                if (subtree.pacmanOnTurn()) {
+                    return null;
+                }
                 PacmanNode pacman_node = (PacmanNode)subtree;
                 roots.put(pacman_node.pacmanMove(), extractRoot(subtree));
             }
-        }
+        } else return null;
         
         return roots;
     }
@@ -105,9 +108,12 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         EnumMap<GHOST, MOVE> best_move = mctree.bestMove(current_game);
         EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> roots = extractRoots();
         
+        /* send messages only if next turn is ghosts turn */
+        if (roots==null) return;
+        
         RootMessage message = new RootMessage(roots);
         broadcastMessageIfLowBuffer(message, (long)Math.floor(0.8*interval_history.averageInterval()));
-        interval_history.putTime(current_time-last_message_sending_time);
+        if (current_time!=0) interval_history.putTime(current_time-last_message_sending_time);
         last_message_sending_time = current_time;
     }
 
@@ -123,48 +129,59 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         /* Return move with best summed visit count */
         EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> summed_visit_count = new EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>(MOVE.class);
         EnumMap<MOVE, Long> pacman_move_visit_count = new EnumMap<MOVE, Long>(MOVE.class);
-        received_roots.put(ghost, extractRoots());
+        EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> my_roots = extractRoots();
+        
+        if (my_roots!=null) {
+            received_roots.put(ghost, my_roots);
+        }
         
         for (EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> roots: received_roots.values()) {
             for (MOVE pacman_move: roots.keySet()) {
                 Map<EnumMap<GHOST, MOVE>, Long> visit_count_map = summed_visit_count.get(pacman_move);
+                
+                
                 if (visit_count_map==null) {
                     visit_count_map = new HashMap<EnumMap<GHOST, MOVE>, Long>();
                     summed_visit_count.put(pacman_move, visit_count_map);
                     pacman_move_visit_count.put(pacman_move, new Long(0));
                 }
-                
-                //TODO !!!
+                for (EnumMap<GHOST, MOVE> ghost_move: visit_count_map.keySet()) {
+                    Long sum = visit_count_map.get(ghost_move);
+                    Long pacman_sum = pacman_move_visit_count.get(pacman_move);
+                    Long count = roots.get(pacman_move).get(ghost_move);
+                    
+                    if (pacman_sum==null) pacman_sum = new Long(0);
+                    if (sum==null) sum = new Long(0);
+                    visit_count_map.put(ghost_move, sum+count);
+                    pacman_move_visit_count.put(pacman_move, pacman_sum+count);
+                }
             }
         }
         
+        MOVE best_pacman_move = null;
         
-        
-        /* Return strongest move (move supported by the most agents)
-         * with priority defined by ordering on GHOST enum. */
-        EnumMap<GHOST, MOVE> my_best_move = mctree.bestMove(current_game);
-        received_moves.put(ghost, new MoveMessage(my_best_move)); /* putTime my current best move to received messages */
-        
-        Map<EnumMap<GHOST,MOVE>, Pair<Integer, GHOST>> move_strength = new HashMap<EnumMap<GHOST,MOVE>, Pair<Integer, GHOST>>();
-        
-        for (Entry<GHOST, MoveMessage> entry: received_moves.entrySet()) {
-            GHOST g = entry.getKey();
-            MoveMessage message = entry.getValue();
-            Pair<Integer, GHOST> current_value = move_strength.get(message.moves());
-            if (current_value==null) {
-                move_strength.put(message.moves(), new Pair<Integer, GHOST>(1, g));
-            } else {
-                current_value.first++;
-            }
-        }                
-        last_full_move = Collections.min(move_strength.entrySet(), move_strength_entry_comparator).getKey();
-        
-        if (verbose) {
-            System.out.printf(ghost+": ");
-            System.out.printf("my best move: %s\n", my_best_move);
-            System.out.printf("\tchosen best move: %s\n", last_full_move);
+        if (pacman_move_visit_count.isEmpty()) {
+            return MOVE.NEUTRAL;
         }
-        return last_full_move.get(ghost);
+        
+        for (MOVE pacman_move: pacman_move_visit_count.keySet()) {
+            if (best_pacman_move==null||pacman_move_visit_count.get(pacman_move)>pacman_move_visit_count.get(best_pacman_move)) {
+                best_pacman_move = pacman_move;
+            }
+        }
+        
+        Map<EnumMap<GHOST, MOVE>, Long> ghost_subtree = summed_visit_count.get(best_pacman_move);
+        EnumMap<GHOST, MOVE> best_ghost_move = null;
+      
+        assert(!ghost_subtree.isEmpty());
+        
+        for (EnumMap<GHOST, MOVE> ghost_move: ghost_subtree.keySet()) {
+            if (best_ghost_move==null||ghost_subtree.get(ghost_move)>ghost_subtree.get(best_ghost_move)) {
+                best_ghost_move = ghost_move;
+            }
+        }
+        
+        return best_ghost_move.get(this.ghost);
     }
 
 }

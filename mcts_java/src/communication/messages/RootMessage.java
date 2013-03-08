@@ -15,7 +15,7 @@ import pacman.game.Constants.MOVE;
  * 
  * Ghost move records consist of:
  * Ghost moves (4x2 bits - for ghosts, four actions), if ghost is not at turn, value is interpreted as GHOST.NEUTRAL
- * Move value - 64bits (double)
+ * Move value - 32bits (int) //XXX: some prefix code?
  * 
  */
 public class RootMessage extends Message {    
@@ -31,7 +31,7 @@ public class RootMessage extends Message {
         long length = 0;
         
         for (Map<EnumMap<GHOST, MOVE>, Long> root: valued_moves.values()) {
-            length += 1 + root.size()*9;
+            length += 1 + root.size()*5;
         }
         return length;
     }

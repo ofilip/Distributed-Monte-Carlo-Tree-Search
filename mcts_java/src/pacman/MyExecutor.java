@@ -22,6 +22,7 @@ import mcts.distributed.agents.DummyGhostAgent;
 import mcts.distributed.agents.JointActionExchangingAgent;
 import mcts.distributed.controller_generators.DummyGhostsGenerator;
 import mcts.distributed.controller_generators.JointActionExchangingGhostsGenerator;
+import mcts.distributed.controller_generators.RootExchangingGhostsGenerator;
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
 import pacman.controllers.KeyBoardInput;
@@ -47,7 +48,7 @@ public class MyExecutor
 {
     
        static boolean verbose = true;
-               public static void runCompetition(List<CompetitionOptions> options_list, int trials, boolean visual, boolean recorded) {
+       public static void runCompetition(List<CompetitionOptions> options_list, int trials, boolean visual, boolean recorded) {
             try {
                 MyExecutor exec = new MyExecutor();
                 String date_string = new SimpleDateFormat("yyMMdd-hhmmss").format(new Date());
@@ -97,21 +98,29 @@ public class MyExecutor
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args)	{
-            List<CompetitionOptions> options_list = new ArrayList<CompetitionOptions>();
+            MyExecutor exec = new MyExecutor();
+            //GhostControllerGenerator gen = new RootExchangingGhostsGenerator(200, 0.7);
+            GhostControllerGenerator gen = new JointActionExchangingGhostsGenerator(200, 0.7, 10);
+            exec.runGameTimed(new StarterPacMan(), gen.ghostController(), true, true, 40, 200);
+            //exec.runGameTimed(new StarterPacMan(), new MCTSGhosts(200, 0.7, true), true, true, 40, 200);
             
-            for (int ghosts_simulation_depth: new int[]{200}) {
-                for (int ghosts_delay: new int[]{80, 200}) {
-                    for (PacmanControllerGenerator pacman_generator: new PacmanControllerGenerator[]{new StarterPacManGenerator()}) {
-                        options_list.add(new CompetitionOptions(pacman_generator, 40, 
-                                            new DummyGhostsGenerator(ghosts_simulation_depth, 0.7), ghosts_delay));
-                        options_list.add(new CompetitionOptions(pacman_generator, 40, 
-                                            new JointActionExchangingGhostsGenerator(ghosts_simulation_depth, 0.7, 1), ghosts_delay));
-                    }
-                }
-                
-            }
             
-            runCompetition(options_list, 10, true, true);
+            
+//            List<CompetitionOptions> options_list = new ArrayList<CompetitionOptions>();
+//            
+//            for (int ghosts_simulation_depth: new int[]{200}) {
+//                for (int ghosts_delay: new int[]{80, 200}) {
+//                    for (PacmanControllerGenerator pacman_generator: new PacmanControllerGenerator[]{new StarterPacManGenerator()}) {
+//                        options_list.add(new CompetitionOptions(pacman_generator, 40, 
+//                                            new DummyGhostsGenerator(ghosts_simulation_depth, 0.7), ghosts_delay));
+//                        options_list.add(new CompetitionOptions(pacman_generator, 40, 
+//                                            new JointActionExchangingGhostsGenerator(ghosts_simulation_depth, 0.7, 1), ghosts_delay));
+//                    }
+//                }
+//                
+//            }
+//            
+//            runCompetition(options_list, 10, true, true);
 	}
 	
     /**

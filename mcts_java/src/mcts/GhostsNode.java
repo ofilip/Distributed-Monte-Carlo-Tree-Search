@@ -38,7 +38,7 @@ public class GhostsNode extends MCNode {
 //        this.game.updateGame();
         pacman_children = new EnumMap<MOVE, PacmanNode>(MOVE.class);
         this.decision_cause = decision_cause;
-        dbg_halfstep = true;
+        halfstep = true;
         for (int i=0; i<pacmans_possible_moves.length; i++) {
             MOVE pacman_move = pacmans_possible_moves[i];
             Game child_game = parent_game.copy();

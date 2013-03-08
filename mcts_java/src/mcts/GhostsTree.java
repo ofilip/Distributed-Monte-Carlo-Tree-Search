@@ -45,7 +45,5 @@ public class GhostsTree extends MCTree<EnumMap<GHOST, MOVE>> implements Cloneabl
         } else {
             return Utils.ghostsFollowRoads(current_game);
         }
-    }
-    
-    
+    }   
 }

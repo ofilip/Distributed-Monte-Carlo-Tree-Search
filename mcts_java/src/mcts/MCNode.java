@@ -22,7 +22,7 @@ public abstract class MCNode implements UCBNode {
     
     int ticks_to_go;
     
-    public boolean dbg_halfstep = false;
+    protected boolean halfstep = false;
     
     /* Tree links and values */
     MCTree tree;
@@ -135,52 +135,27 @@ public abstract class MCNode implements UCBNode {
         return value;
     }
     
+    public boolean halfstep() {
+        return halfstep;
+    }
+    
     public int pacmanDecisionGap() {
         return pacman_decision_gap;
-    }
-    
-    private MCNode pacmanBestMove() {
-        MCNode best = null;
-        double best_val = Double.NEGATIVE_INFINITY;
-        
-        for (MCNode child: pacman_children.values()) {
-            double curr_val = child.visit_count;//child.value();
-            
-            if (curr_val>best_val) {
-                best_val = curr_val;
-                best = child;
-            }
-        }
-        
-        return best;
-    }
-    
-    private MCNode ghostsBestMove() {
-        MCNode best = null;
-        double best_val = Double.NEGATIVE_INFINITY;
-        
-        for (MCNode child: ghosts_children.values()) {
-            double curr_val = 1/(double)child.visit_count;//-child.value();
-            
-            if (curr_val>best_val) {
-                best_val = curr_val;
-                best = child;
-            }
-        }
-        
-        return best;
     }
     
     /** 
      * Node best to play by the player 
      */
     public MCNode bestMove() {
-        if (pacmanOnTurn()) {
-            return pacmanBestMove();
-        } else {
-            assert ghostsOnTurn();
-            return ghostsBestMove();
+        MCNode best = null;
+        
+        for (MCNode child: children()) {
+            if (best==null||child.visitCount()>best.visitCount()) {
+                best = child;
+            }
         }
+        
+        return best;
     }
     
     public boolean isRoot() {
@@ -265,7 +240,7 @@ public abstract class MCNode implements UCBNode {
         Decision decision;
         if (game==null) {
             /* Game not set => create game by advancing game until decision is required */
-            assert dbg_halfstep==false;
+            assert halfstep==false;
             game = parent.game.copy();
             // XXX TODO: What if this.joint_node==true? (
             advanceGame(game);
@@ -278,7 +253,7 @@ public abstract class MCNode implements UCBNode {
         } else {
             /* Game already set => calculate possible moves using Decision object 
              * This case happens only if node is created using createJointNode() */
-            assert parent.dbg_halfstep;
+            assert parent.halfstep;
             decision = Decision.nextDecision(game, pacman_decision_gap, true);
         }
         
@@ -315,7 +290,7 @@ public abstract class MCNode implements UCBNode {
         if (this.isRoot()) {
             result.append("/ROOT");
         }
-        if (this.dbg_halfstep) {
+        if (this.halfstep) {
             result.append("/halfstep");
         }
         result.append(" c=").append(this.visit_count)
