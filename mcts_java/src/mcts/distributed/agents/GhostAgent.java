@@ -17,6 +17,7 @@ import mcts.distributed.DistributedMCTSController;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
+import utils.VerboseLevel;
 
 public abstract class GhostAgent {
     protected interface MessageHandler {
@@ -29,12 +30,12 @@ public abstract class GhostAgent {
     protected Backpropagator backpropagator;
     protected Selector ucb_selector;
     protected double ucb_coef;
-    protected boolean verbose;
+    protected VerboseLevel verbose;
     protected Map<Class<?>, MessageHandler> message_handlers = new  HashMap<Class<?>, MessageHandler>();
     protected DistributedMCTSController controller;
      
     
-    public GhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, boolean verbose) {
+    public GhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
         this.controller = controller;
         this.ghost = ghost;
         this.my_simulator = new MySimulator(simulation_depth);        
@@ -71,6 +72,12 @@ public abstract class GhostAgent {
     protected void receiveMessages() {   
         for (GhostAgent ally: message_receivers.keySet()) {
             MessageReceiver receiver = message_receivers.get(ally);
+            if (verbose.check(VerboseLevel.DEBUGGING)) {
+                Channel ch = receiver.channel();
+                System.out.printf("%s from %s: %s messages (size: %s), transmitting %s (size %s)\n", 
+                        ghost, ally.ghost, receiver.receiveQueueLength(), receiver.receiveQueueSize(),
+                        ch.sendQueueLength(), ch.sendQueueSize());
+            }
             while (!receiver.receiveQueueEmpty()) {
                 Message message = receiver.receive();
                 MessageHandler handler = message_handlers.get(message.getClass());

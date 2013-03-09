@@ -36,6 +36,7 @@ import pacman.game.Game;
 import pacman.game.GameView;
 
 import static pacman.game.Constants.*;
+import utils.VerboseLevel;
 
 /**
  * This class may be used to execute the game in timed or un-timed modes, with or without
@@ -52,7 +53,7 @@ public class MyExecutor
             try {
                 MyExecutor exec = new MyExecutor();
                 String date_string = new SimpleDateFormat("yyMMdd-hhmmss").format(new Date());
-                PrintWriter writer = new PrintWriter(String.format("results-%s.txt", date_string));                
+                PrintWriter writer = new PrintWriter(String.format("d:\\pacman_results\\results-%s.txt", date_string));                ;
                 int replay_number = 0;
                 for (CompetitionOptions options: options_list) {
                     int pacman_delay = options.pacmanDelay();
@@ -60,7 +61,7 @@ public class MyExecutor
                     long total_score = 0;
                     long min_score = Long.MAX_VALUE;
                     long max_score = 0;
-                    String competition_id = String.format("%s\t%s\t%s\t%s", options.pacmanName(), pacman_delay, options.ghostName(), ghosts_delay);
+                    String competition_id = String.format("d:\\pacman_results\\%s\t%s\t%s\t%s", options.pacmanName(), pacman_delay, options.ghostName(), ghosts_delay);
                     Game game;
                     for (int i=1; i<=trials; i++) {
                         if (recorded) {
@@ -98,16 +99,26 @@ public class MyExecutor
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args)	{
-            MyExecutor exec = new MyExecutor();
-            //GhostControllerGenerator gen = new RootExchangingGhostsGenerator(200, 0.7);
-            GhostControllerGenerator gen = new JointActionExchangingGhostsGenerator(200, 0.7, 10);
-            exec.runGameTimed(new StarterPacMan(), gen.ghostController(), true, true, 40, 200);
+//            MyExecutor exec = new MyExecutor();
+//            GhostControllerGenerator gen = new RootExchangingGhostsGenerator(200, 0.7, 10000, VerboseLevel.QUIET);
+            //GhostControllerGenerator gen = new JointActionExchangingGhostsGenerator(200, 0.7, 10000, 10, VerboseLevel.DEBUGGING);
+            //exec.runGameTimed(new StarterPacMan(), gen.ghostController(), true, true, 40, 1000);
             //exec.runGameTimed(new StarterPacMan(), new MCTSGhosts(200, 0.7, true), true, true, 40, 200);
+            final int simulation_depth = 120;
+            final double ucb_coef = 0.7;
+            final long channel_transmission_speed = 10000;
+            GhostControllerGenerator gen_dummy = new DummyGhostsGenerator(simulation_depth, ucb_coef);
+            GhostControllerGenerator gen_action_exchange = new JointActionExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, 5);
+            GhostControllerGenerator gen_root_exchange = new RootExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed);
+            
+            List<CompetitionOptions> options_list = new ArrayList<CompetitionOptions>();
+            
+            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_dummy, 400));
+            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_action_exchange, 400));
+            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_root_exchange, 400));
             
             
             
-//            List<CompetitionOptions> options_list = new ArrayList<CompetitionOptions>();
-//            
 //            for (int ghosts_simulation_depth: new int[]{200}) {
 //                for (int ghosts_delay: new int[]{80, 200}) {
 //                    for (PacmanControllerGenerator pacman_generator: new PacmanControllerGenerator[]{new StarterPacManGenerator()}) {
@@ -119,8 +130,9 @@ public class MyExecutor
 //                }
 //                
 //            }
-//            
-//            runCompetition(options_list, 10, true, true);
+            
+            runCompetition(options_list, 10, false, false);
+            runCompetition(options_list, 10, false, false);
 	}
 	
     /**

@@ -27,8 +27,9 @@ import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 import utils.Pair;
+import utils.VerboseLevel;
 
-public class RootExchangingAgent extends FullMCTSGhostAgent {   
+public class ResultsExchangingAgent extends FullMCTSGhostAgent {   
     private Map<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>> received_roots = new EnumMap<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>>(GHOST.class);    
     private IntervalHistory interval_history = new IntervalHistory(5);
     private long last_message_sending_time = 0;
@@ -58,9 +59,9 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         }            
     };
     
-    public RootExchangingAgent(DistributedMCTSController controller, final GHOST ghost, int simulation_depth, double ucb_coef, boolean verbose) {
+    public ResultsExchangingAgent(DistributedMCTSController controller, final GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
         super(controller, ghost, simulation_depth, ucb_coef, verbose);
-        hookMessageHandler(MoveMessage.class, new MessageHandler() {
+        hookMessageHandler(RootMessage.class, new MessageHandler() {
             @Override
             public void handleMessage(GhostAgent agent, Message message) {
                 RootMessage roots_message = (RootMessage)message;
@@ -69,8 +70,8 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         });
     }
     
-    public RootExchangingAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef) {
-        this(controller, ghost, simulation_depth, ucb_coef, false);
+    public ResultsExchangingAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef) {
+        this(controller, ghost, simulation_depth, ucb_coef, VerboseLevel.QUIET);
     }
     
     private Map<EnumMap<GHOST, MOVE>, Long> extractRoot(MCNode subtree) {
@@ -104,7 +105,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
     }
     
     private void sendMessages() {
-        long current_time = controller.currentVirtualMillis();
+        long current_time = controller.currentMillis();
         EnumMap<GHOST, MOVE> best_move = mctree.bestMove(current_game);
         EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> roots = extractRoots();
         
@@ -137,18 +138,19 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         
         for (EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> roots: received_roots.values()) {
             for (MOVE pacman_move: roots.keySet()) {
+                Map<EnumMap<GHOST, MOVE>, Long> root = roots.get(pacman_move);
                 Map<EnumMap<GHOST, MOVE>, Long> visit_count_map = summed_visit_count.get(pacman_move);
-                
-                
+                                
                 if (visit_count_map==null) {
                     visit_count_map = new HashMap<EnumMap<GHOST, MOVE>, Long>();
                     summed_visit_count.put(pacman_move, visit_count_map);
                     pacman_move_visit_count.put(pacman_move, new Long(0));
                 }
-                for (EnumMap<GHOST, MOVE> ghost_move: visit_count_map.keySet()) {
+                
+                for (EnumMap<GHOST, MOVE> ghost_move: root.keySet()) {
                     Long sum = visit_count_map.get(ghost_move);
                     Long pacman_sum = pacman_move_visit_count.get(pacman_move);
-                    Long count = roots.get(pacman_move).get(ghost_move);
+                    Long count = root.get(ghost_move);
                     
                     if (pacman_sum==null) pacman_sum = new Long(0);
                     if (sum==null) sum = new Long(0);
@@ -181,7 +183,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
             }
         }
         
-        return best_ghost_move.get(this.ghost);
+        return best_ghost_move==null? MOVE.NEUTRAL: best_ghost_move.get(this.ghost);
     }
 
 }

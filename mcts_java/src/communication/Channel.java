@@ -4,22 +4,27 @@ import communication.messages.Message;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import utils.SystemTimer;
+import utils.VirtualTimer;
 
 public class Channel implements MessageSender, MessageReceiver {
+    private Network network;
     private long transmission_speed; /* bytes per second */
     private LinkedList<Message> sending_queue = new LinkedList<Message>();
     private LinkedList<Message> received_queue = new LinkedList<Message>();
-    private long last_transmission_time = System.currentTimeMillis(); /* time when last transmission happened */
     private long queue_millibytes_transmitted; /* millibytes to be transmitted from sending_queue to received_queue */
     private String name;
+    private long last_transmission_time; /* time when last transmission happened */
     
-    public Channel(String name, long transmission_speed) {
+    protected Channel(Network network, String name, long transmission_speed) {
+        this.network = network;
+        this.last_transmission_time = network.timer().currentMillis();
         this.name = name;
         this.transmission_speed = transmission_speed;
     }
     
     private void doTransmission() {
-        long current_time = System.currentTimeMillis();
+        long current_time = network.timer().currentMillis();
         queue_millibytes_transmitted += (current_time-last_transmission_time)*transmission_speed;
         
         while (!sending_queue.isEmpty()) {
@@ -104,6 +109,7 @@ public class Channel implements MessageSender, MessageReceiver {
     
     @Override
     synchronized public void send(Message message) {
+        if (sending_queue.isEmpty()) last_transmission_time = network.timer().currentMillis(); /* reset transmission if queue is empty */
         sending_queue.add(message);
     }    
     

@@ -11,6 +11,7 @@ import pacman.game.Constants;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
+import utils.VerboseLevel;
 
 public abstract class FullMCTSGhostAgent extends GhostAgent {
     protected MOVE move = MOVE.NEUTRAL;
@@ -19,7 +20,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
     protected int current_level;
     protected EnumMap<GHOST, MOVE> last_full_move;
     
-    public FullMCTSGhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, boolean verbose) {
+    public FullMCTSGhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
         super(controller, ghost, simulation_depth, ucb_coef, verbose);
     }
     

@@ -1,5 +1,6 @@
 package mcts.distributed;
 
+import utils.VirtualTimer;
 import mcts.distributed.agents.GhostAgent;
 import communication.messages.Message;
 import communication.Channel;
@@ -21,8 +22,13 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
     private static GHOST ghosts[] = {GHOST.BLINKY, GHOST.PINKY, GHOST.INKY, GHOST.SUE};
     protected static final long MILLIS_TO_FINISH = 20; 
     
+    /**
+     * 
+     * @param channel_transmission_speed Transmission speed in bytes per second.
+     * @param verbose Verbose level.
+     */
     public DistributedMCTSController(long channel_transmission_speed, boolean verbose) {        
-        this.network = new Network(channel_transmission_speed);
+        this.network = new Network(channel_transmission_speed, this);
         this.verbose = verbose;
     }
     
@@ -39,7 +45,7 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
     }
     
     @Override
-    public long currentVirtualMillis() {
+    public long currentMillis() {
         return System.currentTimeMillis()/agents.size();
     }
 
