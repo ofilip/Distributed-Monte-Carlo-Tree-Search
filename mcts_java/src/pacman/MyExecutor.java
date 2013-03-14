@@ -49,11 +49,11 @@ public class MyExecutor
 {
     
        static boolean verbose = true;
-       public static void runCompetition(List<CompetitionOptions> options_list, int trials, boolean visual, boolean recorded) {
+       public static void runCompetition(List<CompetitionOptions> options_list, int trials, boolean visual, boolean recorded, String path) {
             try {
                 MyExecutor exec = new MyExecutor();
                 String date_string = new SimpleDateFormat("yyMMdd-hhmmss").format(new Date());
-                PrintWriter writer = new PrintWriter(String.format("d:\\pacman_results\\results-%s.txt", date_string));                ;
+                PrintWriter writer = new PrintWriter(String.format(path+"results-%s.txt", date_string));                ;
                 int replay_number = 0;
                 for (CompetitionOptions options: options_list) {
                     int pacman_delay = options.pacmanDelay();
@@ -61,11 +61,11 @@ public class MyExecutor
                     long total_score = 0;
                     long min_score = Long.MAX_VALUE;
                     long max_score = 0;
-                    String competition_id = String.format("d:\\pacman_results\\%s\t%s\t%s\t%s", options.pacmanName(), pacman_delay, options.ghostName(), ghosts_delay);
+                    String competition_id = String.format("%s\t%s\t%s\t%s", options.pacmanName(), pacman_delay, options.ghostName(), ghosts_delay);
                     Game game;
                     for (int i=1; i<=trials; i++) {
                         if (recorded) {
-                            String replay_name = String.format("%s-%s-%s_%s-%s_%s.replay", date_string, replay_number++, options.pacmanName(), pacman_delay, options.ghostName(), ghosts_delay);
+                            String replay_name = String.format(path+"%s-%s-%s_%s-%s_%s.replay", date_string, replay_number++, options.pacmanName(), pacman_delay, options.ghostName(), ghosts_delay);
                             game = exec.runGameTimedRecorded(options.pacmanController(), options.ghostController(), visual, true, replay_name, pacman_delay, ghosts_delay);
                         } else {
                             game = exec.runGameTimed(options.pacmanController(), options.ghostController(), visual, true, pacman_delay, ghosts_delay);
@@ -131,8 +131,8 @@ public class MyExecutor
 //                
 //            }
             
-            runCompetition(options_list, 10, false, false);
-            runCompetition(options_list, 10, false, false);
+            runCompetition(options_list, 10, false, false, "d:\\pacman_test\\");
+            runCompetition(options_list, 10, false, false, "d:\\pacman_test\\");
 	}
 	
     /**

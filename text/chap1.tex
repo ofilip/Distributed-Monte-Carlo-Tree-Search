@@ -52,7 +52,7 @@ Node representing the best evaluated position reachable by one action is returne
     $rewards[\,] \leftarrow Playouts(node)$ \tcp*[h]{Phase 3: Simulation}\;
     $Backpropagate(tree,node,rewards[\,])$ \tcp*[h]{Ph 4: Backpropagation}\;
 }
-\Return{$\argmax\limits_{n \in Children(root)}v_n$} \tcp*[h]{Return most visited child}\;
+\Return{$\argmax\limits_{n \in Children(root)}c_n$} \tcp*[h]{Return most visited child}\;
 \end{algorithm}
 
 Monte-Carlo Tree Search (MCTS) is an iterative best-first search algorithm with stochastic positional
@@ -63,9 +63,6 @@ this thesis along with all important details and explanation of the properties i
 chapter. In addition, section \ref{sec_parallel_mcts} sumarizes current approaches to paralelization
 of MCTS.
 
-\section{Perfect-information game}
-
-
 \section{Algorithm Description}
 
 \citeauthor{Chaslot2008} provides good description of the Monte-Carlo Tree Search algorithm in
@@ -73,6 +70,7 @@ of MCTS.
 on this paper.
 
 \todo{Je notace úplná?}
+\todo{Sladit definice Perfect-information game s notací}
 
 Monte-Carlo Tree Search is iteratively building the search tree as depicted by Figure
 \ref{fig_mcts_loop} and Algorithms \ref{alg_select}, \ref{alg_backpropagate} and \ref{alg_mcts}
@@ -80,11 +78,11 @@ which follow the algorithm in its generality. Further details of chosen variant 
 are discussed in subsequent sections and their related Algorithms, namely \ref{alg_selection_step},
 \ref{alg_expand}, \ref{alg_playouts} and \ref{alg_add_rewards}.
 
-Each node $n$ of the tree $t$ contains at least two values - visit count $v_n$
-saying how many random position evaluations have been performed from $n$ and all its
+Each node $i$ of the tree $t$ contains at least two values - visit count $n_i$
+saying how many random position evaluations have been performed from $i$ and all its
 descendants and
-actual value $v_n$ which aggregates the results of these evaluations (usually as an average).
-In addition, the game position represented by $n$, $Position(n)$, and pointers defining
+actual value $v_i$ which aggregates the results of these evaluations (usually as an average).
+In addition, the game position represented by $i$, $Position(i)$, and pointers defining
 tree structure have to be included. 
 
 Position $p$ represents the current game state. Following
@@ -92,12 +90,12 @@ functions are appliable to $p$: $Actions(p)$ returns set of actions performable 
 $Step(p, a)$ returns new position reachable by performing action $a$ in $p$ and $Score(p) \in
 [0;1]$ returns static evaluation of the position (e.g. current game score).
 
-$Parent(n)$ is
-pointing to the parent of the node or to the $NullNode$ if $n$ is the root of the tree.
-$Children(n)$ is the set of $n$'s children nodes. Once $n$ is expanded, $Children(n)$ contains
+$Parent(i)$ is
+pointing to the parent of the node or to the $NullNode$ if $i$ is the root of the tree.
+$Children(i)$ is the set of $i$'s children nodes. Once $i$ is expanded, $Children(i)$ contains
 nodes representing positions reachable by set of
-distinct actions $Actions(p)$ performable from $p = Position(n)$.
-Particular action required to reaching $n$'s child $m$ is $Action(m)$.
+distinct actions $Actions(p)$ performable from $p = Position(i)$.
+Particular action required to reaching $i$'s child $j$ is $Action(j)$.
 
 New unexpanded node representing position $p$ reached with action $a$ is created by calling of
 $new\;Node(p,a)$ where special $noop$ action is used for root node. Newly initialized tree for
@@ -111,11 +109,11 @@ there is enough time to pass at least one more MCTS iteration and return the bes
 Each iteration of MCTS consists of four
 phases - \emph{selection}, \emph{expansion}, \emph{simulation} and \emph{backpropagation}. During
 the selection phase the 
-algorithm passes through the tree to a particular leaf $n$ where better-evaluated but less-visited nodes
+algorithm passes through the tree to a particular leaf $i$ where better-evaluated but less-visited nodes
 are preferred. Appropriate balance between these claims is main objective of this
 phase. Once a leaf node is selected the expansion phase follows. In this phase, accordingly to a
-certan condition (which is usually condition on node's visit count), $n$ itself is selected, or
-new nodes reachable by actions from $Actions(n)$ are added to set $Children(n)$ and any of these
+certan condition (which is usually condition on node's visit count), $i$ itself is selected, or
+new nodes reachable by actions from $Actions(i)$ are added to set $Children(i)$ and any of these
 nodes is selected.
 The next phase, simulation (also called \emph{playout}), plays a random game (or several games) 
 starting
@@ -134,16 +132,16 @@ further discussed in subsequent sections.
 \caption{$SelectionStep(node)$\label{alg_selection_step}}
 \KwData{$node$\ldots a node of MCTS tree}
 \KwResult{a children node chosen by a selection}
-\If(\tcp*[h]{$node$ is a leaf}){$Children(node)=\varnothing$}{
-    \Return{$Null$}
+\If(\tcp*[h]{$node$ is a leaf or terminal node}){$Children(node)=\varnothing$}{
+    \Return{$NullNode$}
 }
 \If(\tcp*[h]{Not enough simulations played}){$n_{node} < T_s$}{
     \Return{$SimulationStep(node)$} \tcp*[h]{Follow simulation strategy}
 }
-\If{$\exists i \in Children(node)$ such that $v_n=0$}{
-    \Return{$i$} \tcp*[h]{Try every child first}
+\If{$\exists i \in Children(node)$ such that $n_i=0$}{
+    \Return{$i$} \tcp*[h]{Try all children first}
 }
-\Return{$\argmax\limits_{i \in Children(node} \left( v_i + C \sqrt{\log{n_{node}} \over n_i}
+\Return{$\argmax\limits_{i \in Children(node)} \left( v_i + C \sqrt{\log{n_{node}} \over n_i}
 \right)$} \tcp*[h]{Follow UCT value}
 \end{algorithm}
 
@@ -154,16 +152,15 @@ undiscovered ways in the tree. This problem can be viewed as instance of a well-
 called the Multi-Armed Bandit Problem (MAB). Its definition is adopted from \cite{Auer2002} and 
 \cite{Kocsis2006}:
 
-\begin{samepage}
 \newtheorem*{defmab}{Definition}
-\begin{defmab}[K-armed bandit problem ] 
+\begin{defmab}[K-armed bandit problem] 
 
 Let us have independent random variables $X_{i,n}$ for $1 \le i \le K$ and $n \ge 1$. Each $i$ is
 the index of a gambling machine and $X_{i,1}$, $X_{i,2}$,\ldots are identically distributed rewards
 with unknown expected value $\mu_i$ yielded by successive plays of machine $i$. For the simplicity
 the rewards are bounded to $[0,1]$.
 
-A policy $A$ is an algorithm that chooses the next machine to play based on the sequence of
+A \textbf{policy} $A$ is an algorithm that chooses the next machine to play based on the sequence of
 past plays and obtained rewards. Let $n_i$ be the number of times machine $i$ has been played by
 $A$ during the first $n$ plays and $I_i^A$ be the index of a machine played in nth play. Then the
 regret of A after n plays is defined as
@@ -173,13 +170,12 @@ R_n^A = n \mu^* - \sum_{j=1}^K n_j \mu_j \mathrm{,\;where}\;\mu^* \stackrel{\mat
 \max_{1 \le i \le K} \mu_i
 \end{equation}
 
-thus the regret $R_n^A$ is the loss caused by the policy not always playing the best machine.
+thus the \textbf{regret} $R_n^A$ is the loss caused by the policy not always playing the best machine.
 
-K-armed bandit problem consists in finding optimal policy $A^*$ minimizing
+\textbf{K-armed bandit problem} consists in finding optimal policy $A^*$ minimizing
 expected regret $R_n^A$.
 
 \end{defmab}
-\end{samepage}
 
 \todo{Citovat \cite{Berry85banditproblems}}
 \todo{doplnit zmínku o tom, že optimální policy má regret  ~$O(\log{n})$,
@@ -241,7 +237,7 @@ Accordingly to the UCT, the selection passes down through the tree starting in t
 root where the child with greatest UCT value is chosen in each node until a leaf is reached.
 As mentioned in \cite{Chaslot2008}, experimental results show that the UCT value does not 
 guide the selection well until
-enough trials have been performed in node $p$ ($n_p$ is too small). To vercome this empirical
+enough trials have been performed in node $p$ ($n_p$ is too small). To overcome this empirical
 finding, the selection is guided by \emph{simulation strategy} which uses domain-specific
 information (described in section
 \ref{sec_simulation}) until $n_p$ does not reach certain threshold T. Selection phase
@@ -265,7 +261,10 @@ are $C= 0.7$ and $T=30$.
 \KwResult{$node$ itself is returned, or new children reachable by actions valid in position
 defined by $node$ are added to
 $node$. One if these children is then returned.}
-\If{$n_{node} < T_e$}{
+\If(\tcp*[h]{Not enough simulations performed}){$n_{node} < T_e$}{
+    \Return{$node$}
+}
+\If(\tcp*[h]{$node$ is a terminal node}){$Actions(node) = \varnothing$}{
     \Return{$node$}
 }
 \ForEach{$action \in Actions(node)$}{
@@ -296,7 +295,7 @@ simulations have been performed from a leaf.
 \KwResult{An array of results of performed simulations is returned.}
 \For{$i\leftarrow 1$ \KwTo $SIMULATIONS\_COUNT$}{
     $p \leftarrow Position(node)$\;
-    \While{$not TerminalCondition(p)$}{
+    \While{$\mathbf{not}\;TerminalCondition(p)$}{
         $p \leftarrow Step(p, SimulationAction(p))$\;
     }
     $rewards[i] \leftarrow Score(p)$\;

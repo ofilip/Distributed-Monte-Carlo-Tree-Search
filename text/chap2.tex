@@ -1,14 +1,100 @@
-\chapter{Distributed Coordination Algorithms}
+\chapter{Games with Team of Cooperative Agents}
 \label{chap_mas}
 
-\emph{Extraction from the related chapters from \ref{MAS2008}}
+\todo{Název kapitoly, koncepce}
 
-\emph{Neúplné algoritmy z DCOP článků}
-\section{Problem Definition}
-\emph{}
+\todo{Extraction from the related chapters from \ref{MAS2008}}
 
-\section{Distributed Constraints Optimization}
+\todo{Neúplné algoritmy z DCOP článků}
 
-\section{Inter-Agent Communication}
+
+\section{Perfect-information game}
+
+\todo{Převzato z MAS, doprovodný text}
+
+\todo{Sladit značení a terminologii ve zbytku textu}
+
+This thesis deals with the problem of coordination of agents in games. Before we will review
+work on this topic and propose our algorithms, it is necessary to define what the game in our
+context is. We will consider finite, discrete, full-observable, deterministic and static and
+call it \emph{perfect-information game}. Following definition is based on the definition
+proposed in \cite{MAS2008} and generalized for our purposes (original definition does not
+include posibility of simultaneous play of multiple players and forces a play of exactly one
+player).
+
+
+\newtheorem*{defgpig}{Definition}
+\begin{defgpig}[Perfect-information game]
+
+A (finite) \textbf{perfect-information game} (in extensive form) is a tuple $G =
+(P,A\cup\{\lambda\},S=S_n\cup S_p,\chi,\rho,\sigma,u)$, where:
+
+\begin{itemize}
+
+\item $N$ is a set of $n$ players;
+
+\item $A$ is a (single) set of actions;
+
+\item $S_n$ is a set of nonterminal choice states;
+
+\item $S_t$ is a set of terminal states, disjoint from $S_n$;
+
+\item $\chi: S_n \times P \mapsto 2^A \cup \{\lambda\} \setminus \varnothing$ is the action 
+ function, which assigns to each choice node and player a set of possible actions, $\lambda \notin
+ A$ is a neutral move played by the players not being on turn;
+
+\item $\sigma: \{(s,a)| s \in S_n, a \in \prod\limits_{i\in P}\chi(s,i)\} \mapsto S$ is the
+successor function, which maps a choice node and an action tuple to a new choice node or
+terminal node such that for all $s_1, s_2 \in S_n$ and $a_1 \in \prod\limits_{i\in
+P}\chi(s_1,i), a_2 \in \prod\limits_{i\in P}\chi(s_2,i)$, if 
+$\sigma(s_1,a_1) = \sigma(s_2,a_2)$ then $s_1=s_2$ and $a_1=a_2$; and
+
+\item $u = (u_1,\ldots,u_n)$, where $u_i: S_t \mapsto \mathbb{R}$ is a real-valued utility
+function for player $i$ on the terminal nodes $S_t$.
+
+\end{itemize}
+
+We say that a perfect-information game is \textbf{turn-based} if each turn at most one player plays a
+turn, in other words, if the following restriction on action function $\chi$ is satisfied:
+
+\begin{equation}
+\label{eq_turn_based_game}
+\forall s \in S_n |\{i \in P|\chi(s,i) \not= \{\lambda\}\}| \le 1
+\end{equation}
+
+Contrariwise we will call a perfect-information game \textbf{simultaneous} if simultaneous
+plays of multiple players are permitted and a state forcing a play of at least two players
+exists (and so Equation \ref{eq_turn_based_game} is not satisfied).
+
+\end{defgpig}
+
+Because this thesis works only with perfect-information games, we will usually refer to
+perfect-information game and its variants as to \emph{game}, \emph{turn-based game} and
+\emph{simultaneous game}. We will also bound a utility function to $[0,1]$.
+
+The aim of a player $i$ is reaching a terminal node $s$ with the greatest possible utility
+$u_i(s)$.
+
+
+\section{Team Coordination}
+
+\subsection{Games with Teams of Players}
+
+Definition of perferct-information game serves (without further modifications) as an
+environment for \emph{teams of players}. A team of player (or just a team) is a set of agents
+attempting to reach the best result possible collectively. In other words, agents of a team
+shares the utility. 
+
+This can be simply applied to a perfect-information game. A team can be represented as a single
+player of a perfect-information game where actions of such a player is joint-action composed of
+all actions played by team members. The second possibility how to model a team in
+perfect-information game is simply applying the definition of a team and considering players
+with the same utility.
+
+\todo{Rozdíl mezi přístupy v předchozím odstavci, komunikace, ...}
+
+
+\subsection{Communication}
+\subsection{Distributed Constraints Optimization (??)}
 
 \section{Conclusion}
