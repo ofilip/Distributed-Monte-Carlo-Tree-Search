@@ -18,11 +18,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import mcts.distributed.DistributedMCTSController;
-import mcts.distributed.agents.DummyGhostAgent;
+import mcts.distributed.agents.IndependentGhostAgent;
 import mcts.distributed.agents.JointActionExchangingAgent;
 import mcts.distributed.controller_generators.DummyGhostsGenerator;
 import mcts.distributed.controller_generators.JointActionExchangingGhostsGenerator;
 import mcts.distributed.controller_generators.RootExchangingGhostsGenerator;
+import mcts.distributed.controller_generators.SimulationResultsPassingGhostsGenerator;
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
 import pacman.controllers.KeyBoardInput;
@@ -44,7 +45,6 @@ import utils.VerboseLevel;
  * game.entries.pacman respectively. The skeleton classes are already provided. The package
  * structure should not be changed (although you may create sub-packages in these packages).
  */
-@SuppressWarnings("unused")
 public class MyExecutor
 {
     
@@ -99,7 +99,7 @@ public class MyExecutor
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args)	{
-//            MyExecutor exec = new MyExecutor();
+            MyExecutor exec = new MyExecutor();
 //            GhostControllerGenerator gen = new RootExchangingGhostsGenerator(200, 0.7, 10000, VerboseLevel.QUIET);
             //GhostControllerGenerator gen = new JointActionExchangingGhostsGenerator(200, 0.7, 10000, 10, VerboseLevel.DEBUGGING);
             //exec.runGameTimed(new StarterPacMan(), gen.ghostController(), true, true, 40, 1000);
@@ -110,12 +110,16 @@ public class MyExecutor
             GhostControllerGenerator gen_dummy = new DummyGhostsGenerator(simulation_depth, ucb_coef);
             GhostControllerGenerator gen_action_exchange = new JointActionExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, 5);
             GhostControllerGenerator gen_root_exchange = new RootExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed);
+            GhostControllerGenerator gen_simulation_results_passing = new SimulationResultsPassingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed);
             
             List<CompetitionOptions> options_list = new ArrayList<CompetitionOptions>();
+                
+            exec.runGameTimed(new StarterPacMan(), gen_simulation_results_passing.ghostController(), true, true, 40, 400);
+//            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_dummy, 400));
+//            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_action_exchange, 400));
+//            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_root_exchange, 400));
+//            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_simulation_results_passing, 400));
             
-            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_dummy, 400));
-            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_action_exchange, 400));
-            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_root_exchange, 400));
             
             
             
@@ -131,8 +135,8 @@ public class MyExecutor
 //                
 //            }
             
-            runCompetition(options_list, 10, false, false, "d:\\pacman_test\\");
-            runCompetition(options_list, 10, false, false, "d:\\pacman_test\\");
+//            runCompetition(options_list, 10, false, false, "d:\\pacman_test\\");
+//            runCompetition(options_list, 10, false, false, "d:\\pacman_test\\");
 	}
 	
     /**

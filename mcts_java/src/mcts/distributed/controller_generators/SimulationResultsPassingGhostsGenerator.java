@@ -10,18 +10,18 @@ import pacman.game.Constants.MOVE;
 import utils.VerboseLevel;
 
 
-public class RootExchangingGhostsGenerator implements GhostControllerGenerator {
+public class SimulationResultsPassingGhostsGenerator implements GhostControllerGenerator {
     private int simulation_depth;
     private double ucb_coef;
     private String name;
     VerboseLevel verbose;
     long channel_transmission_speed;
     
-    public RootExchangingGhostsGenerator(int simulation_depth, double ucb_coef, long channel_transmission_speed) {
+    public SimulationResultsPassingGhostsGenerator(int simulation_depth, double ucb_coef, long channel_transmission_speed) {
         this(simulation_depth, ucb_coef, channel_transmission_speed, VerboseLevel.QUIET);
     }
     
-    public RootExchangingGhostsGenerator(int simulation_depth, double ucb_coef, long channel_transmission_speed, VerboseLevel verbose) {
+    public SimulationResultsPassingGhostsGenerator(int simulation_depth, double ucb_coef, long channel_transmission_speed, VerboseLevel verbose) {
         this.channel_transmission_speed = channel_transmission_speed;
         this.verbose = verbose;
         this.simulation_depth = simulation_depth;
@@ -33,10 +33,10 @@ public class RootExchangingGhostsGenerator implements GhostControllerGenerator {
     public Controller<EnumMap<GHOST, MOVE>> ghostController() {
         DistributedMCTSController<JointActionExchangingAgent> controller = new DistributedMCTSController<JointActionExchangingAgent>(channel_transmission_speed, true);
         
-        return controller.addGhostAgent(new RootExchangingAgent(controller, GHOST.BLINKY, simulation_depth, ucb_coef, verbose))
-                                .addGhostAgent(new RootExchangingAgent(controller, GHOST.PINKY, simulation_depth, ucb_coef, verbose))
-                                .addGhostAgent(new RootExchangingAgent(controller, GHOST.INKY, simulation_depth, ucb_coef, verbose))
-                                .addGhostAgent(new RootExchangingAgent(controller, GHOST.SUE, simulation_depth, ucb_coef, verbose));                                    
+        return controller.addGhostAgent(new SimulationResultsPassingAgent(controller, GHOST.BLINKY, simulation_depth, ucb_coef, verbose))
+                                .addGhostAgent(new SimulationResultsPassingAgent(controller, GHOST.PINKY, simulation_depth, ucb_coef, verbose))
+                                .addGhostAgent(new SimulationResultsPassingAgent(controller, GHOST.INKY, simulation_depth, ucb_coef, verbose))
+                                .addGhostAgent(new SimulationResultsPassingAgent(controller, GHOST.SUE, simulation_depth, ucb_coef, verbose));                                    
     }
     
     @Override

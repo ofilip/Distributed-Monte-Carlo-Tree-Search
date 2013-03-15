@@ -9,6 +9,7 @@ import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
+import utils.Pair;
 
 /**
  * Simulation based on ideas (simplified) described in 
@@ -16,12 +17,14 @@ import pacman.game.Game;
  */
 public class MySimulator implements Simulator {
     private int max_depth;
+    private Random random;
 
     public static double sigm(double x) {
         return 1/(1+Math.exp(-x));
     }
     
-    public MySimulator(int max_depth) {
+    public MySimulator(int max_depth, long seed) {
+        this.random = new Random(seed);
         this.max_depth = max_depth;
     }
     
@@ -29,7 +32,7 @@ public class MySimulator implements Simulator {
         MOVE pacman_move;
         
         if (Utils.pacmanOnCrossroad(game)) {
-            pacman_move = Utils.randomPacmanMove(game, PACMAN_REVERSAL.XROADS_ONLY);
+            pacman_move = Utils.randomPacmanMove(game, PACMAN_REVERSAL.XROADS_ONLY, random);
         } else {
             pacman_move = Utils.getPacmansPossibleMoves(game, PACMAN_REVERSAL.NEVER)[0];            
         }
@@ -47,7 +50,7 @@ public class MySimulator implements Simulator {
             MOVE ghost_move;
             
             //XXX: consider blue ghosts!
-            if (Utils.rnd().nextDouble()<0.9) {
+            if (random.nextDouble()<0.9) {
                 if (Utils.ghostOnCrossroad(game, ghost)) {
                     MOVE last_move = game.getGhostLastMoveMade(ghost);
                     MOVE move = game.getApproximateNextMoveTowardsTarget(ghost_pos, pacman_pos, last_move, DM.PATH);
@@ -56,7 +59,7 @@ public class MySimulator implements Simulator {
                     ghost_move = Utils.getGhostsPossibleMoves(game, ghost)[0];                    
                 }
             } else {
-                ghost_move = Utils.randomGhostsMove(game, ghost);
+                ghost_move = Utils.randomGhostsMove(game, ghost, random);
             }
             ghosts_moves.put(ghost, ghost_move);
         }
@@ -72,14 +75,14 @@ public class MySimulator implements Simulator {
     }
 
     @Override
-    public MCNode nodeStep(MCNode node) {
+    public Pair<MCNode,Action> nodeStep(MCNode node) {
         if (node.pacmanOnTurn()) {
             MOVE pacman_move = choosePacmanMove(node.game);
-            return node.child(pacman_move);
+            return new Pair<MCNode,Action>(node.child(pacman_move), new PacmanAction(pacman_move));
         } else if (node.ghostsOnTurn()) {
             EnumMap<GHOST, MOVE> ghosts_moves = chooseGhostsMoves(node.game);
             Utils.decisionMoves(ghosts_moves, node.game);
-            return node.child(ghosts_moves);
+            return new Pair<MCNode,Action>(node.child(ghosts_moves), new GhostAction(ghosts_moves));
         } else {
             assert false;
             return null;

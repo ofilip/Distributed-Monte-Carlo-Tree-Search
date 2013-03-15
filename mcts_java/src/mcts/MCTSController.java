@@ -27,7 +27,7 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
     }
     
     public MCTSController(int simulation_depth, double ucb_coef, boolean verbose, int iterations) {
-        this.my_simulator = new MySimulator(simulation_depth);        
+        this.my_simulator = new MySimulator(simulation_depth, System.currentTimeMillis());        
         this.ucb_selector = new UCBSelector(30, my_simulator);
         this.backpropagator = AvgBackpropagator.getInstance();
         this.iterations = iterations;

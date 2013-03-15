@@ -28,12 +28,12 @@ public class RootMessage extends Message {
     
     @Override
     public long length() {
-        long length = 0;
+        long bit_length = 0;
         
         for (Map<EnumMap<GHOST, MOVE>, Long> root: valued_moves.values()) {
-            length += 1 + root.size()*5;
+            bit_length += 1 + root.size()*5;
         }
-        return length;
+        return bit_length;
     }
     
     public EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> getRoots() {

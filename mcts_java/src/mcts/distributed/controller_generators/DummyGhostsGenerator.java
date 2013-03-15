@@ -2,7 +2,7 @@ package mcts.distributed.controller_generators;
 
 import java.util.EnumMap;
 import mcts.distributed.DistributedMCTSController;
-import mcts.distributed.agents.DummyGhostAgent;
+import mcts.distributed.agents.IndependentGhostAgent;
 import pacman.GhostControllerGenerator;
 import pacman.controllers.Controller;
 import pacman.game.Constants.GHOST;
@@ -29,12 +29,12 @@ public class DummyGhostsGenerator implements GhostControllerGenerator {
     
     @Override
     public Controller<EnumMap<GHOST, MOVE>> ghostController() {
-        DistributedMCTSController<DummyGhostAgent> controller = new DistributedMCTSController<DummyGhostAgent>(1, true);
+        DistributedMCTSController<IndependentGhostAgent> controller = new DistributedMCTSController<IndependentGhostAgent>(1, true);
                 
-        return controller.addGhostAgent(new DummyGhostAgent(controller, GHOST.BLINKY, simulation_depth, ucb_coef, verbose))
-                        .addGhostAgent(new DummyGhostAgent(controller, GHOST.PINKY, simulation_depth, ucb_coef, verbose))
-                        .addGhostAgent(new DummyGhostAgent(controller, GHOST.INKY, simulation_depth, ucb_coef, verbose))
-                        .addGhostAgent(new DummyGhostAgent(controller, GHOST.SUE, simulation_depth, ucb_coef, verbose));                                    
+        return controller.addGhostAgent(new IndependentGhostAgent(controller, GHOST.BLINKY, simulation_depth, ucb_coef, verbose))
+                        .addGhostAgent(new IndependentGhostAgent(controller, GHOST.PINKY, simulation_depth, ucb_coef, verbose))
+                        .addGhostAgent(new IndependentGhostAgent(controller, GHOST.INKY, simulation_depth, ucb_coef, verbose))
+                        .addGhostAgent(new IndependentGhostAgent(controller, GHOST.SUE, simulation_depth, ucb_coef, verbose));                                    
     }
     
     @Override

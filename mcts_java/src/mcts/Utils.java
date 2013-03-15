@@ -11,7 +11,7 @@ import pacman.game.GameView;
  * Miscellaneous functions.
  */
 public class Utils {
-    static Random random = new Random(10);
+//    static Random random = new Random(10);
     public final static EnumMap<GHOST, MOVE> NEUTRAL_GHOSTS_MOVES = new EnumMap<GHOST, MOVE>(GHOST.class);
     
     static {
@@ -22,9 +22,9 @@ public class Utils {
     
     private Utils() {}
     
-    public static Random rnd() {
-        return random;
-    }
+//    public static Random rnd() {
+//        return random;
+//    }
     
     public static double UCB1(double v_i, double n_p, double n_i, double coef) {
         return n_i==0? Double.POSITIVE_INFINITY: (v_i + coef*Math.sqrt(Math.log(n_p)/(n_i)));
@@ -99,17 +99,17 @@ public class Utils {
         return ghosts_possible_moves;
     }
     
-    public static MOVE randomGhostsMove(Game game, GHOST ghost) {
+    public static MOVE randomGhostsMove(Game game, GHOST ghost, Random random) {
         MOVE[] possible_moves = getGhostsPossibleMoves(game, ghost);
         int move_index = random.nextInt(possible_moves.length);
         return possible_moves[move_index];
     }
     
-    public static EnumMap<GHOST, MOVE> randomGhostsMoves(Game game) {
+    public static EnumMap<GHOST, MOVE> randomGhostsMoves(Game game, Random random) {
         EnumMap<GHOST, MOVE> res = new EnumMap<GHOST, MOVE>(GHOST.class);
         
         for (GHOST ghost: GHOST.values()) {
-            res.put(ghost, randomGhostsMove(game, ghost));
+            res.put(ghost, randomGhostsMove(game, ghost, random));
         }
         
         return res;
@@ -190,18 +190,18 @@ public class Utils {
         game.advanceGameWithPowerPillReverseOnly(pacmanFollowRoad(game), ghostsFollowRoads(game).clone());
     }
     
-    public static MOVE randomPacmanMove(Game game) {
-        return randomPacmanMove(game, PACMAN_REVERSAL.ALWAYS);
+    public static MOVE randomPacmanMove(Game game, Random random) {
+        return randomPacmanMove(game, PACMAN_REVERSAL.ALWAYS, random);
     }
     
-    public static MOVE randomPacmanMove(Game game, PACMAN_REVERSAL reversal) {
+    public static MOVE randomPacmanMove(Game game, PACMAN_REVERSAL reversal, Random random) {
         MOVE[] possible_moves = getPacmansPossibleMoves(game, reversal);
         int move_index = random.nextInt(possible_moves.length);
         
         return possible_moves[move_index];
     }
     
-    public static MOVE randomPacmanMoveReversalPenalized(Game game, double reversal_probability_coef) {
+    public static MOVE randomPacmanMoveReversalPenalized(Game game, double reversal_probability_coef, Random random) {
         MOVE[] possible_moves = getAllPacmansPossibleMoves(game);
         MOVE last_move = game.getPacmanLastMoveMade();
         double sum = possible_moves.length-(1-reversal_probability_coef);
@@ -306,4 +306,16 @@ public class Utils {
         }
         return true;
     }
+    
+    /**
+     * @param bits Number of bits.
+     * @return Number of bytes (as a ceiling) necessary to transmit bits.
+     */
+    public static long bitsToBytes(long bits) {
+        /*  0<=bits<=7 => (bits+1)/8 = bits/8
+         *  bits==8 => (bits+1)/8 = 1 + bits/8
+         */
+        return (bits+1)/8;
+    }
+    
 }

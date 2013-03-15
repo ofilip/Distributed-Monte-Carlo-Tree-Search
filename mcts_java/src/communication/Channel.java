@@ -7,6 +7,9 @@ import java.util.List;
 import utils.SystemTimer;
 import utils.VirtualTimer;
 
+//TODO:
+// * bounded length of buffer
+// * priorities + sendFirst()
 public class Channel implements MessageSender, MessageReceiver {
     private Network network;
     private long transmission_speed; /* bytes per second */

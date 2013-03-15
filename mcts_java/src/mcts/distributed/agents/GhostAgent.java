@@ -38,7 +38,7 @@ public abstract class GhostAgent {
     public GhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
         this.controller = controller;
         this.ghost = ghost;
-        this.my_simulator = new MySimulator(simulation_depth);        
+        this.my_simulator = new MySimulator(simulation_depth, System.currentTimeMillis()+ghost.ordinal());        
         this.ucb_selector = new UCBSelector(30, my_simulator);
         this.backpropagator = AvgBackpropagator.getInstance();
         this.ucb_coef = ucb_coef;

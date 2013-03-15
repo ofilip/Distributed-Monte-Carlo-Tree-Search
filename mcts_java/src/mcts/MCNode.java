@@ -2,6 +2,7 @@ package mcts;
 
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import mcts.Decision;
@@ -14,6 +15,7 @@ import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 import pacman.game.GameView;
+import utils.Pair;
 
 public abstract class MCNode implements UCBNode {
     /* MCTS values */
@@ -31,6 +33,7 @@ public abstract class MCNode implements UCBNode {
     Map<EnumMap<GHOST, MOVE>, GhostsNode> ghosts_children = null;
     int pacman_decision_gap; /* before how mant ticks happened last pacman decision */    
     DecisionCause decision_cause; /* NONE for "not set" */
+    boolean terminal = false;
     
     /* current game state */
     Game game; /* set only iff expanded()||isRoot() */
@@ -119,15 +122,43 @@ public abstract class MCNode implements UCBNode {
         return node;
     }
     
+    public MCNode child(Action action) {
+        if (action.type()==Action.Type.PACMAN) {
+            return child(action.pacmanMove());
+        } else {
+            return child(action.ghostMove());
+        }
+    }
+    
+    public MCNode parent() { return parent; }
+    
     public MCNode selectNext() {
-        return (MCNode)tree.selector.select(this);
+        return selectNextNodeActionPair().first;
+    }
+    
+    private Pair<MCNode,Action> selectNextNodeActionPair() {
+        return tree.selector.select(this);
     }
     
     public MCNode select() {
-        if (visit_count==0) {
+        if (visit_count==0||terminal) {
             return this;
         } else {
             return selectNext().select();
+        }
+    }
+    
+    public MCNode select(List<Action> action_list) {
+        if (visit_count==0||terminal) {
+            return this;
+        } else {
+            Pair<MCNode,Action> selected = selectNextNodeActionPair();
+            if (selected==null) {
+                return null;
+            } else {
+                action_list.add(selected.second);
+                return selected.first.select(action_list);
+            }
         }
     }
     

@@ -2,9 +2,11 @@ package mcts;
 
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import mcts.Utils;
+import mcts.exceptions.InvalidActionListException;
 import pacman.game.Constants.*;
 import pacman.game.Game;
 import pacman.game.GameView;
@@ -21,16 +23,39 @@ public abstract class MCTree<M> {
         return root;
     }
     
-    public void iterate() {
-        MCNode node = root.select();
-        if (node.isRoot()||!node.parent.game.wasPacManEaten()) {
+    public double iterate() { return iterate(null); }
+    
+    public double iterate(List<Action> action_list) {
+        MCNode node = action_list==null? root.select(): root.select(action_list);
+        if (node.isRoot()||!node.parent().game.wasPacManEaten()) {
             node.expand();
             double reward = node.simulate();
             node.backpropagate(reward);
+            return reward;
         } else {
             /* do not extend subtree if pacman was eaten */
-            node.parent.backpropagate(node.value);
+            node.terminal = true;
+            node.backpropagate(node.value);
+            return node.value;
         }
+    }
+    
+    private MCNode getNode(List<Action> action_list) throws InvalidActionListException {
+        MCNode node = root;
+        for (Action action: action_list) {
+            node.expand();
+            node = node.child(action);
+            if (node==null) {
+                throw new InvalidActionListException();
+            }
+        }
+        node.expand();
+        return node;
+    }
+    
+    public void applySimulationResult(List<Action> action_list, double simulation_result) throws InvalidActionListException {
+        MCNode node = getNode(action_list);
+        node.backpropagate(simulation_result);
     }
     
     protected MCTree(MCTree tree, long depth) {
