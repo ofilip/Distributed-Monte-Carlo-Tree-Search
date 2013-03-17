@@ -1,4 +1,4 @@
-package pacman;
+package exec.utils;
 
 import java.util.EnumMap;
 import pacman.controllers.Controller;

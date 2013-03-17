@@ -32,7 +32,7 @@ public abstract class MCNode implements UCBNode {
     Map<MOVE, PacmanNode> pacman_children = null;
     Map<EnumMap<GHOST, MOVE>, GhostsNode> ghosts_children = null;
     int pacman_decision_gap; /* before how mant ticks happened last pacman decision */    
-    DecisionCause decision_cause; /* NONE for "not set" */
+    DecisionCause decision_cause = DecisionCause.NONE; /* NONE for "not set" */
     boolean terminal = false;
     
     /* current game state */
@@ -273,7 +273,6 @@ public abstract class MCNode implements UCBNode {
             /* Game not set => create game by advancing game until decision is required */
             assert halfstep==false;
             game = parent.game.copy();
-            // XXX TODO: What if this.joint_node==true? (
             advanceGame(game);
             decision = Decision.nextDecision(game, (pacman_decision_gap+1)%Decision.PACMAN_DECISION_GAP, true);
             game = decision.game;

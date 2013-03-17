@@ -82,7 +82,7 @@ public class Decision {
      * - crossroad reached
      * - powerpill eaten
      * - next step on road leads to powerpill
-     * - each PACMAN_DECISION_GAP ticks at most (TODO: if regular decision happens in next 3 steps, ignore this kind of decision)
+     * - each PACMAN_DECISION_GAP ticks at most
      */
     private static boolean isPacmansDecision(DecisionStepData decision_data) {
         Game game = decision_data.game;

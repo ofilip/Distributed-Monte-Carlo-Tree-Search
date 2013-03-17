@@ -32,13 +32,10 @@ public class GhostsNode extends MCNode {
     }
     
     protected GhostsNode(MCTree tree, MCNode parent, Game parent_game, EnumMap<GHOST, MOVE> ghosts_moves, MOVE[] pacmans_possible_moves, int pacman_decision_gap, DecisionCause pacman_decision_cause) {
-        this(tree, parent, parent_game.copy(), ghosts_moves, 0, pacman_decision_gap);     
-        //TODO: better simulation on halfstep
-//        this.game.updateGhosts(ghosts_moves);
-//        this.game.updateGame();
+        this(tree, parent, parent_game.copy(), ghosts_moves, 0, pacman_decision_gap);  
         pacman_children = new EnumMap<MOVE, PacmanNode>(MOVE.class);
-        this.decision_cause = decision_cause;
         halfstep = true;
+        this.decision_cause = pacman_decision_cause;
         for (int i=0; i<pacmans_possible_moves.length; i++) {
             MOVE pacman_move = pacmans_possible_moves[i];
             Game child_game = parent_game.copy();
@@ -86,6 +83,7 @@ public class GhostsNode extends MCNode {
         }
     }
     
+    @Override
     protected void jointExpand(Decision decision) {
         pacmanGhostsExpand(decision);
     }
@@ -114,7 +112,7 @@ public class GhostsNode extends MCNode {
 
     @Override
     public boolean isPacmanNode() {
-        return false; //TODO : remove
+        return false;
     }
 
     @Override

@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import pacman.GhostControllerGenerator;
+import exec.utils.GhostControllerGenerator;
 import pacman.controllers.Controller;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;

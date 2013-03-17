@@ -1,4 +1,4 @@
-package pacman;
+package exec.utils;
 
 import pacman.controllers.Controller;
 import pacman.game.Constants;

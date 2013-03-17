@@ -1,12 +1,14 @@
-package pacman;
+package exec.utils;
 
+import exec.utils.PacmanControllerGenerator;
+import exec.utils.GhostControllerGenerator;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
-import pacman.MyExecutor;
+import exec.utils.Executor;
 import pacman.controllers.Controller;
 import pacman.game.Constants;
 import pacman.game.Game;

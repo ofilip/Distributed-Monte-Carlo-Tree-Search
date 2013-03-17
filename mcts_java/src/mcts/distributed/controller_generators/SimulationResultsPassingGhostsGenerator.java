@@ -3,7 +3,7 @@ package mcts.distributed.controller_generators;
 import java.util.EnumMap;
 import mcts.distributed.DistributedMCTSController;
 import mcts.distributed.agents.*;
-import pacman.GhostControllerGenerator;
+import exec.utils.GhostControllerGenerator;
 import pacman.controllers.Controller;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;

@@ -1,5 +1,7 @@
-package pacman;
+package exec;
 
+import exec.utils.CompetitionOptions;
+import exec.utils.Executor;
 import java.util.ArrayList;
 import java.util.List;
 import pacman.entries.ghosts.generators.MCTSGhostsGenerator;
@@ -7,7 +9,7 @@ import pacman.entries.pacman.generators.StarterPacManGenerator;
 
 public class ExecCTest {
     public static void main(String[] args) {
-        MyExecutor exec = new MyExecutor();
+        Executor exec = new Executor();
         List<CompetitionOptions> options_list = new ArrayList<CompetitionOptions>();
         final int simulation_depth = 120;
         

@@ -20,7 +20,12 @@ public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>>
         super(simulation_depth, ucb_coef, verbose);
     }      
     
-    public MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose, int iterations) {
+    public MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose, double random_simulation_move_probability) {
+        super(simulation_depth, ucb_coef, verbose, random_simulation_move_probability);
+    }      
+    
+    //TODO: remove iterations related code
+    private MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose, int iterations) {
         super(simulation_depth, ucb_coef, verbose, iterations);
     }    
     

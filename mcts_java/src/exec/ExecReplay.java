@@ -1,4 +1,4 @@
-package pacman;
+package exec;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -29,14 +29,14 @@ import pacman.game.GameView;
 
 import static pacman.game.Constants.*;
 @SuppressWarnings("unused")
-public class ReplayExecutor {
+public class ExecReplay {
 	public static void main(String[] args)	{
             if (args.length!=1) {
-                System.out.printf("Usage: %s <replay_file>\n", ReplayExecutor.class.getSimpleName());
+                System.out.printf("Usage: %s <replay_file>\n", ExecReplay.class.getSimpleName());
                 System.exit(1);
             }
             
-            ReplayExecutor exec = new ReplayExecutor();
+            ExecReplay exec = new ExecReplay();
             
             exec.replayGame(args[0], true);
 	}

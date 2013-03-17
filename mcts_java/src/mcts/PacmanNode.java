@@ -2,11 +2,7 @@ package mcts;
 
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.Map;
-import mcts.Decision;
 import mcts.Decision.DecisionCause;
-import mcts.Moves;
-import mcts.Utils;
 import pacman.game.Constants;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
@@ -32,9 +28,6 @@ public class PacmanNode extends MCNode {
     
     protected PacmanNode(MCTree tree, MCNode parent, Game parent_game, MOVE pacman_move, EnumMap<GHOST, MOVE[]> possible_ghosts_moves, Game game, int pacman_decision_gap) {
         this(tree, parent, parent_game.copy(), pacman_move, 0, pacman_decision_gap);
-        //TODO: 
-//        this.game.updatePacMan(pacman_move);
-//        this.game.updateGame();
         this.halfstep = true;
         decision_cause = DecisionCause.CROSSROAD_REACHED;
         ghosts_children = new HashMap<EnumMap<GHOST, MOVE>, GhostsNode>();

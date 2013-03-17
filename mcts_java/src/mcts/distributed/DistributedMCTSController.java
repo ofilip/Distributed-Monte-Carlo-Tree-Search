@@ -22,6 +22,7 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
     
     private static GHOST ghosts[] = {GHOST.BLINKY, GHOST.PINKY, GHOST.INKY, GHOST.SUE};
     protected static final long MILLIS_TO_FINISH = 20;
+    private long move_number = 0;
     
     /**
      * 
@@ -46,18 +47,17 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
         return this;
     }
     
-    @Override
-    public long currentMillis() {
-        return System.currentTimeMillis()/agents.size();
-    }
+    @Override public long currentMillis() { return System.currentTimeMillis()/agents.size(); }
 
     @Override
     public EnumMap<GHOST, MOVE> getMove(Game game, long timeDue) {
         long start_time = System.currentTimeMillis();
         assert agents.size()==4;
+        move_number++;
         
         /* update agents' trees */
         for (GHOST ghost: GHOST.values()) {
+            agents.get(ghost).truncateNetworkBuffers();
             agents.get(ghost).updateTree(game);
         }
         
@@ -73,12 +73,13 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
         }        
         if (verbose) {
             int total_simulations_count = 0;
+
             for (GhostAgent agent: agents.values()) {
                 total_simulations_count += agent.getTree().size();
             }
             double computation_time = (System.currentTimeMillis()-start_time)/1000.0;
-            System.out.printf("MOVE INFO [node_index=%d]: computation time: %.3f s, simulations: %s, move: %s\n", 
-                    game.getPacmanCurrentNodeIndex(), computation_time, total_simulations_count, moves);    
+            System.out.printf("MOVE INFO [node_index=%d]: computation time: %.3f s, simulations: %s, move (no.%s): %s\n", 
+                    game.getPacmanCurrentNodeIndex(), computation_time, total_simulations_count, move_number, moves);    
             if (timeDue - System.currentTimeMillis()<0) {
                 System.err.printf("Missed turn, delay: %d ms\n", -(timeDue - System.currentTimeMillis()));
             }    

@@ -18,10 +18,11 @@ import utils.Pair;
  * StarterPacMan and the Legacy ghosts.
  */
 public class GuidedSimulator implements Simulator {
-    private final static double RANDOM_MOVE_PROB = 0.1; //TODO: may be tuned
-    private final static int    MIN_DISTANCE = 20;
-    private final static int    PILL_PROXIMITY = 15;
+    private final static double DEFAULT_RANDOM_MOVE_PROB = 0.5;
+    private final static int MIN_DISTANCE = 20;
+    private final static int PILL_PROXIMITY = 15;
     
+    private double random_move_prob = 0.5;
     private int max_depth;
     private Random random;
 
@@ -30,8 +31,14 @@ public class GuidedSimulator implements Simulator {
     }
     
     public GuidedSimulator(int max_depth, long seed) {
+        this(max_depth, seed, DEFAULT_RANDOM_MOVE_PROB);
+    }
+    
+    public GuidedSimulator(int max_depth, long seed, double random_move_probability) {
+        assert(random_move_probability>=0&&random_move_probability<=1);
         this.random = new Random(seed);
         this.max_depth = max_depth;
+        this.random_move_prob = random_move_probability;
     }
     
     private MOVE choosePacmanMove(Game game) {
@@ -41,7 +48,7 @@ public class GuidedSimulator implements Simulator {
          * 3. otherwise pacman choose random way
          * 
          * Pacman does not reverse in the middle of path and ignores the path from which he came to the crossroad.
-         * With probability of RANDOM_MOVE_PROB pacman does random move in cases 1 and 2.
+         * With probability of random_move_prob pacman does random move in cases 1 and 2.
          */
         
         
@@ -50,8 +57,8 @@ public class GuidedSimulator implements Simulator {
             return Utils.pacmanFollowRoad(game);
         }
         
-        /* Perform random move with probability of RANDOM_MOVE_PROB */
-        if (random.nextDouble()<RANDOM_MOVE_PROB) {
+        /* Perform random move with probability of random_move_prob */
+        if (random.nextDouble()<random_move_prob) {
             return Utils.randomPacmanMove(game, PACMAN_REVERSAL.XROADS_ONLY, random);
         }
         
@@ -122,7 +129,7 @@ public class GuidedSimulator implements Simulator {
          * 1. If a ghost is edible or pacman is close to the power pill, run away
          * 2. Follow the midified Legacy strategy (no random moves for SUE, see getLegacyMove())
          * 
-         * With probability of RANDOM_MOVE_PROB ghost does random move.
+         * With probability of random_move_prob ghost does random move.
          */
         
         EnumMap<GHOST, MOVE> ghosts_moves = new EnumMap<GHOST, MOVE>(GHOST.class);
@@ -136,8 +143,8 @@ public class GuidedSimulator implements Simulator {
                 continue;
             }
             
-            /* with probability of RANDOM_MOVE_PROB, play a random move */
-            if (random.nextDouble()<RANDOM_MOVE_PROB) {
+            /* with probability of random_move_prob, play a random move */
+            if (random.nextDouble()<random_move_prob) {
                 ghosts_moves.put(ghost, Utils.randomGhostsMove(game, ghost, random));
                 continue;
             }

@@ -1,6 +1,6 @@
 package pacman.entries.pacman.generators;
 
-import pacman.PacmanControllerGenerator;
+import exec.utils.PacmanControllerGenerator;
 import pacman.controllers.Controller;
 import pacman.entries.pacman.MCTSPacman;
 import pacman.game.Constants.MOVE;

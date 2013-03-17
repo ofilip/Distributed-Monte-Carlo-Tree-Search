@@ -4,7 +4,7 @@ import java.util.EnumMap;
 import mcts.distributed.DistributedMCTSController;
 import mcts.distributed.agents.IndependentGhostAgent;
 import mcts.distributed.agents.JointActionExchangingAgent;
-import pacman.GhostControllerGenerator;
+import exec.utils.GhostControllerGenerator;
 import pacman.controllers.Controller;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
