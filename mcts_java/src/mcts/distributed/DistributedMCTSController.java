@@ -18,25 +18,27 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
     protected int current_ghost = 0;
     protected EnumMap<GHOST,MOVE> moves = new EnumMap<GHOST,MOVE>(GHOST.class);
     protected boolean verbose;
+    private long channel_buffer_size;
     
     private static GHOST ghosts[] = {GHOST.BLINKY, GHOST.PINKY, GHOST.INKY, GHOST.SUE};
-    protected static final long MILLIS_TO_FINISH = 20; 
+    protected static final long MILLIS_TO_FINISH = 20;
     
     /**
      * 
      * @param channel_transmission_speed Transmission speed in bytes per second.
      * @param verbose Verbose level.
      */
-    public DistributedMCTSController(long channel_transmission_speed, boolean verbose) {        
+    public DistributedMCTSController(long channel_transmission_speed, long channel_buffer_size, boolean verbose) {        
         this.network = new Network(channel_transmission_speed, this);
         this.verbose = verbose;
+        this.channel_buffer_size = channel_buffer_size;
     }
     
     public DistributedMCTSController addGhostAgent(GhostAgent ghost_agent) {
         assert !agents.containsKey(ghost_agent.ghost());
         for (GhostAgent ally: agents.values()) {
-            Channel out_channel = network.openChannel(String.format("%s$%s", ghost_agent.ghostName(), ally.ghostName()));
-            Channel in_channel = network.openChannel(String.format("%s$%s", ally.ghostName(), ghost_agent.ghostName()));
+            Channel out_channel = network.openChannel(String.format("%s$%s", ghost_agent.ghostName(), ally.ghostName()), channel_buffer_size);
+            Channel in_channel = network.openChannel(String.format("%s$%s", ally.ghostName(), ghost_agent.ghostName()), channel_buffer_size);
             ghost_agent.addAlly(out_channel, ally);
             ally.addAlly(in_channel, ghost_agent);
         }
@@ -70,9 +72,13 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
             moves.put(ghost, agents.get(ghost).getMove());
         }        
         if (verbose) {
+            int total_simulations_count = 0;
+            for (GhostAgent agent: agents.values()) {
+                total_simulations_count += agent.getTree().size();
+            }
             double computation_time = (System.currentTimeMillis()-start_time)/1000.0;
-            System.out.printf("MOVE INFO [node_index=%d]: computation time: %.3f s, move: %s\n", 
-                    game.getPacmanCurrentNodeIndex(), computation_time, moves);    
+            System.out.printf("MOVE INFO [node_index=%d]: computation time: %.3f s, simulations: %s, move: %s\n", 
+                    game.getPacmanCurrentNodeIndex(), computation_time, total_simulations_count, moves);    
             if (timeDue - System.currentTimeMillis()<0) {
                 System.err.printf("Missed turn, delay: %d ms\n", -(timeDue - System.currentTimeMillis()));
             }    

@@ -19,19 +19,19 @@ public class Network {
         this.channel_transmission_speed = channel_transmission_speed;
     }
     
-    public Channel openChannel(String name) {
+    public Channel openChannel(String name, long buffer_size) {
         if (!channels.containsKey(name)) {
-            channels.put(name, new Channel(this, name, channel_transmission_speed));
+            channels.put(name, new Channel(this, name, channel_transmission_speed, buffer_size));
         }
         return channels.get(name);
     }
     
     public MessageSender sender(String name) {
-        return openChannel(name);
+        return channels.get(name);
     }
     
     public MessageReceiver receiver(String name) {
-        return openChannel(name);
+        return channels.get(name);
     }
     
     public long channelTransmissionSpeed() {
@@ -40,5 +40,11 @@ public class Network {
     
     public VirtualTimer timer() {
         return timer;
+    }
+    
+    public void reset() {
+        for (Channel channel: channels.values()) {
+            channel.clear();
+        }
     }
 }

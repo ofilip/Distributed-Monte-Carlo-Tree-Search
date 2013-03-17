@@ -16,7 +16,7 @@ import mcts.GhostsNode;
 import mcts.GhostsTree;
 import mcts.MCNode;
 import mcts.MCTree;
-import mcts.MySimulator;
+import mcts.GuidedSimulator;
 import mcts.PacmanNode;
 import mcts.UCBSelector;
 import mcts.Utils;

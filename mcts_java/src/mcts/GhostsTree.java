@@ -26,7 +26,7 @@ public class GhostsTree extends MCTree<EnumMap<GHOST, MOVE>> implements Cloneabl
         super(tree, depth);
     }
     
-    public GhostsTree(Game game, Selector selector, MySimulator simulator, Backpropagator backpropagator, double ucb1_coef) {
+    public GhostsTree(Game game, Selector selector, GuidedSimulator simulator, Backpropagator backpropagator, double ucb1_coef) {
         super(game, selector, simulator, backpropagator, ucb1_coef);
         root = PacmanNode.createRoot(this, game);
     }

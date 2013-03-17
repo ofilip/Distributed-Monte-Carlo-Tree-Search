@@ -5,8 +5,9 @@ import communication.messages.Message;
 public interface MessageSender {
     public boolean sendQueueEmpty();
     public long sendQueueSize();
-    public int sendQueueLength();
+    public long sendQueueLength();
     public double secondsToSendAll();
-    public void send(Message message);
+    public void send(Priority priority, Message message);
+    public void sendFirst(Priority priority, Message message);
     public Channel channel();
 }

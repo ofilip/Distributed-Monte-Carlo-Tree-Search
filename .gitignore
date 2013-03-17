@@ -16,3 +16,4 @@ text/*.run.xml
 text/thesis-blx.bib
 text/*.blg
 text/thesis.tdo
+mcts_java/nbproject/private/profiler/*.nps

@@ -11,7 +11,7 @@ import pacman.game.Game;
 import pacman.game.GameView;
 
 public class PacmanTree extends MCTree<MOVE> {
-    public PacmanTree(Game game, Selector selector, MySimulator simulator, Backpropagator backpropagator, double ucb1_coef) {
+    public PacmanTree(Game game, Selector selector, GuidedSimulator simulator, Backpropagator backpropagator, double ucb1_coef) {
         super(game, selector, simulator, backpropagator, ucb1_coef);
         root = GhostsNode.createRoot(this, game);
     }

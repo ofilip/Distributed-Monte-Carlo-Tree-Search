@@ -2,6 +2,7 @@ package communication;
 
 import communication.messages.Message;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import utils.SystemTimer;
@@ -10,40 +11,38 @@ import utils.VirtualTimer;
 //TODO:
 // * bounded length of buffer
 // * priorities + sendFirst()
+// * costs of broadcast
 public class Channel implements MessageSender, MessageReceiver {
     private Network network;
     private long transmission_speed; /* bytes per second */
-    private LinkedList<Message> sending_queue = new LinkedList<Message>();
+    //private EnumMap<Priority,LinkedList<Message>> prioritized_sending_queue = new EnumMap<Priority,LinkedList<Message>>(Priority.class);
+    private PrioritySendingQueue sending_queue;
     private LinkedList<Message> received_queue = new LinkedList<Message>();
+    private Message transmitted_message = null; /* message being currently transmited, null if no transmission in progress */
     private long queue_millibytes_transmitted; /* millibytes to be transmitted from sending_queue to received_queue */
     private String name;
     private long last_transmission_time; /* time when last transmission happened */
     
-    protected Channel(Network network, String name, long transmission_speed) {
+    protected Channel(Network network, String name, long transmission_speed, long buffer_size) {
         this.network = network;
         this.last_transmission_time = network.timer().currentMillis();
         this.name = name;
         this.transmission_speed = transmission_speed;
+        this.sending_queue = new PrioritySendingQueue(buffer_size);
     }
     
     private void doTransmission() {
         long current_time = network.timer().currentMillis();
         queue_millibytes_transmitted += (current_time-last_transmission_time)*transmission_speed;
         
-        while (!sending_queue.isEmpty()) {
-            Message top = sending_queue.getFirst();
-            
-            if (1000*top.length()<queue_millibytes_transmitted) {
-                queue_millibytes_transmitted -= 1000*top.length();
-                sending_queue.removeFirst();
-                received_queue.add(top);
-            } else {
-                break;
-            }
+        if (transmitted_message==null) {
+            transmitted_message = sending_queue.removeFirst();
         }
         
-        if (sending_queue.isEmpty()) {
-            queue_millibytes_transmitted = 0;
+        while (transmitted_message!=null&&1000*transmitted_message.length()<queue_millibytes_transmitted) {
+            queue_millibytes_transmitted -= 1000*transmitted_message.length();
+            received_queue.add(transmitted_message);
+            transmitted_message = sending_queue.removeFirst();
         }
         
         last_transmission_time = current_time;
@@ -73,7 +72,7 @@ public class Channel implements MessageSender, MessageReceiver {
     }
     
     @Override
-    synchronized public int receiveQueueLength() {
+    synchronized public long receiveQueueLength() {
         doTransmission();
         return received_queue.size();
     }            
@@ -87,9 +86,8 @@ public class Channel implements MessageSender, MessageReceiver {
     synchronized private long sendQueueMillisSize() {
         doTransmission();
         long size = -queue_millibytes_transmitted;
-        for (Message message: sending_queue) {
-            size += 1000*message.length();
-        }
+        if (transmitted_message!=null) size += transmitted_message.length();
+        size += sending_queue.length();
         assert size>=0;
         return size;
     }
@@ -100,7 +98,7 @@ public class Channel implements MessageSender, MessageReceiver {
     }
     
     @Override
-    synchronized public int sendQueueLength() {
+    synchronized public long sendQueueLength() {
         doTransmission();
         return sending_queue.size();
     }
@@ -111,10 +109,16 @@ public class Channel implements MessageSender, MessageReceiver {
     }
     
     @Override
-    synchronized public void send(Message message) {
+    synchronized public void send(Priority priority, Message message) {
         if (sending_queue.isEmpty()) last_transmission_time = network.timer().currentMillis(); /* reset transmission if queue is empty */
-        sending_queue.add(message);
-    }    
+        sending_queue.add(priority, message);
+    }
+    
+    @Override
+    synchronized public void sendFirst(Priority priority, Message message) {
+        if (sending_queue.isEmpty()) last_transmission_time = network.timer().currentMillis(); /* reset transmission if queue is empty */
+        sending_queue.addFirst(priority, message);
+    }
     
     public long transmissionSpeed() {
         return transmission_speed;
@@ -135,5 +139,12 @@ public class Channel implements MessageSender, MessageReceiver {
     
     public String name() {
         return name;
+    }
+    
+    public void clear() {
+        received_queue.clear();
+        sending_queue.clear();
+        transmitted_message = null;
+        queue_millibytes_transmitted = 0;
     }
 }

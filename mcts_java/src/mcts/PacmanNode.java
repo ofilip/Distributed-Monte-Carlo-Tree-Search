@@ -146,7 +146,6 @@ public class PacmanNode extends MCNode {
     
     @Override
     public boolean isPacmanNode() {
-        //TODO: remove
         return true;
     }
 

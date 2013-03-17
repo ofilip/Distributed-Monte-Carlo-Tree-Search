@@ -28,9 +28,9 @@ public class DummyGhostsGenerator implements GhostControllerGenerator {
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     public Controller<EnumMap<GHOST, MOVE>> ghostController() {
-        DistributedMCTSController<IndependentGhostAgent> controller = new DistributedMCTSController<IndependentGhostAgent>(1, true);
-                
+        DistributedMCTSController<IndependentGhostAgent> controller = new DistributedMCTSController<IndependentGhostAgent>(1, 1, true);
         return controller.addGhostAgent(new IndependentGhostAgent(controller, GHOST.BLINKY, simulation_depth, ucb_coef, verbose))
                         .addGhostAgent(new IndependentGhostAgent(controller, GHOST.PINKY, simulation_depth, ucb_coef, verbose))
                         .addGhostAgent(new IndependentGhostAgent(controller, GHOST.INKY, simulation_depth, ucb_coef, verbose))

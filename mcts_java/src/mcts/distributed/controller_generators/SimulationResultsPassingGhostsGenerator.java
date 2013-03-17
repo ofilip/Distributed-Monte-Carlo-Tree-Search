@@ -16,22 +16,25 @@ public class SimulationResultsPassingGhostsGenerator implements GhostControllerG
     private String name;
     VerboseLevel verbose;
     long channel_transmission_speed;
+    long channel_buffer_size;
     
-    public SimulationResultsPassingGhostsGenerator(int simulation_depth, double ucb_coef, long channel_transmission_speed) {
-        this(simulation_depth, ucb_coef, channel_transmission_speed, VerboseLevel.QUIET);
+    public SimulationResultsPassingGhostsGenerator(int simulation_depth, double ucb_coef, long channel_transmission_speed, long channel_buffer_size) {
+        this(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size, VerboseLevel.QUIET);
     }
     
-    public SimulationResultsPassingGhostsGenerator(int simulation_depth, double ucb_coef, long channel_transmission_speed, VerboseLevel verbose) {
+    public SimulationResultsPassingGhostsGenerator(int simulation_depth, double ucb_coef, long channel_transmission_speed, long channel_buffer_size, VerboseLevel verbose) {
         this.channel_transmission_speed = channel_transmission_speed;
         this.verbose = verbose;
         this.simulation_depth = simulation_depth;
         this.ucb_coef = ucb_coef;
-        name = String.format("JointActionExchangingGhosts[simulation_depth=%d,ucb_coef=%f]", simulation_depth, ucb_coef);
+        this.name = String.format("JointActionExchangingGhosts[simulation_depth=%d,ucb_coef=%f]", simulation_depth, ucb_coef);
+        this.channel_buffer_size = channel_buffer_size;
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     public Controller<EnumMap<GHOST, MOVE>> ghostController() {
-        DistributedMCTSController<JointActionExchangingAgent> controller = new DistributedMCTSController<JointActionExchangingAgent>(channel_transmission_speed, true);
+        DistributedMCTSController<JointActionExchangingAgent> controller = new DistributedMCTSController<JointActionExchangingAgent>(channel_transmission_speed, channel_buffer_size, true);
         
         return controller.addGhostAgent(new SimulationResultsPassingAgent(controller, GHOST.BLINKY, simulation_depth, ucb_coef, verbose))
                                 .addGhostAgent(new SimulationResultsPassingAgent(controller, GHOST.PINKY, simulation_depth, ucb_coef, verbose))

@@ -2,6 +2,7 @@ package pacman;
 
 import communication.messages.Message;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -31,6 +32,8 @@ import pacman.controllers.examples.*;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.examples.StarterPacMan;
 import pacman.entries.ghosts.MCTSGhosts;
+import pacman.entries.ghosts.generators.GhostsGenerator;
+import pacman.entries.ghosts.generators.MCTSGhostsGenerator;
 import pacman.entries.pacman.*;
 import pacman.entries.pacman.generators.StarterPacManGenerator;
 import pacman.game.Game;
@@ -51,6 +54,13 @@ public class MyExecutor
        static boolean verbose = true;
        public static void runCompetition(List<CompetitionOptions> options_list, int trials, boolean visual, boolean recorded, String path) {
             try {
+                File dir = new File(path);
+                try {
+                    new File(path).mkdirs();
+                } catch (SecurityException ex) {
+                    System.err.printf("Cannot create folder %s, operation not permitted\n", path);
+                    return;
+                }
                 MyExecutor exec = new MyExecutor();
                 String date_string = new SimpleDateFormat("yyMMdd-hhmmss").format(new Date());
                 PrintWriter writer = new PrintWriter(String.format(path+"results-%s.txt", date_string));                ;
@@ -98,7 +108,7 @@ public class MyExecutor
 	 *
 	 * @param args the command line arguments
 	 */
-	public static void main(String[] args)	{
+	public static void main(String[] args) throws NoSuchMethodException	{
             MyExecutor exec = new MyExecutor();
 //            GhostControllerGenerator gen = new RootExchangingGhostsGenerator(200, 0.7, 10000, VerboseLevel.QUIET);
             //GhostControllerGenerator gen = new JointActionExchangingGhostsGenerator(200, 0.7, 10000, 10, VerboseLevel.DEBUGGING);
@@ -107,14 +117,28 @@ public class MyExecutor
             final int simulation_depth = 120;
             final double ucb_coef = 0.7;
             final long channel_transmission_speed = 10000;
-            GhostControllerGenerator gen_dummy = new DummyGhostsGenerator(simulation_depth, ucb_coef);
-            GhostControllerGenerator gen_action_exchange = new JointActionExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, 5);
-            GhostControllerGenerator gen_root_exchange = new RootExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed);
-            GhostControllerGenerator gen_simulation_results_passing = new SimulationResultsPassingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed);
+            final long channel_buffer_size = 30*channel_transmission_speed; /* buffer size = 30 seconds */
+            
+            PacmanControllerGenerator pgen_starter = StarterPacManGenerator.instance;
+            
+            GhostControllerGenerator ggen_mcts = new MCTSGhostsGenerator(simulation_depth, ucb_coef);
+            GhostControllerGenerator ggen_dummy = new DummyGhostsGenerator(simulation_depth, ucb_coef);
+            GhostControllerGenerator ggen_action_exchange = new JointActionExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size, 5);
+            GhostControllerGenerator ggen_root_exchange = new RootExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size);
+            GhostControllerGenerator ggen_simulation_results_passing = new SimulationResultsPassingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size);
+            GhostsGenerator ggen_legacy = new GhostsGenerator(Legacy.class);
             
             List<CompetitionOptions> options_list = new ArrayList<CompetitionOptions>();
+            
+            //options_list.add(new CompetitionOptions(pgen_starter, 40, ggen_legacy, 40));
+//            options_list.add(new CompetitionOptions(pgen_starter, 40, ggen_mcts, 400));
+//            options_list.add(new CompetitionOptions(pgen_starter, 40, ggen_dummy, 400));
+//            options_list.add(new CompetitionOptions(pgen_starter, 40, ggen_simulation_results_passing, 400));
+//            
+//            runCompetition(options_list, 10, false, false, "d:\\pacman_test\\1\\");
+            
                 
-            exec.runGameTimed(new StarterPacMan(), gen_simulation_results_passing.ghostController(), true, true, 40, 400);
+            exec.runGameTimed(new StarterPacMan(), ggen_simulation_results_passing.ghostController(), true, true, 40, 400);
 //            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_dummy, 400));
 //            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_action_exchange, 400));
 //            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_root_exchange, 400));

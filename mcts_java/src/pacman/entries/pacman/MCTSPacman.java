@@ -6,7 +6,7 @@ import mcts.AvgBackpropagator;
 import mcts.Backpropagator;
 import mcts.MCTSController;
 import mcts.MCTree;
-import mcts.MySimulator;
+import mcts.GuidedSimulator;
 import mcts.PacmanTree;
 import mcts.Selector;
 import mcts.UCBSelector;

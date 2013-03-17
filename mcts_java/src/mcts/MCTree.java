@@ -14,7 +14,7 @@ import pacman.game.GameView;
 public abstract class MCTree<M> {
     Selector selector;
     Selector best_move_selector = new UCBSelector(0, null);
-    MySimulator simulator;
+    GuidedSimulator simulator;
     Backpropagator backpropagator;
     double ucb1_coef;
     MCNode root;    
@@ -66,7 +66,7 @@ public abstract class MCTree<M> {
         this.root = tree.root.copy(this, null, depth);
     }
     
-    public MCTree(Game game, Selector selector, MySimulator simulator, Backpropagator backpropagator, double ucb1_coef) {
+    public MCTree(Game game, Selector selector, GuidedSimulator simulator, Backpropagator backpropagator, double ucb1_coef) {
         this.selector = selector;
         this.simulator = simulator;
         this.backpropagator = backpropagator;

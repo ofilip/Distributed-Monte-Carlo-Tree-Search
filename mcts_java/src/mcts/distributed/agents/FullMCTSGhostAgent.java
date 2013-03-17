@@ -3,7 +3,8 @@ package mcts.distributed.agents;
 import java.util.EnumMap;
 import mcts.AvgBackpropagator;
 import mcts.GhostsTree;
-import mcts.MySimulator;
+import mcts.GuidedSimulator;
+import mcts.MCTree;
 import mcts.UCBSelector;
 import mcts.Utils;
 import mcts.distributed.DistributedMCTSController;
@@ -28,8 +29,9 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
         mctree = new GhostsTree(game, ucb_selector, my_simulator, backpropagator, ucb_coef);
     }
     
-    @Override
-    public void updateTree(Game game) {
+    @Override public MCTree getTree() { return mctree; }
+    
+    @Override public void updateTree(Game game) {
         if (mctree==null /* new game or synchronization fail */
                 ||game.getCurrentLevel()!=current_level /* new level */
                 ||game.wasPacManEaten() /* pacman eaten */

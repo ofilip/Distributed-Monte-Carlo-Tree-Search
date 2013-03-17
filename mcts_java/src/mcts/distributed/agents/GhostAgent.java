@@ -5,12 +5,14 @@ import communication.MessageReceiver;
 import communication.MessageSender;
 import communication.Channel;
 import communication.Network;
+import communication.Priority;
 import communication.messages.MoveMessage;
 import java.util.HashMap;
 import java.util.Map;
 import mcts.AvgBackpropagator;
 import mcts.Backpropagator;
-import mcts.MySimulator;
+import mcts.GuidedSimulator;
+import mcts.MCTree;
 import mcts.Selector;
 import mcts.UCBSelector;
 import mcts.distributed.DistributedMCTSController;
@@ -26,7 +28,7 @@ public abstract class GhostAgent {
     protected final GHOST ghost;
     protected Map<GhostAgent, MessageSender> message_senders = new HashMap<GhostAgent, MessageSender>();
     protected Map<GhostAgent, MessageReceiver> message_receivers = new HashMap<GhostAgent, MessageReceiver>();
-    protected MySimulator my_simulator;
+    protected GuidedSimulator my_simulator;
     protected Backpropagator backpropagator;
     protected Selector ucb_selector;
     protected double ucb_coef;
@@ -38,7 +40,7 @@ public abstract class GhostAgent {
     public GhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
         this.controller = controller;
         this.ghost = ghost;
-        this.my_simulator = new MySimulator(simulation_depth, System.currentTimeMillis()+ghost.ordinal());        
+        this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis()+ghost.ordinal());        
         this.ucb_selector = new UCBSelector(30, my_simulator);
         this.backpropagator = AvgBackpropagator.getInstance();
         this.ucb_coef = ucb_coef;
@@ -62,6 +64,7 @@ public abstract class GhostAgent {
     }
     
     public abstract void updateTree(Game game);
+    public abstract MCTree getTree();
     public abstract void step();
     public abstract MOVE getMove();
     
@@ -88,14 +91,14 @@ public abstract class GhostAgent {
     
     protected void broadcastMessage(Message message) {
         for (MessageSender sender: message_senders.values()) {
-            sender.send(message);
+            sender.send(Priority.MEDIUM, message);
         }
     }
     
     protected void broadcastMessageIfLowBuffer(Message message, long sending_interval) {
         for (MessageSender sender: message_senders.values()) {
             if (sender.secondsToSendAll()<sending_interval) {
-                sender.send(message);
+                sender.send(Priority.MEDIUM, message);
             }
         }
     }
