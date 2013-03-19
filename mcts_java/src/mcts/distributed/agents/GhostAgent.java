@@ -88,8 +88,8 @@ public abstract class GhostAgent {
             if (verbose.check(VerboseLevel.DEBUGGING)) {
                 Channel ch = receiver.channel();
                 System.out.printf("%s from %s: %s messages (size: %s), transmitting %s (size %s)\n",
-                        ghost, ally.ghost, receiver.receiveQueueLength(), receiver.receiveQueueSize(),
-                        ch.sendQueueLength(), ch.sendQueueSize());
+                        ghost, ally.ghost, receiver.receiveQueueLength(), receiver.receiveQueueItemsCount(),
+                        ch.sendQueueLength(), ch.sendQueueItemsCount());
             }
             while (!receiver.receiveQueueEmpty()) {
                 Message message = receiver.receive();

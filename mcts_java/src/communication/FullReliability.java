@@ -2,22 +2,14 @@ package communication;
 
 import communication.messages.Message;
 
-public class FullReliability implements Reliability {
-    private static FullReliability instance = null;
-    
+public class FullReliability implements Reliability {    
     @Override
     public boolean isTransmitted(Message message) {
         return true;
     }
     
-    private FullReliability() {}
-    
-    public static FullReliability getInstance() {
-        if (instance==null) {
-            instance = new FullReliability();
-        }
-        
-        return instance;
+    @Override
+    public FullReliability clone() {
+        return new FullReliability();
     }
-
 }

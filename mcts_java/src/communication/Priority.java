@@ -26,10 +26,4 @@ public enum Priority {
         lowest2highest.add(HIGH);
         lowest2highest.add(HIGHEST);
     }
-    
-    boolean lt(Priority p) { return this.ordinal()>p.ordinal(); }
-    boolean le(Priority p) { return this.ordinal()>=p.ordinal(); }
-    boolean eq(Priority p) { return this.ordinal()==p.ordinal(); }
-    boolean gt(Priority p) { return !le(p); }
-    boolean ge(Priority p) { return !lt(p); }
 }

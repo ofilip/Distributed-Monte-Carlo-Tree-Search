@@ -8,7 +8,7 @@ import utils.VirtualTimer;
 public class Network {
     private long channel_transmission_speed;
     private VirtualTimer timer;
-    Map<String, Channel> channels = new HashMap<String, Channel>();
+    private Map<String, Channel> channels = new HashMap<String, Channel>();
     
     public Network(long channel_transmission_speed) {
         this(channel_transmission_speed, SystemTimer.instance);

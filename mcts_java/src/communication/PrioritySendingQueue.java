@@ -7,7 +7,7 @@ import java.util.LinkedList;
 public class PrioritySendingQueue {
     private EnumMap<Priority, LinkedList<Message>> queues = new EnumMap<Priority, LinkedList<Message>>(Priority.class);
     private long buffer_size;
-    public long size = 0;
+    public long count = 0;
     public long length = 0;
     
     {
@@ -21,16 +21,16 @@ public class PrioritySendingQueue {
     }
     
     public long bufferSize() { return buffer_size; }
-    public long size() { return size(); }
-    public boolean isEmpty() { return size==0; }
-    public long length() { return length(); }
+    public long itemsCount() { return count; }
+    public boolean isEmpty() { return count==0; }
+    public long length() { return length; }
     
     public Message removeFirst() {
-        if (size==0) return null;
+        if (count==0) return null;
         for (LinkedList<Message> queue: queues.values()) {
             if (!queue.isEmpty()) {
                 Message m = queue.removeFirst();
-                size--;
+                count--;
                 length -= m.length();
                 return m;
             }
@@ -41,12 +41,12 @@ public class PrioritySendingQueue {
     }
     
     private Message removeLast() {
-        if (size==0) return null;
+        if (count==0) return null;
         for (Priority p: Priority.lowest2highest) {
             LinkedList<Message> queue = queues.get(p);
             if (!queue.isEmpty()) {
-                Message m = queue.removeFirst();
-                size--;
+                Message m = queue.removeLast();
+                count--;
                 length -= m.length();
                 return m;
             }
@@ -64,14 +64,14 @@ public class PrioritySendingQueue {
     
     public void add(Priority priority, Message message) {
         length += message.length();
-        size++;
+        count++;
         queues.get(priority).add(message);
         checkFullness();
     }
     
     public void addFirst(Priority priority, Message message) {
         length += message.length();
-        size++;
+        count++;
         queues.get(priority).addFirst(message);
         checkFullness();
     }    
@@ -79,6 +79,8 @@ public class PrioritySendingQueue {
     public void clear() {
         for (LinkedList<Message> queue: queues.values()) {
             queue.clear();
+            length = 0;
+            count = 0;
         }
     }
 }

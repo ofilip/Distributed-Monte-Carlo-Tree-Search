@@ -9,13 +9,10 @@ import utils.SystemTimer;
 import utils.VirtualTimer;
 
 //TODO:
-// * bounded length of buffer
-// * priorities + sendFirst()
 // * costs of broadcast
 public class Channel implements MessageSender, MessageReceiver {
     private Network network;
     private long transmission_speed; /* bytes per second */
-    //private EnumMap<Priority,LinkedList<Message>> prioritized_sending_queue = new EnumMap<Priority,LinkedList<Message>>(Priority.class);
     private PrioritySendingQueue sending_queue;
     private LinkedList<Message> received_queue = new LinkedList<Message>();
     private Message transmitted_message = null; /* message being currently transmited, null if no transmission in progress */
@@ -45,13 +42,17 @@ public class Channel implements MessageSender, MessageReceiver {
             transmitted_message = sending_queue.removeFirst();
         }
         
+        if (transmitted_message==null) {
+            queue_millibytes_transmitted = 0;
+        }
+        
         last_transmission_time = current_time;
     }
     
     @Override
     synchronized public boolean sendQueueEmpty() {
         doTransmission();
-        return sending_queue.isEmpty();
+        return transmitted_message==null;
     }
     
     @Override
@@ -61,20 +62,21 @@ public class Channel implements MessageSender, MessageReceiver {
     }
     
     @Override
-    synchronized public long receiveQueueSize() {
+    synchronized public long receiveQueueItemsCount() {
         doTransmission();
-        long size = queue_millibytes_transmitted/1000;
-        for (Message message: received_queue) {
-            size += message.length();
-        }
-        assert size>=0;
-        return size;
+        return received_queue.size();
     }
     
     @Override
     synchronized public long receiveQueueLength() {
         doTransmission();
-        return received_queue.size();
+        
+        long size = 0;
+        for (Message message: received_queue) {
+            size += message.length();
+        }
+        return size;
+
     }            
     
     @Override
@@ -83,41 +85,42 @@ public class Channel implements MessageSender, MessageReceiver {
         return received_queue.pollFirst();
     }
     
-    synchronized private long sendQueueMillisSize() {
+    synchronized private long sendQueueMillisLength() {
         doTransmission();
-        long size = -queue_millibytes_transmitted;
+        long size = 0;
         if (transmitted_message!=null) size += transmitted_message.length();
         size += sending_queue.length();
-        assert size>=0;
-        return size;
+        return 1000*size-queue_millibytes_transmitted;
     }
     
     @Override
-    synchronized public long sendQueueSize() {
-        return sendQueueMillisSize()/1000;
+    synchronized public long sendQueueItemsCount() {
+        doTransmission();
+        return transmitted_message==null? 0: 1+sending_queue.itemsCount();
     }
     
     @Override
     synchronized public long sendQueueLength() {
-        doTransmission();
-        return sending_queue.size();
+        return (long)Math.ceil(sendQueueMillisLength()/1000.0);
     }
     
     @Override
     synchronized public double secondsToSendAll() {
-        return 1000*sendQueueMillisSize()/transmission_speed;
+        return 0.001*sendQueueMillisLength()/transmission_speed;
     }
     
     @Override
     synchronized public void send(Priority priority, Message message) {
         if (sending_queue.isEmpty()) last_transmission_time = network.timer().currentMillis(); /* reset transmission if queue is empty */
         sending_queue.add(priority, message);
+        doTransmission();
     }
     
     @Override
     synchronized public void sendFirst(Priority priority, Message message) {
         if (sending_queue.isEmpty()) last_transmission_time = network.timer().currentMillis(); /* reset transmission if queue is empty */
         sending_queue.addFirst(priority, message);
+        doTransmission();
     }
     
     public long transmissionSpeed() {

@@ -69,7 +69,7 @@ public class ExecPlayground
             
             PacmanControllerGenerator pgen_starter = StarterPacManGenerator.instance;
             
-            GhostControllerGenerator ggen_mcts = new MCTSGhostsGenerator(simulation_depth, ucb_coef, true);
+            GhostControllerGenerator ggen_mcts = new MCTSGhostsGenerator(simulation_depth, ucb_coef, false);
             GhostControllerGenerator ggen_dummy = new DummyGhostsGenerator(simulation_depth, ucb_coef);
             GhostControllerGenerator ggen_action_exchange = new JointActionExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size, 5);
             GhostControllerGenerator ggen_root_exchange = new RootExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size);
@@ -87,7 +87,7 @@ public class ExecPlayground
             
                 
 //            exec.runGameTimed(new StarterPacMan(), ggen_simulation_results_passing.ghostController(), true, true, 40, 400);
-            exec.runGameTimed(new StarterPacMan(), ggen_mcts.ghostController(), true, true, 40, 400);
+            exec.runGameTimed(new StarterPacMan(), ggen_mcts.ghostController(), true, true, 40, 100);
 //            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_dummy, 400));
 //            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_action_exchange, 400));
 //            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_root_exchange, 400));
