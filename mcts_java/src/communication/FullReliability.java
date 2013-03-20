@@ -1,15 +1,18 @@
+
 package communication;
 
 import communication.messages.Message;
 
-public class FullReliability implements Reliability {    
+public class FullReliability implements Reliability {
+
     @Override
     public boolean isTransmitted(Message message) {
-        return true;
+        throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
     @Override
-    public FullReliability clone() {
-        return new FullReliability();
+    public Reliability clone() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
+
 }

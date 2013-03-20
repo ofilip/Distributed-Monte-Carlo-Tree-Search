@@ -7,21 +7,18 @@ import utils.VirtualTimer;
 
 public class Network {
     private long channel_transmission_speed;
-    private VirtualTimer timer;
+    private VirtualTimer timer = SystemTimer.instance;
     private Map<String, Channel> channels = new HashMap<String, Channel>();
+    private Reliability reliability;
+    
     
     public Network(long channel_transmission_speed) {
-        this(channel_transmission_speed, SystemTimer.instance);
-    }
-    
-    public Network(long channel_transmission_speed, VirtualTimer timer) {
         this.timer = timer;
-        this.channel_transmission_speed = channel_transmission_speed;
     }
     
     public Channel openChannel(String name, long buffer_size) {
         if (!channels.containsKey(name)) {
-            channels.put(name, new Channel(this, name, channel_transmission_speed, buffer_size));
+            channels.put(name, new Channel(this, name, channel_transmission_speed, buffer_size, reliability.clone()));
         }
         return channels.get(name);
     }
@@ -40,6 +37,19 @@ public class Network {
     
     public VirtualTimer timer() {
         return timer;
+    }
+    
+    public void setTimer(VirtualTimer timer) {
+        if (timer==null) {
+            this.timer = SystemTimer.instance;
+        } else {
+            this.timer = timer;
+        }
+    }
+    
+    public Reliability getReliability() { return reliability; }
+    public void setReliability(Reliability reliability) {
+        this.reliability = reliability;
     }
     
     public void reset() {

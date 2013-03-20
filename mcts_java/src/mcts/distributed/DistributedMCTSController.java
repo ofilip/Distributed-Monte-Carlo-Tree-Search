@@ -30,7 +30,8 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
      * @param verbose Verbose level.
      */
     public DistributedMCTSController(long channel_transmission_speed, long channel_buffer_size, boolean verbose) {        
-        this.network = new Network(channel_transmission_speed, this);
+        this.network = new Network(channel_transmission_speed);
+        this.network.setTimer(this);
         this.verbose = verbose;
         this.channel_buffer_size = channel_buffer_size;
     }

@@ -19,13 +19,17 @@ public class Channel implements MessageSender, MessageReceiver {
     private long queue_millibytes_transmitted; /* millibytes to be transmitted from sending_queue to received_queue */
     private String name;
     private long last_transmission_time; /* time when last transmission happened */
+    private Reliability reliability;
     
-    protected Channel(Network network, String name, long transmission_speed, long buffer_size) {
+    private final static FullReliability FULL_RELIABIILTY = new FullReliability();
+    
+    protected Channel(Network network, String name, long transmission_speed, long buffer_size, Reliability reliability) {
         this.network = network;
         this.last_transmission_time = network.timer().currentMillis();
         this.name = name;
         this.transmission_speed = transmission_speed;
         this.sending_queue = new PrioritySendingQueue(buffer_size);
+        this.reliability = reliability==null? FULL_RELIABIILTY: reliability;
     }
     
     private void doTransmission() {
@@ -38,7 +42,11 @@ public class Channel implements MessageSender, MessageReceiver {
         
         while (transmitted_message!=null&&1000*transmitted_message.length()<queue_millibytes_transmitted) {
             queue_millibytes_transmitted -= 1000*transmitted_message.length();
-            received_queue.add(transmitted_message);
+            
+            if (reliability.isTransmitted(transmitted_message)) { //TODO cover with tests
+                received_queue.add(transmitted_message);
+            }
+            
             transmitted_message = sending_queue.removeFirst();
         }
         
