@@ -34,7 +34,7 @@ public class ExecPlainMCTSTest
                     sim_depth, sim_random_prob, result.getScore(), ghost_controller.simulationsPerSecond());
             System.exit(0);
         } catch (Exception ex) {
-            System.err.printf("Exception %f caught with message '%s'", ex.getClass().getSimpleName(), ex.getMessage());
+            System.err.printf("Exception %s caught with message '%s'", ex.getClass().getSimpleName(), ex.getMessage());
             System.exit(1);
         }
     }
