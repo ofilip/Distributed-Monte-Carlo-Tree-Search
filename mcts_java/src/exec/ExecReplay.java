@@ -22,8 +22,7 @@ import pacman.controllers.KeyBoardInput;
 import pacman.controllers.examples.*;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.examples.StarterPacMan;
-import pacman.entries.ghosts.MCTSGhosts;
-import pacman.entries.pacman.*;
+import mcts.entries.ghosts.MCTSGhosts;
 import pacman.game.Game;
 import pacman.game.GameView;
 
@@ -35,25 +34,25 @@ public class ExecReplay {
                 System.out.printf("Usage: %s <replay_file>\n", ExecReplay.class.getSimpleName());
                 System.exit(1);
             }
-            
+
             ExecReplay exec = new ExecReplay();
-            
+
             exec.replayGame(args[0], true);
 	}
 
 	public void replayGame(String fileName,boolean visual)
 	{
 		ArrayList<String> timeSteps=loadReplay(fileName);
-		
+
 		Game game=new Game(0);
-		
+
 		GameView gv=null;
-		
+
 		if(visual)
 			gv=new GameView(game).showGame();
-		
+
 		for(int j=0;j<timeSteps.size();j++)
-		{			
+		{
 			game.setGameState(timeSteps.get(j));
 
 			try
@@ -68,30 +67,30 @@ public class ExecReplay {
 	        	gv.repaint();
 		}
 	}
-	
+
     //load a replay
     private static ArrayList<String> loadReplay(String fileName)
 	{
     	ArrayList<String> replay=new ArrayList<String>();
-		
+
         try
-        {         	
-        	BufferedReader br=new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));	 
-            String input=br.readLine();		
-            
+        {
+        	BufferedReader br=new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
+            String input=br.readLine();
+
             while(input!=null)
             {
             	if(!input.equals(""))
             		replay.add(input);
 
-            	input=br.readLine();	
+            	input=br.readLine();
             }
         }
         catch(IOException ioe)
         {
             ioe.printStackTrace();
         }
-        
+
         return replay;
 	}
 }

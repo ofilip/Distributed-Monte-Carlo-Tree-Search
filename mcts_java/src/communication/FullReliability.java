@@ -7,12 +7,12 @@ public class FullReliability implements Reliability {
 
     @Override
     public boolean isTransmitted(Message message) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
 
     @Override
     public Reliability clone() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new FullReliability();
     }
 
 }

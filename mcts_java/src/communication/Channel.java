@@ -20,9 +20,9 @@ public class Channel implements MessageSender, MessageReceiver {
     private String name;
     private long last_transmission_time; /* time when last transmission happened */
     private Reliability reliability;
-    
+
     private final static FullReliability FULL_RELIABIILTY = new FullReliability();
-    
+
     protected Channel(Network network, String name, long transmission_speed, long buffer_size, Reliability reliability) {
         this.network = network;
         this.last_transmission_time = network.timer().currentMillis();
@@ -31,68 +31,68 @@ public class Channel implements MessageSender, MessageReceiver {
         this.sending_queue = new PrioritySendingQueue(buffer_size);
         this.reliability = reliability==null? FULL_RELIABIILTY: reliability;
     }
-    
+
     private void doTransmission() {
         long current_time = network.timer().currentMillis();
         queue_millibytes_transmitted += (current_time-last_transmission_time)*transmission_speed;
-        
+
         if (transmitted_message==null) {
             transmitted_message = sending_queue.removeFirst();
         }
-        
+
         while (transmitted_message!=null&&1000*transmitted_message.length()<queue_millibytes_transmitted) {
             queue_millibytes_transmitted -= 1000*transmitted_message.length();
-            
-            if (reliability.isTransmitted(transmitted_message)) { //TODO cover with tests
+
+//            if (reliability.isTransmitted(transmitted_message)) { //TODO cover with tests
                 received_queue.add(transmitted_message);
-            }
-            
+//            }
+
             transmitted_message = sending_queue.removeFirst();
         }
-        
+
         if (transmitted_message==null) {
             queue_millibytes_transmitted = 0;
         }
-        
+
         last_transmission_time = current_time;
     }
-    
+
     @Override
     synchronized public boolean sendQueueEmpty() {
         doTransmission();
         return transmitted_message==null;
     }
-    
+
     @Override
     synchronized public boolean receiveQueueEmpty() {
         doTransmission();
         return received_queue.isEmpty();
     }
-    
+
     @Override
     synchronized public long receiveQueueItemsCount() {
         doTransmission();
         return received_queue.size();
     }
-    
+
     @Override
     synchronized public long receiveQueueLength() {
         doTransmission();
-        
+
         long size = 0;
         for (Message message: received_queue) {
             size += message.length();
         }
         return size;
 
-    }            
-    
+    }
+
     @Override
     synchronized public Message receive() {
         doTransmission();
         return received_queue.pollFirst();
     }
-    
+
     synchronized private long sendQueueMillisLength() {
         doTransmission();
         long size = 0;
@@ -100,58 +100,58 @@ public class Channel implements MessageSender, MessageReceiver {
         size += sending_queue.length();
         return 1000*size-queue_millibytes_transmitted;
     }
-    
+
     @Override
     synchronized public long sendQueueItemsCount() {
         doTransmission();
         return transmitted_message==null? 0: 1+sending_queue.itemsCount();
     }
-    
+
     @Override
     synchronized public long sendQueueLength() {
         return (long)Math.ceil(sendQueueMillisLength()/1000.0);
     }
-    
+
     @Override
     synchronized public double secondsToSendAll() {
         return 0.001*sendQueueMillisLength()/transmission_speed;
     }
-    
+
     @Override
     synchronized public void send(Priority priority, Message message) {
         if (sending_queue.isEmpty()) last_transmission_time = network.timer().currentMillis(); /* reset transmission if queue is empty */
         sending_queue.add(priority, message);
         doTransmission();
     }
-    
+
     @Override
     synchronized public void sendFirst(Priority priority, Message message) {
         if (sending_queue.isEmpty()) last_transmission_time = network.timer().currentMillis(); /* reset transmission if queue is empty */
         sending_queue.addFirst(priority, message);
         doTransmission();
     }
-    
+
     public long transmissionSpeed() {
         return transmission_speed;
     }
-    
+
     public MessageSender sender() {
         return this;
     }
-    
+
     public MessageReceiver receiver() {
         return this;
     }
-    
+
     @Override
     public Channel channel() {
         return this;
     }
-    
+
     public String name() {
         return name;
     }
-    
+
     public void clear() {
         received_queue.clear();
         sending_queue.clear();

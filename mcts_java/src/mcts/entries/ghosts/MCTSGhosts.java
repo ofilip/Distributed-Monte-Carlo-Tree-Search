@@ -1,4 +1,4 @@
-package pacman.entries.ghosts;
+package mcts.entries.ghosts;
 
 import java.util.EnumMap;
 import mcts.Utils;
@@ -15,25 +15,25 @@ import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
-public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>> { 
+public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>> {
     public MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose) {
         super(simulation_depth, ucb_coef, verbose);
-    }      
-    
+    }
+
     public MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose, double random_simulation_move_probability) {
         super(simulation_depth, ucb_coef, verbose, random_simulation_move_probability);
-    }      
-    
+    }
+
     //TODO: remove iterations related code
     private MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose, int iterations) {
         super(simulation_depth, ucb_coef, verbose, iterations);
-    }    
-    
+    }
+
     private void initializeTree(Game game) {
-        /* (re)initialize MC-tree and its components */            
+        /* (re)initialize MC-tree and its components */
         mctree = new GhostsTree(game, ucb_selector, my_simulator, backpropagator, ucb_coef);
     }
-    
+
     @Override
     protected void updateTree(Game game) {
         if (mcTree()==null /* new game or synchronization fail */
@@ -42,16 +42,16 @@ public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>>
                 ||Utils.globalReversalHappened(game) /* accidental reversal */
                 ||last_move==null /* last getMove() didn't finish in limit */
                 ||!Utils.compareGhostsMoves(last_move, Utils.lastGhostsMoves(game))
-                ) {            
-            /* (re)initialize MC-tree and its components */            
+                ) {
+            /* (re)initialize MC-tree and its components */
             initializeTree(game);
-            
+
             /* remember current level */
             current_level = game.getCurrentLevel();
-        } else {            
+        } else {
             assert previous_game!=null;
             EnumMap<GHOST, MOVE> last_ghosts_moves = Utils.lastGhostsDecisionMoves(game, previous_game);
-            
+
             if (mcTree().root().ticksToGo()==0) {
                 initializeTree(game);
             } else {

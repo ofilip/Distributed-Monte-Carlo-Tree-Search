@@ -6,7 +6,7 @@ import pacman.controllers.Controller;
 import pacman.game.Constants;
 import pacman.game.Game;
 
-public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<M> {
+public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<M> implements IterationsCounter {
     protected T mctree = null;
     protected int current_level;
     protected Selector ucb_selector;
@@ -17,10 +17,12 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
     protected double ucb_coef;
     protected Game previous_game = null;
     protected int pacman_decision_gap = 1;
-    protected static final long MILLIS_TO_FINISH = 10;
     protected M last_move;
+    protected long total_simulations = 0;
+    protected long total_time_millis = 0;
 
-    public static final int DEFAULT_ITERATION_COUNT = 30;
+    public static final int DEFAULT_ITERATION_COUNT = 0;
+    public static final int MILLIS_TO_FINISH = 20;
 
     public MCTSController(int simulation_depth, double ucb_coef, boolean verbose) {
         this(simulation_depth, ucb_coef, verbose, DEFAULT_ITERATION_COUNT, -1);
@@ -61,8 +63,10 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
 
         /* do the iteration until time/iterations limit reached */
         do {
-            mcTree().iterate();
-        } while (++iteration_count<iterations||(System.currentTimeMillis()+MILLIS_TO_FINISH)<timeDue);
+            if (!Double.isNaN(mcTree().iterate())) {
+                iteration_count++;
+            }
+        } while (iteration_count<iterations||(System.currentTimeMillis()+MILLIS_TO_FINISH)<timeDue);
 
         /* choose pacman's next move */
         M move = mctree.bestMove(game);
@@ -86,7 +90,6 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
             /* print MC-tree if pacman (or ghosts) has to choose a move */
             if (mcTree().root().ticksToGo()==0) {
                 System.out.printf("%s", mcTree().toString(2));
-                int i = 0;
             }
         }
 
@@ -96,6 +99,13 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
         if (verbose&&timeDue - System.currentTimeMillis()<0) {
             System.err.printf("Missed turn, delay: %d ms\n", -(timeDue - System.currentTimeMillis()));
         }
+        total_time_millis += System.currentTimeMillis()-start_time;
+        total_simulations += iteration_count;
+//        System.err.printf("sims: %s, millis: %s, sps: %s\n", totalSimulations(), totalTimeMillis(), simulationsPerSecond());
         return move;
     }
+
+    public long totalTimeMillis() { return total_time_millis; }
+    public long totalSimulations() { return total_simulations; }
+    public double simulationsPerSecond() { return total_simulations/(0.001*total_time_millis); }
 }

@@ -43,8 +43,7 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
         //TODO:
         // * aggregated information passing
         // * load ballancing
-        // * move message (send prioritized)
-        // * push message at the beginning of messge queue
+        // * push message at the beginning of message queue
 
         /* Broadcast simulation results and enqueue messages before prevously enqueued simulation messages */
         SimulationResultMessage message = new SimulationResultMessage(action_list, simulation_result);
@@ -62,12 +61,13 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
 
         receiveMessages();
         double simulation_result = mctree.iterate(action_list);
-        sendMessages(action_list, simulation_result);
+        if (!Double.isNaN(simulation_result)) {
+            sendMessages(action_list, simulation_result);
+        }
     }
 
     @Override
     public MOVE getMove() {
-        //TODO: interchange move messages
         simulations_sent = 0;
         return getMoveFromMessages(received_moves);
     }

@@ -4,8 +4,8 @@ import java.util.EnumMap;
 import exec.utils.GhostControllerGenerator;
 import exec.utils.PacmanControllerGenerator;
 import pacman.controllers.Controller;
-import pacman.entries.ghosts.MCTSGhosts;
-import pacman.entries.pacman.MCTSPacman;
+import mcts.entries.ghosts.MCTSGhosts;
+import mcts.entries.pacman.MCTSPacman;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 
