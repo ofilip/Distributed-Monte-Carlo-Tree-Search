@@ -36,7 +36,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
 
     @Override public MCTree getTree() { return mctree; }
 
-    @Override public void updateTree(Game game) {
+    @Override public void updateTree(Game game) {        
         if (mctree==null /* new game or synchronization fail */
                 ||game.getCurrentLevel()!=current_level /* new level */
                 ||game.wasPacManEaten() /* pacman eaten */

@@ -7,12 +7,13 @@ import communication.Channel;
 import communication.Network;
 import java.util.EnumMap;
 import java.util.Map;
+import mcts.SimulationsStat;
 import pacman.controllers.Controller;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
-public class DistributedMCTSController<G extends GhostAgent> extends Controller<EnumMap<GHOST,MOVE>> implements VirtualTimer {
+public class DistributedMCTSController<G extends GhostAgent> extends Controller<EnumMap<GHOST,MOVE>> implements VirtualTimer, SimulationsStat {
     protected Network network;
     protected Map<GHOST, GhostAgent> agents = new EnumMap<GHOST, GhostAgent>(GHOST.class);
     protected int current_ghost = 0;
@@ -23,6 +24,8 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
     private static GHOST ghosts[] = {GHOST.BLINKY, GHOST.PINKY, GHOST.INKY, GHOST.SUE};
     protected static final long MILLIS_TO_FINISH = 20;
     private long move_number = 0;
+    
+    protected long total_time_millis = 0;
     
     /**
      * 
@@ -85,6 +88,27 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
                 System.err.printf("Missed turn, delay: %d ms\n", -(timeDue - System.currentTimeMillis()));
             }    
         }
+        
+        total_time_millis = System.currentTimeMillis() - start_time;
         return moves;
+    }
+
+    @Override
+    public long totalTimeMillis() {
+        return total_time_millis;
+    }
+
+    @Override
+    public long totalSimulations() {
+       long simulations = 0;
+        for (GhostAgent agent: agents.values()) {
+            simulations += agent.totalSimulations();
+        }
+        return simulations;
+    }
+
+    @Override
+    public double simulationsPerSecond() {
+        return totalSimulations()/(0.001*totalTimeMillis());
     }
 }

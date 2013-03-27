@@ -6,7 +6,7 @@ import pacman.controllers.Controller;
 import pacman.game.Constants;
 import pacman.game.Game;
 
-public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<M> implements IterationsCounter {
+public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<M> implements SimulationsStat {
     protected T mctree = null;
     protected int current_level;
     protected Selector ucb_selector;
@@ -53,6 +53,7 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
     protected abstract void updateTree(Game timeDue);
     protected abstract M cloneMove(M move);
 
+    @Override
     public M getMove(Game game, long timeDue) {
         /* initialize timing */
         long start_time = System.currentTimeMillis();

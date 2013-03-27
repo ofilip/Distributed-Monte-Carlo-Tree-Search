@@ -1,9 +1,9 @@
 package mcts.distributed.controller_generators;
 
+import exec.utils.GhostControllerGenerator;
 import java.util.EnumMap;
 import mcts.distributed.DistributedMCTSController;
 import mcts.distributed.agents.IndependentGhostAgent;
-import exec.utils.GhostControllerGenerator;
 import pacman.controllers.Controller;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
@@ -30,7 +30,7 @@ public class DummyGhostsGenerator implements GhostControllerGenerator {
     @Override
     @SuppressWarnings("unchecked")
     public Controller<EnumMap<GHOST, MOVE>> ghostController() {
-        DistributedMCTSController<IndependentGhostAgent> controller = new DistributedMCTSController<IndependentGhostAgent>(1, 1, true);
+        DistributedMCTSController<IndependentGhostAgent> controller = new DistributedMCTSController<IndependentGhostAgent>(1, 1, false);
         return controller.addGhostAgent(new IndependentGhostAgent(controller, GHOST.BLINKY, simulation_depth, ucb_coef, verbose))
                         .addGhostAgent(new IndependentGhostAgent(controller, GHOST.PINKY, simulation_depth, ucb_coef, verbose))
                         .addGhostAgent(new IndependentGhostAgent(controller, GHOST.INKY, simulation_depth, ucb_coef, verbose))

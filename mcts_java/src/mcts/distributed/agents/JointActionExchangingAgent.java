@@ -19,7 +19,7 @@ public class JointActionExchangingAgent extends FullMCTSGhostAgent {
     private final Map<GHOST, MoveMessage> received_moves = new EnumMap<GHOST, MoveMessage>(GHOST.class);
     private int moves_message_interval;
     private long last_message_sending_time = 0;
-
+    private long total_simulations = 0;
 
 
     public JointActionExchangingAgent(DistributedMCTSController controller, final GHOST ghost, int simulation_depth, double ucb_coef, int moves_message_interval, final VerboseLevel verbose) {
@@ -44,13 +44,20 @@ public class JointActionExchangingAgent extends FullMCTSGhostAgent {
     @Override
     public void step() {
         receiveMessages();
-        mctree.iterate();
+        if (!Double.isNaN(mctree.iterate())) {
+            total_simulations++;
+        }
         sendMessages();
     }
 
     @Override
     public MOVE getMove() {
         return getMoveFromMessages(received_moves);
+    }
+
+    @Override
+    public long totalSimulations() {
+        return total_simulations;
     }
 
 }

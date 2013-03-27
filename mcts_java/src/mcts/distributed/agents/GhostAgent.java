@@ -1,13 +1,10 @@
 package mcts.distributed.agents;
 
-import communication.messages.Message;
+import communication.Channel;
 import communication.MessageReceiver;
 import communication.MessageSender;
-import communication.Channel;
-import communication.Network;
 import communication.Priority;
-import communication.messages.MoveMessage;
-import java.util.EnumMap;
+import communication.messages.Message;
 import java.util.HashMap;
 import java.util.Map;
 import mcts.AvgBackpropagator;
@@ -15,6 +12,7 @@ import mcts.Backpropagator;
 import mcts.GuidedSimulator;
 import mcts.MCTree;
 import mcts.Selector;
+import mcts.SimulationsCounter;
 import mcts.UCBSelector;
 import mcts.distributed.DistributedMCTSController;
 import pacman.game.Constants.GHOST;
@@ -22,10 +20,11 @@ import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 import utils.VerboseLevel;
 
-public abstract class GhostAgent {
+public abstract class GhostAgent implements SimulationsCounter {
     protected interface MessageHandler {
         void handleMessage(GhostAgent agent, Message message);
     }
+    
     protected final GHOST ghost;
     protected Map<GhostAgent, MessageSender> message_senders = new HashMap<GhostAgent, MessageSender>();
     protected Map<GhostAgent, MessageReceiver> message_receivers = new HashMap<GhostAgent, MessageReceiver>();

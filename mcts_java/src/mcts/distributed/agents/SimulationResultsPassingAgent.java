@@ -19,6 +19,7 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
     private int MOVE_MESSAGE_INTERVAL = 50;
     private long simulations_sent = 0;
     private final Map<GHOST, MoveMessage> received_moves = new EnumMap<GHOST, MoveMessage>(GHOST.class);
+    private long total_simulations = 0;
 
     public SimulationResultsPassingAgent(DistributedMCTSController controller, final GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
         super(controller, ghost, simulation_depth, ucb_coef, verbose);
@@ -62,6 +63,7 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
         receiveMessages();
         double simulation_result = mctree.iterate(action_list);
         if (!Double.isNaN(simulation_result)) {
+            total_simulations++;
             sendMessages(action_list, simulation_result);
         }
     }
@@ -70,6 +72,11 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
     public MOVE getMove() {
         simulations_sent = 0;
         return getMoveFromMessages(received_moves);
+    }
+
+    @Override
+    public long totalSimulations() {
+        return total_simulations;
     }
 
 }

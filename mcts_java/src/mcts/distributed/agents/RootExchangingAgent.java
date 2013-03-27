@@ -19,6 +19,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
     private Map<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>> received_roots = new EnumMap<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>>(GHOST.class);
     private IntervalHistory interval_history = new IntervalHistory(5);
     private long last_message_sending_time = 0;
+    private long total_simulations;
 
     public RootExchangingAgent(DistributedMCTSController controller, final GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
         super(controller, ghost, simulation_depth, ucb_coef, verbose);
@@ -81,7 +82,9 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
     @Override
     public void step() {
         receiveMessages();
-        mctree.iterate();
+        if (!Double.isNaN(mctree.iterate())) {
+            total_simulations++;
+        }
         sendMessages();
     }
 
@@ -144,6 +147,11 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         }
 
         return best_ghost_move==null? MOVE.NEUTRAL: best_ghost_move.get(this.ghost);
+    }
+
+    @Override
+    public long totalSimulations() {
+        return total_simulations;
     }
 
 }
