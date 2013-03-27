@@ -2,7 +2,7 @@ package mcts.distributed.controller_generators;
 
 import java.util.EnumMap;
 import mcts.distributed.DistributedMCTSController;
-import mcts.distributed.agents.IndependentGhostAgent;
+import mcts.distributed.agents.DummyGhostAgent;
 import mcts.distributed.agents.JointActionExchangingAgent;
 import exec.utils.GhostControllerGenerator;
 import pacman.controllers.Controller;

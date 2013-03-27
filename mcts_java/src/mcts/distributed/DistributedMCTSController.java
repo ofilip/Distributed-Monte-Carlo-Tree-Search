@@ -89,7 +89,7 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
             }    
         }
         
-        total_time_millis = System.currentTimeMillis() - start_time;
+        total_time_millis += System.currentTimeMillis() - start_time;
         return moves;
     }
 

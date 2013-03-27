@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import mcts.distributed.DistributedMCTSController;
-import mcts.distributed.agents.IndependentGhostAgent;
+import mcts.distributed.agents.DummyGhostAgent;
 import mcts.distributed.agents.JointActionExchangingAgent;
 import mcts.distributed.controller_generators.DummyGhostsGenerator;
 import mcts.distributed.controller_generators.JointActionExchangingGhostsGenerator;

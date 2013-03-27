@@ -5,13 +5,13 @@ import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import utils.VerboseLevel;
 
-public class IndependentGhostAgent extends FullMCTSGhostAgent { 
+public class DummyGhostAgent extends FullMCTSGhostAgent { 
     public long total_simulations = 0;
     
-    public IndependentGhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
+    public DummyGhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
         super(controller, ghost, simulation_depth, ucb_coef, verbose);
     }
-    public IndependentGhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef) {
+    public DummyGhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef) {
         this(controller, ghost, simulation_depth, ucb_coef, VerboseLevel.QUIET);
     }
 

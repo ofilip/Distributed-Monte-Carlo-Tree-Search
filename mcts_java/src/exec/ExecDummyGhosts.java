@@ -6,7 +6,7 @@ import java.lang.reflect.Constructor;
 import java.util.EnumMap;
 import mcts.MCTSController;
 import mcts.distributed.DistributedMCTSController;
-import mcts.distributed.agents.IndependentGhostAgent;
+import mcts.distributed.agents.DummyGhostAgent;
 import mcts.distributed.controller_generators.DummyGhostsGenerator;
 import mcts.entries.ghosts.MCTSGhosts;
 import pacman.controllers.Controller;
@@ -30,7 +30,7 @@ public class ExecDummyGhosts
             Constructor pacman_constructor = pacman_class.getConstructor(new Class[]{});
             Controller<MOVE> pacman_controller = (Controller<MOVE>)pacman_constructor.newInstance(new Object[]{});
             GhostControllerGenerator ghost_generator = new DummyGhostsGenerator(sim_depth, ucb_coef);
-            DistributedMCTSController<IndependentGhostAgent> ghost_controller = (DistributedMCTSController<IndependentGhostAgent>) ghost_generator.ghostController();
+            DistributedMCTSController<DummyGhostAgent> ghost_controller = (DistributedMCTSController<DummyGhostAgent>) ghost_generator.ghostController();
             Executor exec = new Executor();
 
             Game result = exec.runGame(pacman_controller, ghost_controller, false, 40, ghost_time+MCTSController.MILLIS_TO_FINISH, false);
