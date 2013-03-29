@@ -15,20 +15,32 @@ public class PacmanTree extends MCTree<MOVE> {
         super(game, selector, simulator, backpropagator, ucb1_coef);
         root = GhostsNode.createRoot(this, game);
     }
-    
+
     @Override
     public MOVE bestMove(Game current_game) {
         MCNode node = root;
-        
+
         /* skip ghosts decisions */
         while (node.ghostsOnTurn()&&node.ticks_to_go==0) {
             node = node.bestMove();
         }
-        
+
         if (node.pacmanOnTurn()&&node.ticks_to_go==0) {
             return ((PacmanNode)node.bestMove()).pacmanMove();
         } else {
             return Utils.pacmanFollowRoad(current_game);
         }
+    }
+
+    @Override
+    public boolean decisionNeeded() {
+        MCNode node = root;
+
+        /* skip ghosts decisions */
+        while (node.ghostsOnTurn()&&node.ticks_to_go==0) {
+            node = node.bestMove();
+        }
+
+        return node.pacmanOnTurn()&&node.ticks_to_go==0;
     }
 }

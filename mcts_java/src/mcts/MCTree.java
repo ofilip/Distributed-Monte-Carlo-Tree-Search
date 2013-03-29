@@ -70,6 +70,7 @@ public abstract class MCTree<M> {
     }
 
     public abstract M bestMove(Game game);
+    public abstract boolean decisionNeeded();
 
     public void moveToNode(MCNode node) {
         assert node.parent==root;

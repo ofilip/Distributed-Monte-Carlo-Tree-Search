@@ -6,7 +6,7 @@ import pacman.controllers.Controller;
 import pacman.game.Constants;
 import pacman.game.Game;
 
-public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<M> implements SimulationsStat {
+public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<M> implements SimulationsStat, TreeSimulationsStat {
     protected T mctree = null;
     protected int current_level;
     protected Selector ucb_selector;
@@ -20,6 +20,7 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
     protected M last_move;
     protected long total_simulations = 0;
     protected long total_time_millis = 0;
+    protected long decisions = 0;
 
     public static final int DEFAULT_ITERATION_COUNT = 0;
     public static final int MILLIS_TO_FINISH = 20;
@@ -103,10 +104,20 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
         total_time_millis += System.currentTimeMillis()-start_time;
         total_simulations += iteration_count;
 //        System.err.printf("sims: %s, millis: %s, sps: %s\n", totalSimulations(), totalTimeMillis(), simulationsPerSecond());
+
+        if (mctree.decisionNeeded()) {
+            decisions++;
+        }
+
         return move;
     }
 
-    public long totalTimeMillis() { return total_time_millis; }
-    public long totalSimulations() { return total_simulations; }
-    public double simulationsPerSecond() { return total_simulations/(0.001*total_time_millis); }
+    @Override public long totalTimeMillis() { return total_time_millis; }
+    @Override public long totalSimulations() { return total_simulations; }
+    @Override public double simulationsPerSecond() { return total_simulations/(0.001*total_time_millis); }
+
+    @Override public double averageDecisionSimulations() {
+        return total_simulations/(double)decisions;
+    }
+
 }
