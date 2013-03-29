@@ -1,4 +1,4 @@
-trial	pacman_class	ghost_time	ucb_coef	sim_depth	sim_random_prob	score	simulations_per_second
+trial	pacman_class	ghost_class	ghost_time	ucb_coef	sim_depth	sim_random_prob	score	simulations_per_second
 1	StarterPacMan	MCTSGhosts	40	0.4	120	1.0	2250	9704.235430
 2	StarterPacMan	MCTSGhosts	40	0.4	120	1.0	1760	9743.500782
 3	StarterPacMan	MCTSGhosts	40	0.4	120	1.0	1970	9616.340449

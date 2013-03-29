@@ -39,6 +39,7 @@ import pacman.controllers.examples.*;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.examples.StarterPacMan;
 import mcts.entries.ghosts.MCTSGhosts;
+import mcts.entries.pacman.MCTSPacman;
 import pacman.entries.ghosts.generators.GhostsGenerator;
 import pacman.entries.ghosts.generators.MCTSGhostsGenerator;
 import pacman.entries.pacman.generators.StarterPacManGenerator;
@@ -63,20 +64,20 @@ public class ExecPlayground
             //exec.runGameTimed(new StarterPacMan(), gen.ghostController(), true, true, 40, 1000);
             //exec.runGameTimed(new StarterPacMan(), new MCTSGhosts(200, 0.7, true), true, true, 40, 200);
             final int simulation_depth = 120;
-            final double ucb_coef = 0.7;
+            final double ucb_coef = 0.3;
             final long channel_transmission_speed = 10000;
             final long channel_buffer_size = 30*channel_transmission_speed; /* buffer size = 30 seconds */
-
-            PacmanControllerGenerator pgen_starter = StarterPacManGenerator.instance;
-
-            GhostControllerGenerator ggen_mcts = new MCTSGhostsGenerator(simulation_depth, ucb_coef, false);
-            GhostControllerGenerator ggen_dummy = new DummyGhostsGenerator(simulation_depth, ucb_coef);
-            GhostControllerGenerator ggen_action_exchange = new JointActionExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size, 5);
-            GhostControllerGenerator ggen_root_exchange = new RootExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size);
-            GhostControllerGenerator ggen_simulation_results_passing = new SimulationResultsPassingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size);
-            GhostsGenerator ggen_legacy = new GhostsGenerator(Legacy.class);
-
-            List<CompetitionOptions> options_list = new ArrayList<CompetitionOptions>();
+//
+//            PacmanControllerGenerator pgen_starter = StarterPacManGenerator.instance;
+//
+//            GhostControllerGenerator ggen_mcts = new MCTSGhostsGenerator(simulation_depth, ucb_coef, false);
+//            GhostControllerGenerator ggen_dummy = new DummyGhostsGenerator(simulation_depth, ucb_coef);
+//            GhostControllerGenerator ggen_action_exchange = new JointActionExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size, 5);
+//            GhostControllerGenerator ggen_root_exchange = new RootExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size);
+//            GhostControllerGenerator ggen_simulation_results_passing = new SimulationResultsPassingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size);
+//            GhostsGenerator ggen_legacy = new GhostsGenerator(Legacy.class);
+//
+//            List<CompetitionOptions> options_list = new ArrayList<CompetitionOptions>();
 
             //options_list.add(new CompetitionOptions(pgen_starter, 40, ggen_legacy, 40));
 //            options_list.add(new CompetitionOptions(pgen_starter, 40, ggen_mcts, 400));
@@ -88,7 +89,12 @@ public class ExecPlayground
 
 //            exec.runGameTimed(new StarterPacMan(), ggen_simulation_results_passing.ghostController(), true, true, 40, 400);
             //exec.runGameTimed(new StarterPacMan(), ggen_mcts.ghostController(), true, true, 40, 100);
-            exec.runGameTimed(new ICEP_IDDFS(), new MCTSGhosts(simulation_depth, ucb_coef, true, 1), true, true, 40, 220);
+//            exec.runGameTimed(new ICEP_IDDFS(), new MCTSGhosts(simulation_depth, ucb_coef, true, 1), true, true, 40, 220);
+
+                exec.runGameTimedRecorded(new MCTSPacman(simulation_depth, ucb_coef, true), new Legacy(), true, true, "d:/pacman_test/replay_"+System.currentTimeMillis()+".replay", 800, 40);
+//            exec.runGame(new MCTSPacman(simulation_depth, ucb_coef, true), new Legacy(), true, 800, 40, true);
+
+
 //            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_dummy, 400));
 //            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_action_exchange, 400));
 //            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_root_exchange, 400));

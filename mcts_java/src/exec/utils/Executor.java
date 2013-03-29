@@ -125,6 +125,10 @@ public class Executor
 		System.out.println(avgScore/trials);
     }
 
+        public Game runGame(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,int pacman_delay,int ghost_delay, boolean dispose_view){
+            return runGame(new Game(0), pacManController, ghostController, visual, pacman_delay, ghost_delay, dispose_view);
+        }
+
 	/**
 	 * Run a game in asynchronous mode: the game waits until a move is returned. In order to slow thing down in case
 	 * the controllers return very quickly, a time limit can be used. If fasted gameplay is required, this delay
@@ -135,9 +139,8 @@ public class Executor
 	 * @param visual Indicates whether or not to use visuals
 	 * @param delay The delay between time-steps
 	 */
-	public Game runGame(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,int pacman_delay,int ghost_delay, boolean dispose_view)
+	public Game runGame(Game game, Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,int pacman_delay,int ghost_delay, boolean dispose_view)
 	{
-		Game game=new Game(0);
 
 		GameView gv=null;
 

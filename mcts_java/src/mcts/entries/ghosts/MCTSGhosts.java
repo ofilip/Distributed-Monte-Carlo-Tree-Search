@@ -16,6 +16,10 @@ import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
 public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>> {
+    public MCTSGhosts() {
+        this(120, 0.3, false);
+    }
+
     public MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose) {
         super(simulation_depth, ucb_coef, verbose);
     }

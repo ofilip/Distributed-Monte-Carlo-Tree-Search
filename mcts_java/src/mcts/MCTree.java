@@ -1,15 +1,11 @@
 package mcts;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import mcts.Utils;
 import mcts.exceptions.InvalidActionListException;
-import pacman.game.Constants.*;
+import pacman.game.Constants.GHOST;
+import pacman.game.Constants.MOVE;
 import pacman.game.Game;
-import pacman.game.GameView;
 
 public abstract class MCTree<M> {
     Selector selector;
@@ -88,18 +84,8 @@ public abstract class MCTree<M> {
         while (root.ticks_to_go==-1) {
             MCNode next_node;
             if (root.pacmanOnTurn()) {
-                /////DEBUG////
-                if (root.child(last_pacman_move)==null) {
-                    int i = 1;
-                }
-                //////////////
                 next_node = root.child(last_pacman_move);
             } else {
-                /////DEBUG////
-                if (root.child(last_ghosts_moves)==null) {
-                    int i = 1;
-                }
-                //////////////
                 next_node = root.child(last_ghosts_moves);
             }
             next_node.expand();

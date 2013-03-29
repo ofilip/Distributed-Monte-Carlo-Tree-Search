@@ -33,7 +33,7 @@ public class ExecDummyGhosts
             DistributedMCTSController<DummyGhostAgent> ghost_controller = (DistributedMCTSController<DummyGhostAgent>) ghost_generator.ghostController();
             Executor exec = new Executor();
 
-            Game result = exec.runGame(pacman_controller, ghost_controller, false, 40, ghost_time+MCTSController.MILLIS_TO_FINISH, false);
+            Game result = exec.runGame(pacman_controller, ghost_controller, false, 40, ghost_time+DistributedMCTSController.MILLIS_TO_FINISH, false);
             System.out.printf("%s\t%s\t%s\t%s\t"
                     + "%s\t%s\t%s\t%f",
                     pacman_class.getSimpleName(), MCTSGhosts.class.getSimpleName(), ghost_time, ucb_coef,

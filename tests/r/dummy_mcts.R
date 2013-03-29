@@ -32,7 +32,7 @@ plot_data <- function(my_data) {
 	)
 }
 
-data <- read.delim("results/plain_mcts_test_20130322.txt", row.names=NULL)
+data <- read.delim("results/dummy_ghosts_test_20130327-starter.txt", row.names=NULL)
 data <- data[c("pacman_class","ghost_class","score", "ghost_time", "ucb_coef")]
 plot_data(data[data$pacman_class=="StarterPacMan",])
 

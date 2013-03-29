@@ -13,7 +13,7 @@ import utils.Pair;
 
 /**
  * Simulator guided by simplified starter controllers.
- * Simulation based on ideas (simplified) described in 
+ * Simulation based on ideas (simplified) described in
  * 'Nozomu Ikehata and Takeshi Ito: Monte-Carlo Tree Search in Ms. Pac-Man',
  * StarterPacMan and the Legacy ghosts.
  */
@@ -21,7 +21,7 @@ public class GuidedSimulator implements Simulator {
     private final static double DEFAULT_RANDOM_MOVE_PROB = 0.5;
     private final static int MIN_DISTANCE = 20;
     private final static int PILL_PROXIMITY = 15;
-    
+
     private double random_move_prob = 0.5;
     private int max_depth;
     private Random random;
@@ -29,50 +29,49 @@ public class GuidedSimulator implements Simulator {
     public static double sigm(double x) {
         return 1/(1+Math.exp(-x));
     }
-    
+
     public GuidedSimulator(int max_depth, long seed) {
         this(max_depth, seed, DEFAULT_RANDOM_MOVE_PROB);
     }
-    
+
     public GuidedSimulator(int max_depth, long seed, double random_move_probability) {
         assert(random_move_probability>=0&&random_move_probability<=1);
         this.random = new Random(seed);
         this.max_depth = max_depth;
         this.random_move_prob = random_move_probability;
     }
-    
+
     private MOVE choosePacmanMove(Game game) {
         /* Simplified strategy of StarterPacMan:
          * 1. if a ghost is too close, then pacman tries to flee
          * 2. if a blue ghost is nearby, pacman hunts it
          * 3. otherwise pacman choose random way
-         * 
+         *
          * Pacman does not reverse in the middle of path and ignores the path from which he came to the crossroad.
          * With probability of random_move_prob pacman does random move in cases 1 and 2.
          */
-        
-        
+
         /* pacman is not at crossroad => follow the path */
         if (!Utils.pacmanOnCrossroad(game)) {
             return Utils.pacmanFollowRoad(game);
         }
-        
+
         /* Perform random move with probability of random_move_prob */
         if (random.nextDouble()<random_move_prob) {
             return Utils.randomPacmanMove(game, PACMAN_REVERSAL.XROADS_ONLY, random);
         }
-        
+
         /* If any ghost is too close, try to flee */
-        int pacman_position=game.getPacmanCurrentNodeIndex();        
-        for (GHOST ghost: GHOST.values()) {            
+        int pacman_position=game.getPacmanCurrentNodeIndex();
+        for (GHOST ghost: GHOST.values()) {
             if (!game.isGhostEdible(ghost) && game.getGhostLairTime(ghost)==0) {
-                int ghost_position = game.getGhostCurrentNodeIndex(ghost);             
+                int ghost_position = game.getGhostCurrentNodeIndex(ghost);
                 if (game.getShortestPathDistance(pacman_position, ghost_position)<MIN_DISTANCE) {
                     return game.getNextMoveAwayFromTarget(pacman_position, ghost_position, DM.PATH);
                 }
             }
         }
-        
+
         /* Hunt blue ghosts */
         int min_distance = Integer.MAX_VALUE;
         int closest_edible_ghost_position = -1;
@@ -85,27 +84,27 @@ public class GuidedSimulator implements Simulator {
                     closest_edible_ghost_position = ghost_position;
                 }
             }
-        }        
+        }
         if (closest_edible_ghost_position!=-1) {
             return game.getNextMoveTowardsTarget(pacman_position,closest_edible_ghost_position,DM.PATH);
         }
-        
+
         /* play a random move otherwise */
         return Utils.randomPacmanMove(game, PACMAN_REVERSAL.XROADS_ONLY, random);
     }
-    
+
     private boolean pacmanNearPowerPill(Game game)
     {
     	int pacmanIndex=game.getPacmanCurrentNodeIndex();
     	int[] powerPillIndices=game.getActivePowerPillsIndices();
-    	
+
     	for(int i=0;i<powerPillIndices.length;i++)
     		if(game.getShortestPathDistance(powerPillIndices[i],pacmanIndex)<PILL_PROXIMITY)
     			return true;
 
         return false;
     }
-    
+
     private MOVE legacyMove(Game game, GHOST ghost) {
         int pacman_position = game.getPacmanCurrentNodeIndex();
         int ghost_position = game.getGhostCurrentNodeIndex(ghost);
@@ -120,35 +119,35 @@ public class GuidedSimulator implements Simulator {
                 dm = DM.EUCLID;
                 break;
         }
-        
+
         return game.getApproximateNextMoveAwayFromTarget(ghost_position, pacman_position, last_move, dm);
     }
-    
+
     private EnumMap<GHOST, MOVE> chooseGhostsMoves(Game game) {
         /* Ghost strategy:
          * 1. If a ghost is edible or pacman is close to the power pill, run away
          * 2. Follow the midified Legacy strategy (no random moves for SUE, see getLegacyMove())
-         * 
+         *
          * With probability of random_move_prob ghost does random move.
          */
-        
+
         EnumMap<GHOST, MOVE> ghosts_moves = new EnumMap<GHOST, MOVE>(GHOST.class);
         int pacman_position = game.getPacmanCurrentNodeIndex();
         boolean danger = pacmanNearPowerPill(game);
-        
+
         for (GHOST ghost: GHOST.values()) {
             /* skip if move is not required */
             if (!game.doesGhostRequireAction(ghost)) {
                 ghosts_moves.put(ghost, MOVE.NEUTRAL);
                 continue;
             }
-            
+
             /* with probability of random_move_prob, play a random move */
             if (random.nextDouble()<random_move_prob) {
                 ghosts_moves.put(ghost, Utils.randomGhostsMove(game, ghost, random));
                 continue;
             }
-            
+
             int ghost_position = game.getGhostCurrentNodeIndex(ghost);
             MOVE last_ghost_move = game.getGhostLastMoveMade(ghost);
             /* if ghost is edible or pacman is close to power pill, run away */
@@ -156,18 +155,18 @@ public class GuidedSimulator implements Simulator {
                 ghosts_moves.put(ghost, game.getApproximateNextMoveAwayFromTarget(ghost_position, pacman_position, last_ghost_move, DM.PATH));
                 continue;
             }
-            
+
             /* follow the Legacy strategy */
             ghosts_moves.put(ghost, legacyMove(game, ghost));
         }
-        
+
         return ghosts_moves;
     }
-    
+
     private Moves chooseMoves(Game game) {
         MOVE pacman_move = choosePacmanMove(game);
         EnumMap<GHOST, MOVE> ghosts_moves = chooseGhostsMoves(game);
-        
+
         return new Moves(pacman_move, ghosts_moves);
     }
 
@@ -197,13 +196,13 @@ public class GuidedSimulator implements Simulator {
         Game simulation = game.copy();
         int current_level = game.getCurrentLevel();
         int depth = 0;
-        
+
         while (!simulation.wasPacManEaten()&&simulation.getCurrentLevel()==current_level&&depth<max_depth) {
             Moves moves = chooseMoves(simulation);
             simulation.advanceGameWithPowerPillReverseOnly(moves.pacmans, moves.ghosts.clone());
             depth++;
         }
-        
+
         return simulation.getScore() / 3000.0;
     }
 
