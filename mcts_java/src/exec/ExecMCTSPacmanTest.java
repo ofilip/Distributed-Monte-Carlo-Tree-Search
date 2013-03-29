@@ -31,7 +31,7 @@ public class ExecMCTSPacmanTest
             Controller<EnumMap<GHOST,MOVE>> ghost_controller = (Controller<EnumMap<GHOST,MOVE>>)ghost_constructor.newInstance(new Object[]{});
             Executor exec = new Executor();
 
-            Game result = exec.runGame(pacman_controller, ghost_controller, true, pacman_time+MCTSController.MILLIS_TO_FINISH, ghost_time, false);
+            Game result = exec.runGame(pacman_controller, ghost_controller, false, pacman_time+MCTSController.MILLIS_TO_FINISH, ghost_time, false);
             System.out.printf("%s\t%s\t%s\t%s\t"
                     + "%s\t%s\t%s\t%f",
                     MCTSPacman.class.getSimpleName(), ghost_class.getSimpleName(), ghost_time, ucb_coef,
