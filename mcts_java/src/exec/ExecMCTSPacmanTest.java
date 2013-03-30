@@ -33,12 +33,13 @@ public class ExecMCTSPacmanTest
             Controller<EnumMap<GHOST,MOVE>> ghost_controller = (Controller<EnumMap<GHOST,MOVE>>)ghost_constructor.newInstance(new Object[]{});
             Executor exec = new Executor();
 
-            Game result = exec.runGame(pacman_controller, ghost_controller, true, pacman_time+MCTSController.MILLIS_TO_FINISH, ghost_time, false);
+            Game result = exec.runGame(pacman_controller, ghost_controller, false, pacman_time+MCTSController.MILLIS_TO_FINISH, ghost_time, false);
             System.out.printf("%s\t%s\t%s\t%s\t"
-                    + "%s\t%s\t%s\t%f\t%f\t%d",
+                    + "%s\t%s\t%s\t%s\t"
+                    + "%f\t%f\t%d",
                     MCTSPacman.class.getSimpleName(), ghost_class.getSimpleName(), pacman_time, ucb_coef,
-                    sim_depth, sim_random_prob, result.getScore(), pacman_controller.simulationsPerSecond(),
-                    pacman_controller.averageDecisionSimulations(), result.getTotalTime());
+                    death_weight, sim_depth, sim_random_prob, result.getScore(),
+                    pacman_controller.simulationsPerSecond(), pacman_controller.averageDecisionSimulations(), result.getTotalTime());
             System.exit(0);
         } catch (Exception ex) {
             System.err.printf("Exception %s caught with message '%s'", ex.getClass().getSimpleName(), ex.getMessage());
