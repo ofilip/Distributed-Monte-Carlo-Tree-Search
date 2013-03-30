@@ -15,7 +15,7 @@ import pacman.game.Game;
 public class ExecMCTSPacmanTest
 {
     /* usage:
-     * java -jar my.jar PACMAN_TIME GHOSTS_CLASS UCB_COEF
+     * java -jar my.jar PACMAN_TIME GHOSTS_CLASS UCB_COEF RANDOM_PROB DEATH_WEIGHT
      */
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
@@ -25,13 +25,15 @@ public class ExecMCTSPacmanTest
             Class ghost_class = Class.forName(args[1]);
             int sim_depth = 120;
             double ucb_coef = Double.parseDouble(args[2]);
+            double random_prob = Double.parseDouble(args[3]);
+            double death_weight = Double.parseDouble(args[4]);
             double sim_random_prob = 1.0;
             Constructor ghost_constructor = ghost_class.getConstructor(new Class[]{});
-            MCTSPacman pacman_controller = new MCTSPacman(sim_depth, ucb_coef, false);
+            MCTSPacman pacman_controller = new MCTSPacman(sim_depth, ucb_coef, random_prob, death_weight, false);
             Controller<EnumMap<GHOST,MOVE>> ghost_controller = (Controller<EnumMap<GHOST,MOVE>>)ghost_constructor.newInstance(new Object[]{});
             Executor exec = new Executor();
 
-            Game result = exec.runGame(pacman_controller, ghost_controller, false, pacman_time+MCTSController.MILLIS_TO_FINISH, ghost_time, false);
+            Game result = exec.runGame(pacman_controller, ghost_controller, true, pacman_time+MCTSController.MILLIS_TO_FINISH, ghost_time, false);
             System.out.printf("%s\t%s\t%s\t%s\t"
                     + "%s\t%s\t%s\t%f\t%f\t%d",
                     MCTSPacman.class.getSimpleName(), ghost_class.getSimpleName(), pacman_time, ucb_coef,

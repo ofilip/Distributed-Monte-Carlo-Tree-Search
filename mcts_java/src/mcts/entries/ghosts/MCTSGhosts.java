@@ -24,14 +24,14 @@ public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>>
         super(simulation_depth, ucb_coef, verbose);
     }
 
-    public MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose, double random_simulation_move_probability) {
-        super(simulation_depth, ucb_coef, verbose, random_simulation_move_probability);
+    public MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose, double random_simulation_move_probability, double death_weight) {
+        super(simulation_depth, ucb_coef, verbose, random_simulation_move_probability, death_weight);
     }
 
     //TODO: remove iterations related code
-    private MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose, int iterations) {
-        super(simulation_depth, ucb_coef, verbose, iterations);
-    }
+//    private MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose, int iterations, double death_weight) {
+//        super(simulation_depth, ucb_coef, verbose, iterations);
+//    }
 
     private void initializeTree(Game game) {
         /* (re)initialize MC-tree and its components */

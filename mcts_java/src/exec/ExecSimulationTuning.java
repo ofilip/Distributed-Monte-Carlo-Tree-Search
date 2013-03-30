@@ -24,7 +24,7 @@ public class ExecSimulationTuning {
         PacmanControllerGenerator pgen_starter = StarterPacManGenerator.instance;
 
         for (double random_move_prob = 0.1; random_move_prob<0.95; random_move_prob += 0.1) {
-            GhostControllerGenerator ggen = new MCTSGhostsGenerator(simulation_depth, ucb_coef, false, random_move_prob);
+            GhostControllerGenerator ggen = new MCTSGhostsGenerator(simulation_depth, ucb_coef, false, random_move_prob, 0);
             options_list.add(new CompetitionOptions(pgen_starter, 40, ggen, ghosts_delay));
         }
 

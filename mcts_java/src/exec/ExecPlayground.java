@@ -91,7 +91,7 @@ public class ExecPlayground
             //exec.runGameTimed(new StarterPacMan(), ggen_mcts.ghostController(), true, true, 40, 100);
 //            exec.runGameTimed(new ICEP_IDDFS(), new MCTSGhosts(simulation_depth, ucb_coef, true, 1), true, true, 40, 220);
 
-                exec.runGameTimedRecorded(new MCTSPacman(simulation_depth, ucb_coef, true), new Legacy(), true, true, "d:/pacman_test/replay_"+System.currentTimeMillis()+".replay", 800, 40);
+                exec.runGameTimedRecorded(new MCTSPacman(simulation_depth, ucb_coef, 1.0, 0.0, true), new Legacy(), true, true, "d:/pacman_test/replay_"+System.currentTimeMillis()+".replay", 800, 40);
 //            exec.runGame(new MCTSPacman(simulation_depth, ucb_coef, true), new Legacy(), true, 800, 40, true);
 
 

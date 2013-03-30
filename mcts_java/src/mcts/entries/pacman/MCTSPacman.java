@@ -18,13 +18,13 @@ import pacman.game.Game;
 import pacman.game.GameView;
 
 public class MCTSPacman extends MCTSController<PacmanTree, MOVE> {
-    public MCTSPacman(int simulation_depth, double ucb_coef, boolean verbose) {
-        super(simulation_depth, ucb_coef, verbose);
+    public MCTSPacman(int simulation_depth, double ucb_coef, double random_simulation_move_probability, double death_weight, boolean verbose) {
+        super(simulation_depth, ucb_coef, verbose, random_simulation_move_probability, death_weight);
     }
 
-    public MCTSPacman(int simulation_depth, double ucb_coef, boolean verbose, int iterations) {
-        super(simulation_depth, ucb_coef, verbose, iterations);
-    }
+//    public MCTSPacman(int simulation_depth, double ucb_coef, boolean verbose, int iterations) {
+//        super(simulation_depth, ucb_coef, verbose, iterations);
+//    }
 
     @Override
     protected void updateTree(Game game) {

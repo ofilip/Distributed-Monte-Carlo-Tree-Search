@@ -24,7 +24,7 @@ public class ExecPlainMCTSTest
             double sim_random_prob = 1.0;
             Constructor pacman_constructor = pacman_class.getConstructor(new Class[]{});
             Controller<MOVE> pacman_controller = (Controller<MOVE>)pacman_constructor.newInstance(new Object[]{});
-            MCTSGhosts ghost_controller = new MCTSGhosts(sim_depth, ucb_coef, false, sim_random_prob);
+            MCTSGhosts ghost_controller = new MCTSGhosts(sim_depth, ucb_coef, false, sim_random_prob, 0);
             Executor exec = new Executor();
 
             Game result = exec.runGame(pacman_controller, ghost_controller, false, 40, ghost_time+MCTSController.MILLIS_TO_FINISH, false);

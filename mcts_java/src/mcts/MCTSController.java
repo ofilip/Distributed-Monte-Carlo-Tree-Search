@@ -1,6 +1,8 @@
 package mcts;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import mcts.Utils;
 import pacman.controllers.Controller;
 import pacman.game.Constants;
@@ -19,6 +21,8 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
     protected int pacman_decision_gap = 1;
     protected M last_move;
     protected long total_simulations = 0;
+    protected long current_simulations = 0;
+    protected List<Long> decision_simulations = new ArrayList<Long>();
     protected long total_time_millis = 0;
     protected long decisions = 0;
 
@@ -29,16 +33,16 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
         this(simulation_depth, ucb_coef, verbose, DEFAULT_ITERATION_COUNT, -1);
     }
 
-    public MCTSController(int simulation_depth, double ucb_coef, boolean verbose, double random_simulation_move_probability) {
-        this(simulation_depth, ucb_coef, verbose, DEFAULT_ITERATION_COUNT, random_simulation_move_probability);
+    public MCTSController(int simulation_depth, double ucb_coef, boolean verbose, double random_simulation_move_probability, double death_weight) {
+        this(simulation_depth, ucb_coef, verbose, DEFAULT_ITERATION_COUNT, random_simulation_move_probability, death_weight);
     }
 
     //TODO: remove the constructor, iterations variable and related code
-    private MCTSController(int simulation_depth, double ucb_coef, boolean verbose, int iterations, double random_simulation_move_probability) {
+    private MCTSController(int simulation_depth, double ucb_coef, boolean verbose, int iterations, double random_simulation_move_probability, double death_weight) {
         if (random_simulation_move_probability<-0.5) {
             this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis());
         } else {
-            this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis(), random_simulation_move_probability);
+            this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis(), random_simulation_move_probability, death_weight);
         }
         this.ucb_selector = new UCBSelector(30, my_simulator);
         this.backpropagator = AvgBackpropagator.getInstance();
@@ -67,6 +71,7 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
         do {
             if (!Double.isNaN(mcTree().iterate())) {
                 iteration_count++;
+                current_simulations++;
             }
         } while (iteration_count<iterations||(System.currentTimeMillis()+MILLIS_TO_FINISH)<timeDue);
 
@@ -106,7 +111,8 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
 //        System.err.printf("sims: %s, millis: %s, sps: %s\n", totalSimulations(), totalTimeMillis(), simulationsPerSecond());
 
         if (mctree.decisionNeeded()) {
-            decisions++;
+            decision_simulations.add(current_simulations);
+            current_simulations = 0;
         }
 
         return move;
@@ -116,8 +122,10 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
     @Override public long totalSimulations() { return total_simulations; }
     @Override public double simulationsPerSecond() { return total_simulations/(0.001*total_time_millis); }
 
+
     @Override public double averageDecisionSimulations() {
-        return total_simulations/(double)decisions;
+        return total_simulations/(double)decision_simulations.size();
     }
 
+    @Override public List<Long> decisionSimulations() { return decision_simulations; }
 }
