@@ -24,7 +24,7 @@ public abstract class GhostAgent implements SimulationsCounter {
     protected interface MessageHandler {
         void handleMessage(GhostAgent agent, Message message);
     }
-    
+
     protected final GHOST ghost;
     protected Map<GhostAgent, MessageSender> message_senders = new HashMap<GhostAgent, MessageSender>();
     protected Map<GhostAgent, MessageReceiver> message_receivers = new HashMap<GhostAgent, MessageReceiver>();
@@ -40,7 +40,7 @@ public abstract class GhostAgent implements SimulationsCounter {
     public GhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
         this.controller = controller;
         this.ghost = ghost;
-        this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis()+ghost.ordinal());
+        this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis()+ghost.ordinal(), GuidedSimulator.DEFAULT_RANDOM_MOVE_PROB, GuidedSimulator.DEFAULT_DEATH_WEIGHT);
         this.ucb_selector = new UCBSelector(30, my_simulator);
         this.backpropagator = AvgBackpropagator.getInstance();
         this.ucb_coef = ucb_coef;

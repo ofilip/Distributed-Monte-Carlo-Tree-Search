@@ -9,6 +9,7 @@ import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
+import pacman.game.GameView;
 import utils.Pair;
 
 /**
@@ -19,7 +20,7 @@ import utils.Pair;
  */
 public class GuidedSimulator implements Simulator {
     public final static double DEFAULT_RANDOM_MOVE_PROB = 0.5;
-    public final static double DEFAULT_DEATH_WEIGHT = 0.2;
+    public final static double DEFAULT_DEATH_WEIGHT = 0.05;
     public final static int MIN_DISTANCE = 20;
     public final static int PILL_PROXIMITY = 15;
 
@@ -32,9 +33,9 @@ public class GuidedSimulator implements Simulator {
         return 1/(1+Math.exp(-x));
     }
 
-    public GuidedSimulator(int max_depth, long seed) {
-        this(max_depth, seed, DEFAULT_RANDOM_MOVE_PROB, DEFAULT_DEATH_WEIGHT);
-    }
+//    public GuidedSimulator(int max_depth, long seed) {
+//        this(max_depth, seed, DEFAULT_RANDOM_MOVE_PROB, DEFAULT_DEATH_WEIGHT);
+//    }
 
     public GuidedSimulator(int max_depth, long seed, double random_move_probability, double death_weight) {
         assert(random_move_probability>=0&&random_move_probability<=1);
@@ -205,6 +206,7 @@ public class GuidedSimulator implements Simulator {
             depth++;
         }
 
-        return (1-death_weight)*(simulation.getScore() / 3000.0) + death_weight*(simulation.wasPacManEaten()? 0: 1);
+
+        return (1-death_weight)*((simulation.getScore()-150*(4-simulation.getPowerPillIndices().length)) / 3000.0) + death_weight*(simulation.wasPacManEaten()? 0: 1);
     }
 }

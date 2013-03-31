@@ -45,11 +45,11 @@ public class MCTSGhostsGenerator implements GhostControllerGenerator   {
 
     @Override
     public Controller<EnumMap<GHOST,MOVE>> ghostController() {
-        if (random_simulation_move_probability<0) {
-            return new MCTSGhosts(simulation_depth, ucb_coef, verbose);
-        } else {
-            return new MCTSGhosts(simulation_depth, ucb_coef, verbose, random_simulation_move_probability, death_weight);
-        }
+//        if (random_simulation_move_probability<0) {
+//            return new MCTSGhosts(simulation_depth, ucb_coef, verbose);
+//        } else {
+        return new MCTSGhosts(simulation_depth, ucb_coef, verbose, random_simulation_move_probability, death_weight);
+//        }
     }
 
 //    public MCTSGhosts ghostController(double random_simulation_move_probability) {

@@ -17,12 +17,12 @@ import pacman.game.Game;
 
 public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>> {
     public MCTSGhosts() {
-        this(120, 0.3, false);
+        this(120, 0.3, false, GuidedSimulator.DEFAULT_RANDOM_MOVE_PROB, GuidedSimulator.DEFAULT_DEATH_WEIGHT);
     }
 
-    public MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose) {
-        super(simulation_depth, ucb_coef, verbose);
-    }
+//    public MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose) {
+//        super(simulation_depth, ucb_coef, verbose);
+//    }
 
     public MCTSGhosts(int simulation_depth, double ucb_coef, boolean verbose, double random_simulation_move_probability, double death_weight) {
         super(simulation_depth, ucb_coef, verbose, random_simulation_move_probability, death_weight);

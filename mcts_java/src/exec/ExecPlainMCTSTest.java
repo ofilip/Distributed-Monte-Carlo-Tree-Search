@@ -12,22 +12,24 @@ import pacman.game.Game;
 public class ExecPlainMCTSTest
 {
     /* usage:
-     * java -jar my.jar PACMAN_CLASS GHOST_TIME UCB_COEF
+     * java -jar my.jar PACMAN_CLASS GHOST_TIME SIMULATION_DEPTH UCB_COEF
      */
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
             Class pacman_class = Class.forName(args[0]);
             int ghost_time = Integer.parseInt(args[1]);
-            int sim_depth = 120;
-            double ucb_coef = Double.parseDouble(args[2]);
+            int sim_depth = Integer.parseInt(args[2]);
+            double ucb_coef = Double.parseDouble(args[3]);
             double sim_random_prob = 1.0;
             Constructor pacman_constructor = pacman_class.getConstructor(new Class[]{});
             Controller<MOVE> pacman_controller = (Controller<MOVE>)pacman_constructor.newInstance(new Object[]{});
-            MCTSGhosts ghost_controller = new MCTSGhosts(sim_depth, ucb_coef, false, sim_random_prob, 0);
+            MCTSGhosts ghost_controller = new MCTSGhosts(sim_depth, ucb_coef, true, sim_random_prob, 0);
             Executor exec = new Executor();
 
-            Game result = exec.runGame(pacman_controller, ghost_controller, false, 40, ghost_time+MCTSController.MILLIS_TO_FINISH, false);
+            Game game = new Game(System.currentTimeMillis());
+            game.random_reversal = false;
+            Game result = exec.runGame(game, pacman_controller, ghost_controller, true, 40, ghost_time+MCTSController.MILLIS_TO_FINISH, false);
             System.out.printf("%s\t%s\t%s\t%s\t"
                     + "%s\t%s\t%s\t%f",
                     pacman_class.getSimpleName(), MCTSGhosts.class.getSimpleName(), ghost_time, ucb_coef,

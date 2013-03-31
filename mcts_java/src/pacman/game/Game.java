@@ -37,9 +37,11 @@ import static pacman.game.Constants.*;
 public final class Game
 {
     ////// MY CUSTOM METHODS FOR MANIPULATING OF THE OBJECT //////
-    public PacMan getPacman() { return pacman; }
-    public Ghost getGhost(GHOST ghost) { return ghosts.get(ghost); }
-    
+    public PacMan xGetPacman() { return pacman; }
+    public Ghost xGetGhost(GHOST ghost) { return ghosts.get(ghost); }
+    public BitSet xGetPills() { return pills; }
+    public BitSet xGetPowerPills() { return powerPills; }
+
 
 
     //////////////////////////////////////////////////////////////
@@ -54,7 +56,7 @@ public final class Game
 	protected PacMan pacman;
 	protected EnumMap<GHOST, Ghost> ghosts;
 
-        protected boolean random_reversal = true;
+        public boolean random_reversal = true;
 
 	//mazes are only loaded once since they don't change over time
 	protected static Maze[] mazes=new Maze[NUM_MAZES];;

@@ -402,11 +402,13 @@ following section.
 We will briefly describe measures used in comparisons of parallel MCTS algorithms described in
 following sections. Measures are derived from \cite{Chaslot2008}.
 
-\emph{Strength} of a player $P$ choosing actions for playing a game $G$ against
+\emph{Strength} of a player choosing actions for playing a game $G$ against
 opponents $O$ (for case of multi-player game) \todo{Tady by se dalo napsat víc o tom, jak volit
 oponenty}
 is expected value of player's score at the end of the game. For experimental evaluation of the
-strength, finite set of games is played and average of scores obtained is used. For our
+strength, finite set of games is played and average
+\todo{std dev?}
+ of scores obtained is used. For our
 purposes the player is guided by MCTS-based algorithm. Its strength is dependent on time $T$
 provided to the algorithm for computation. In case of parallel MCTS algorithms, each thread has
 time $T$ for computation. Since parallel algorithms run in multiple threads, each having same

@@ -29,9 +29,9 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
     public static final int DEFAULT_ITERATION_COUNT = 0;
     public static final int MILLIS_TO_FINISH = 20;
 
-    public MCTSController(int simulation_depth, double ucb_coef, boolean verbose) {
-        this(simulation_depth, ucb_coef, verbose, DEFAULT_ITERATION_COUNT, -1);
-    }
+//    public MCTSController(int simulation_depth, double ucb_coef, boolean verbose) {
+//        this(simulation_depth, ucb_coef, verbose, DEFAULT_ITERATION_COUNT, -1);
+//    }
 
     public MCTSController(int simulation_depth, double ucb_coef, boolean verbose, double random_simulation_move_probability, double death_weight) {
         this(simulation_depth, ucb_coef, verbose, DEFAULT_ITERATION_COUNT, random_simulation_move_probability, death_weight);
@@ -39,11 +39,11 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
 
     //TODO: remove the constructor, iterations variable and related code
     private MCTSController(int simulation_depth, double ucb_coef, boolean verbose, int iterations, double random_simulation_move_probability, double death_weight) {
-        if (random_simulation_move_probability<-0.5) {
-            this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis());
-        } else {
+//        if (random_simulation_move_probability<-0.5) {
+//            this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis());
+//        } else {
             this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis(), random_simulation_move_probability, death_weight);
-        }
+//        }
         this.ucb_selector = new UCBSelector(30, my_simulator);
         this.backpropagator = AvgBackpropagator.getInstance();
         this.iterations = iterations;
@@ -91,8 +91,10 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
         /* print information about move */
         if (verbose) {
             double computation_time = (System.currentTimeMillis()-start_time)/1000.0;
-            System.out.printf("MOVE INFO [node_index=%d,gap=%d]: iterations: %d, computation time: %.3f s, move: %s, tree size: %d\n",
-                    game.getPacmanCurrentNodeIndex(), pacman_decision_gap, iteration_count, computation_time, move, mcTree().size());
+            int pacman_pos = game.getPacmanCurrentNodeIndex();
+            System.out.printf("MOVE INFO [node_index=%d[%d;%d],gap=%d]: iterations: %d, computation time: %.3f s, move: %s, tree size: %d\n",
+                    pacman_pos, game.getNodeXCood(pacman_pos), game.getNodeYCood(pacman_pos),
+                    pacman_decision_gap, iteration_count, computation_time, move, mcTree().size());
 
             /* print MC-tree if pacman (or ghosts) has to choose a move */
             if (mcTree().root().ticksToGo()==0) {
