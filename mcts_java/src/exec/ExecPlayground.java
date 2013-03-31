@@ -63,7 +63,7 @@ public class ExecPlayground
             //GhostControllerGenerator gen = new JointActionExchangingGhostsGenerator(200, 0.7, 10000, 10, VerboseLevel.DEBUGGING);
             //exec.runGameTimed(new StarterPacMan(), gen.ghostController(), true, true, 40, 1000);
             //exec.runGameTimed(new StarterPacMan(), new MCTSGhosts(200, 0.7, true), true, true, 40, 200);
-            final int simulation_depth = 250;
+            final int simulation_depth = 120;
             final double ucb_coef = 0.3;
             final long channel_transmission_speed = 10000;
             final long channel_buffer_size = 30*channel_transmission_speed; /* buffer size = 30 seconds */
@@ -93,10 +93,13 @@ public class ExecPlayground
             Game game = new Game(0);
 
             game.random_reversal = false;
-            //game.xGetPowerPills().clear();
+            game.xGetPowerPills().clear();
             //B - 1221
 
-            exec.runGame(game , new MCTSPacman(simulation_depth, ucb_coef, 0.3, 0.1, true), new StarterGhosts(), true, 250, 40, true);
+            //exec.runGame(game , new MCTSPacman(simulation_depth, ucb_coef, 0.3, 0.1, true), new StarterGhosts(), true, 250, 40, true);
+            //exec.runGameTimedRecorded(game, new ICEP_IDDFS(), new MCTSGhosts(200, 0.3, true, 1, 0.5), true, false, "d:/pacman_test/ghost_test_"+System.currentTimeMillis()+".replay", 40, 500);
+            exec.runGame(game, new MCTSPacman(simulation_depth, ucb_coef, 0.2, 0.3, true), new StarterGhosts(), true, 200, 40, true);
+
 //            exec.runGame(new MCTSPacman(simulation_depth, ucb_coef, true), new Legacy(), true, 800, 40, true);
 
 

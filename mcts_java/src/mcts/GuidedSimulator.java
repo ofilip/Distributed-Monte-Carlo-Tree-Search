@@ -24,6 +24,16 @@ public class GuidedSimulator implements Simulator {
     public final static int MIN_DISTANCE = 20;
     public final static int PILL_PROXIMITY = 15;
 
+    public final static int[] MAX_SCORES = new int[4];
+    public final static int[] MAX_PILLS = new int[4];
+
+    static {
+        for (int i=0; i<4; i++) {
+            Game game = new Game(0, i);
+            MAX_SCORES[i] = 12000 + 200 + 10*game.getPillIndices().length;
+        }
+    }
+
     private double random_move_prob = 0.5;
     private int max_depth;
     private Random random;
@@ -42,6 +52,7 @@ public class GuidedSimulator implements Simulator {
         this.random = new Random(seed);
         this.max_depth = max_depth;
         this.random_move_prob = random_move_probability;
+        this.death_weight = death_weight;
     }
 
     private MOVE choosePacmanMove(Game game) {
@@ -196,6 +207,9 @@ public class GuidedSimulator implements Simulator {
 
     @Override
     public double simulate(Game game) {
+        int max_score = MAX_SCORES[game.getCurrentLevel()];
+        int max_pills = game.getNumberOfPills();
+
         Game simulation = game.copy();
         int current_level = game.getCurrentLevel();
         int depth = 0;
@@ -206,7 +220,8 @@ public class GuidedSimulator implements Simulator {
             depth++;
         }
 
+        int curr_pills = simulation.getNumberOfActivePills();
 
-        return (1-death_weight)*((simulation.getScore()-150*(4-simulation.getPowerPillIndices().length)) / 3000.0) + death_weight*(simulation.wasPacManEaten()? 0: 1);
+        return (1-death_weight)*((simulation.getScore()) / (double)max_score) + death_weight*(1)*(simulation.wasPacManEaten()? 0: 1);
     }
 }

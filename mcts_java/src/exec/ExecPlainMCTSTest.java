@@ -12,7 +12,7 @@ import pacman.game.Game;
 public class ExecPlainMCTSTest
 {
     /* usage:
-     * java -jar my.jar PACMAN_CLASS GHOST_TIME SIMULATION_DEPTH UCB_COEF
+     * java -jar my.jar PACMAN_CLASS GHOST_TIME SIMULATION_DEPTH UCB_COEF DEATH_WEIGHT
      */
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
@@ -21,6 +21,7 @@ public class ExecPlainMCTSTest
             int ghost_time = Integer.parseInt(args[1]);
             int sim_depth = Integer.parseInt(args[2]);
             double ucb_coef = Double.parseDouble(args[3]);
+            double death_weight = Double.parseDouble(args[4]);
             double sim_random_prob = 1.0;
             Constructor pacman_constructor = pacman_class.getConstructor(new Class[]{});
             Controller<MOVE> pacman_controller = (Controller<MOVE>)pacman_constructor.newInstance(new Object[]{});

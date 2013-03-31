@@ -64,7 +64,7 @@ public class Executor
                     for (int i=1; i<=trials; i++) {
                         if (recorded) {
                             String replay_name = String.format(path+"%s-%s-%s_%s-%s_%s.replay", date_string, replay_number++, options.pacmanName(), pacman_delay, options.ghostName(), ghosts_delay);
-                            game = exec.runGameTimedRecorded(options.pacmanController(), options.ghostController(), visual, true, replay_name, pacman_delay, ghosts_delay);
+                            game = exec.runGameTimedRecorded(new Game(0), options.pacmanController(), options.ghostController(), visual, true, replay_name, pacman_delay, ghosts_delay);
                         } else {
                             game = exec.runGameTimed(options.pacmanController(), options.ghostController(), visual, true, pacman_delay, ghosts_delay);
                         }
@@ -292,8 +292,8 @@ public class Executor
 
 
 
-    public Game runGameTimedRecorded(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,boolean dispose_view, String fileName) {
-        return runGameTimedRecorded(pacManController, ghostController, visual, dispose_view, fileName, DELAY, DELAY);
+    public Game runGameTimedRecorded(Game game, Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,boolean dispose_view, String fileName) {
+        return runGameTimedRecorded(game, pacManController, ghostController, visual, dispose_view, fileName, DELAY, DELAY);
     }
 	/**
 	 * Run a game in asynchronous mode and recorded.
@@ -303,11 +303,11 @@ public class Executor
      * @param visual Whether to run the game with visuals
 	 * @param fileName The file name of the file that saves the replay
 	 */
-	public Game runGameTimedRecorded(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,boolean dispose_view, String fileName, int pacman_delay, int ghosts_delay)
+	public Game runGameTimedRecorded(Game game, Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,boolean dispose_view, String fileName, int pacman_delay, int ghosts_delay)
 	{
 		StringBuilder replay=new StringBuilder();
 
-		Game game=new Game(0);
+		//Game game=new Game(0);
 
 		GameView gv=null;
 

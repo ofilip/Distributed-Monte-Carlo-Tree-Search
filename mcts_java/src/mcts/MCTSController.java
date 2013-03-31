@@ -42,7 +42,7 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
 //        if (random_simulation_move_probability<-0.5) {
 //            this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis());
 //        } else {
-            this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis(), random_simulation_move_probability, death_weight);
+        this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis(), random_simulation_move_probability, death_weight);
 //        }
         this.ucb_selector = new UCBSelector(30, my_simulator);
         this.backpropagator = AvgBackpropagator.getInstance();
