@@ -39,6 +39,10 @@ public class Executor
         }
     }
 
+    public static void runTest() {
+
+    }
+
        static boolean verbose = true;
        public static void runCompetition(List<CompetitionOptions> options_list, int trials, boolean visual, boolean recorded, String path) {
             try {

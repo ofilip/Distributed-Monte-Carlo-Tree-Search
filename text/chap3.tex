@@ -7,7 +7,17 @@
 
 We have already reviewed the Monte-Carlo Tree Search algorithm and its parallelization in
  Chapter \ref{chap_mcts} and distributed coordination algorithms and in Chapter \ref{chap_mas}.
-
+ The purpose of this chapter is design of distributed coordination algorithms based on
+ Monte-Carlo Tree Search. Presented algorithms will work with MCTS tree kept indepentently in
+ each cooperating agent. The tree will contain full information about actions done by all
+ cooperating agents and also agents from opponent teams. This approach is supposed to be
+ appropriate for games with small number of players but with increasing of the number of
+ players, the branching factor grows and keeping full MCTS tree turns to be ineffective. The
+ tree used in distributed algorithms along with general description of common parts of the
+ algorithms are described in section \ref{sec_dmcts_common}. Before we will propose the
+ algorithms description, it is necessary to briefly discuss measures used for comparison of
+ distributed algorithms in Section \ref{sec_measures_distributed}. \todo{Popis full MCTS stromu
+ - zde nebo už v kapitole 1?}
 
 
 
@@ -43,7 +53,24 @@ MCTS calculate action. Strength measures say how strong is team guided by an alg
 
 \todo{Algoritmy s plným stromem x algoritmy inspirované DCOPy...}
 
+\subsection{Backbone of the Distributed Algorithms}
+\label{sec_dmcts_common}
+
+MCTS-based agents will iteratively build MCTS tree exactly as plain MCTS algorithm does. In
+addition before certain set of MCTS iterations, the agent receives messages from its team-mates
+and performs appropriate actions. Similarly after the set of MCTS iterations, the agent
+broadcasts messages to the others. The communicaton between agents is the point differencing
+particular distributed algorithms. We call the agent building full MCTS tree 
+
+
+
+
+
 \subsection{Independent Agents}
+
+
+
+
 \subsection{Joint Action Exchange}
 \subsection{Root Exchange}
 \subsection{Simulation Results Passing}

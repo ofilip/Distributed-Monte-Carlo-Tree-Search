@@ -28,7 +28,7 @@ player).
 \begin{defgpig}[Perfect-information game]
 
 A (finite) \textbf{perfect-information game} (in extensive form) is a tuple $G =
-(P,A\cup\{\lambda\},S=S_n\cup S_p,\chi,\rho,\sigma,u)$, where:
+(P,A\cup\{\lambda\},S=S_n\cup S_p,\chi,\sigma,u)$, where:
 
 \begin{itemize}
 
@@ -90,9 +90,34 @@ This can be simply applied to a perfect-information game. A team can be represen
 player of a perfect-information game where actions of such a player is joint-action composed of
 all actions played by team members. The second possibility how to model a team in
 perfect-information game is simply applying the definition of a team and considering players
-with the same utility.
+with the same utility. Since it is more natural concept allowing the team player to be viewed as
+independent agents, we will use this concept in our thesis. Following definition is a
+formalization of the concept.
+
+\newtheorem*{defpigt}{Definition}
+\begin{defpigt}[Perfect-information game with teams]
+
+A (finite) \textbf{perfect-information game with Teams} (in extensive form) is a tuple $G =
+(P,A\cup\{\lambda\}, S=S_n\cup S_p, \chi, \sigma, T, \tau, u)$, where:
+
+
+\begin{itemize}
+
+\item $P$, $n$, $A$, $\lambda$, $S$, $S_n$, $S_t$, $\chi$ and $\sigma$ are same as in
+perfect-information game;
+
+\item $T$ is a set of teams;
+
+\item $\tau: P \mapsto T$, assigns players to the teams; and
+
+\item $u = (u_1,\ldots,u_m)$, where $u_i: S_t \mapsto \mathbb{R}$ is a real-valued utility
+function for team $i$ on the terminal nodes $S_t$.
 
 \todo{Rozdíl mezi přístupy v předchozím odstavci, komunikace, ...}
+
+\end{itemize}
+
+\end{defpigt}
 
 
 \subsection{Communication}
