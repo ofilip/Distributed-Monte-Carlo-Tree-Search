@@ -31,7 +31,7 @@ public class ExecPlainMCTSTest
 
             Game game = new Game(System.currentTimeMillis());
             game.random_reversal = false;
-            Game result = exec.runGame(game, pacman_controller, ghost_controller, true, 40, ghost_time+MCTSController.MILLIS_TO_FINISH, false);
+            Game result = exec.runGame(game, pacman_controller, ghost_controller, false, 40, ghost_time+MCTSController.MILLIS_TO_FINISH, false);
             System.out.printf("%s\t%s\t%s\t%s\t"
                     + "%s\t%s\t%s\t%f",
                     pacman_class.getSimpleName(), MCTSGhosts.class.getSimpleName(), ghost_time, ucb_coef,
