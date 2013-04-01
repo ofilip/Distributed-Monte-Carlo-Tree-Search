@@ -207,7 +207,7 @@ public class GuidedSimulator implements Simulator {
 
     @Override
     public double simulate(Game game) {
-        int max_score = MAX_SCORES[game.getCurrentLevel()];
+        int max_score = MAX_SCORES[game.getCurrentLevel()%4];
         int max_pills = game.getNumberOfPills();
 
         Game simulation = game.copy();

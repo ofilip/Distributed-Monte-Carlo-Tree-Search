@@ -2,6 +2,7 @@ package exec;
 
 import exec.utils.Executor;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import mcts.MCTSController;
 import mcts.entries.ghosts.MCTSGhosts;
 import pacman.controllers.Controller;
@@ -15,8 +16,8 @@ public class ExecPlainMCTSTest
      * java -jar my.jar PACMAN_CLASS GHOST_TIME SIMULATION_DEPTH UCB_COEF DEATH_WEIGHT
      */
     @SuppressWarnings("unchecked")
-    public static void main(String[] args) {
-        try {
+    public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+//        try {
             Class pacman_class = Class.forName(args[0]);
             int ghost_time = Integer.parseInt(args[1]);
             int sim_depth = Integer.parseInt(args[2]);
@@ -30,15 +31,15 @@ public class ExecPlainMCTSTest
 
             Game game = new Game(System.currentTimeMillis());
             game.random_reversal = false;
-            Game result = exec.runGame(game, pacman_controller, ghost_controller, false, 40, ghost_time+MCTSController.MILLIS_TO_FINISH, false);
+            Game result = exec.runGame(game, pacman_controller, ghost_controller, true, 40, ghost_time+MCTSController.MILLIS_TO_FINISH, false);
             System.out.printf("%s\t%s\t%s\t%s\t"
                     + "%s\t%s\t%s\t%f",
                     pacman_class.getSimpleName(), MCTSGhosts.class.getSimpleName(), ghost_time, ucb_coef,
                     sim_depth, sim_random_prob, result.getScore(), ghost_controller.simulationsPerSecond());
             System.exit(0);
-        } catch (Exception ex) {
-            System.err.printf("Exception %s caught with message '%s'", ex.getClass().getSimpleName(), ex.getMessage());
-            System.exit(1);
-        }
+//        } catch (Exception ex) {
+//            System.err.printf("Exception %s caught with message '%s'", ex.getClass().getSimpleName(), ex.getMessage());
+//            System.exit(1);
+//        }
     }
 }
