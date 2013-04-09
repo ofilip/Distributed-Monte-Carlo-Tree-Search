@@ -44,7 +44,7 @@ $parent \leftarrow Parent(node)$\;
 \DontPrintSemicolon
 \caption{$MCTS(tree)$ \texttt{/* Main MCTS loop */}\label{alg_mcts}}
 \KwData{$tree$\ldots MCTS tree}
-\KwResult{$tree$ is enlarged of newly expanded nodes and results of playouts performed are added.
+\KwResult{$tree$ is enlarged by newly expanded nodes and results of playouts performed are added.
 Node representing the best evaluated position reachable by one action is returned}
 \While(\tcp*[h]{Main MCTS loop}){$EnoughTime()$}{
     $node \leftarrow Select(tree)$ \tcp*[h]{Phase 1: Selection}\;
@@ -442,7 +442,7 @@ parallelization and so we will refer to Simulations-per-Second speedup simply as
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{LeafParallelizationPlayouts(node)}
+\caption{$LeafParallelizationPlayouts(node)$}
 \label{alg_leaf_parallelization}
 \KwData{$node$\ldots a node of MCTS tree}
 \KwResult{Array of simulation resulults is returned}

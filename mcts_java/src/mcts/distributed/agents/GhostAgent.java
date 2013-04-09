@@ -40,7 +40,9 @@ public abstract class GhostAgent implements SimulationsCounter {
     public GhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
         this.controller = controller;
         this.ghost = ghost;
-        this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis()+ghost.ordinal(), GuidedSimulator.DEFAULT_RANDOM_MOVE_PROB, GuidedSimulator.DEFAULT_DEATH_WEIGHT);
+        //TODO: equal seeds for dummy ghosts
+        this.my_simulator = new GuidedSimulator(System.currentTimeMillis()+ghost.ordinal());
+        my_simulator.setMaxDepth(simulation_depth);
         this.ucb_selector = new UCBSelector(30, my_simulator);
         this.backpropagator = AvgBackpropagator.getInstance();
         this.ucb_coef = ucb_coef;

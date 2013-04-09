@@ -3,8 +3,8 @@ package pacman.controllers;
 import pacman.game.Game;
 
 /**
- * This class is the superclass of your controller. In contains the code required to run the 
- * controller as a thread. In provides numerous methods that allow the Executor to use the 
+ * This class is the superclass of your controller. In contains the code required to run the
+ * controller as a thread. In provides numerous methods that allow the Executor to use the
  * controller in various different execution modes. Your controller only needs to provide the
  * code for the getMove() method.
  *
@@ -72,7 +72,7 @@ public abstract class MyController<T> implements Runnable
 	{
 		return lastMove;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see java.lang.Runnable#run()
 	 */
@@ -93,7 +93,7 @@ public abstract class MyController<T> implements Runnable
 						e.printStackTrace();
 					}
 				}
-				
+
 				if(!threadStillRunning)
 				{
 					new Thread()
@@ -107,16 +107,16 @@ public abstract class MyController<T> implements Runnable
 						}
 					}.start();
 				}
-				
+
 				wasSignalled=false;
 			}
 		}
 	}
-	
+
 	/**
 	 * This method is used to check whether the controller computed a move since the last
 	 * update of the game.
-	 * 
+	 *
 	 * @return Whether or not the controller computed a move since the last update
 	 */
 	public final boolean hasComputed()

@@ -10,12 +10,12 @@ import pacman.game.Constants.MOVE;
 public class HumanController extends Controller<MOVE>
 {
 	public KeyBoardInput input;
-    
+
     public HumanController(KeyBoardInput input)
     {
     	this.input=input;
     }
-    
+
     public KeyBoardInput getKeyboardInput()
     {
     	return input;

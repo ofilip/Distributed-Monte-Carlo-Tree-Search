@@ -7,6 +7,7 @@ import mcts.MCTSController;
 import mcts.entries.ghosts.MCTSGhosts;
 import pacman.controllers.Controller;
 import pacman.game.Constants.MOVE;
+import pacman.game.FullGame;
 import pacman.game.Game;
 
 
@@ -27,10 +28,14 @@ public class ExecPlainMCTSTest
         double sim_random_prob = 1.0;
         Constructor pacman_constructor = pacman_class.getConstructor(new Class[]{});
         Controller<MOVE> pacman_controller = (Controller<MOVE>)pacman_constructor.newInstance(new Object[]{});
-        MCTSGhosts ghost_controller = new MCTSGhosts(sim_depth, ucb_coef, false, sim_random_prob, death_weight);
+        MCTSGhosts ghost_controller = new MCTSGhosts();
+        ghost_controller.setSimulationDepth(sim_depth);
+        ghost_controller.setUcbCoef(ucb_coef);
+        ghost_controller.setRandomSimulationMoveProbability(sim_random_prob);
+        ghost_controller.setDeathWeight(death_weight);
         Executor exec = new Executor();
 
-        Game game = new Game(System.currentTimeMillis());
+        FullGame game = new FullGame(System.currentTimeMillis());
         game.random_reversal = false;
         Game result = exec.runGame(game, pacman_controller, ghost_controller, false, 40, ghost_time+MCTSController.MILLIS_TO_FINISH, false);
         System.out.printf("%s\t%s\t%s\t%s\t"

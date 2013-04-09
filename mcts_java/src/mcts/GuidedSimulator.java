@@ -8,6 +8,7 @@ import mcts.Utils.PACMAN_REVERSAL;
 import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
+import pacman.game.FullGame;
 import pacman.game.Game;
 import pacman.game.GameView;
 import utils.Pair;
@@ -18,7 +19,7 @@ import utils.Pair;
  * 'Nozomu Ikehata and Takeshi Ito: Monte-Carlo Tree Search in Ms. Pac-Man',
  * StarterPacMan and the Legacy ghosts.
  */
-public class GuidedSimulator implements Simulator {
+public class GuidedSimulator {
     public final static double DEFAULT_RANDOM_MOVE_PROB = 0.5;
     public final static double DEFAULT_DEATH_WEIGHT = 0.05;
     public final static int MIN_DISTANCE = 20;
@@ -29,30 +30,27 @@ public class GuidedSimulator implements Simulator {
 
     static {
         for (int i=0; i<4; i++) {
-            Game game = new Game(0, i);
+            Game game = new FullGame(0, i);
             MAX_SCORES[i] = 12000 + 200 + 10*game.getPillIndices().length;
         }
     }
 
-    private double random_move_prob = 0.5;
-    private int max_depth;
+    private double randomMoveProb = 1;
+    private int maxDepth = 120;
     private Random random;
-    private double death_weight;
+    private double deathWeight = 0;
 
     public static double sigm(double x) {
         return 1/(1+Math.exp(-x));
     }
 
-//    public GuidedSimulator(int max_depth, long seed) {
-//        this(max_depth, seed, DEFAULT_RANDOM_MOVE_PROB, DEFAULT_DEATH_WEIGHT);
+//    public GuidedSimulator(int maxDepth, long seed) {
+//        this(maxDepth, seed, DEFAULT_RANDOM_MOVE_PROB, DEFAULT_DEATH_WEIGHT);
 //    }
 
-    public GuidedSimulator(int max_depth, long seed, double random_move_probability, double death_weight) {
-        assert(random_move_probability>=0&&random_move_probability<=1);
+
+    public GuidedSimulator(long seed) {
         this.random = new Random(seed);
-        this.max_depth = max_depth;
-        this.random_move_prob = random_move_probability;
-        this.death_weight = death_weight;
     }
 
     private MOVE choosePacmanMove(Game game) {
@@ -62,7 +60,7 @@ public class GuidedSimulator implements Simulator {
          * 3. otherwise pacman choose random way
          *
          * Pacman does not reverse in the middle of path and ignores the path from which he came to the crossroad.
-         * With probability of random_move_prob pacman does random move in cases 1 and 2.
+         * With probability of randomMoveProb pacman does random move in cases 1 and 2.
          */
 
         /* pacman is not at crossroad => follow the path */
@@ -70,8 +68,8 @@ public class GuidedSimulator implements Simulator {
             return Utils.pacmanFollowRoad(game);
         }
 
-        /* Perform random move with probability of random_move_prob */
-        if (random.nextDouble()<random_move_prob) {
+        /* Perform random move with probability of randomMoveProb */
+        if (random.nextDouble()<getRandomMoveProb()) {
             return Utils.randomPacmanMove(game, PACMAN_REVERSAL.XROADS_ONLY, random);
         }
 
@@ -142,7 +140,7 @@ public class GuidedSimulator implements Simulator {
          * 1. If a ghost is edible or pacman is close to the power pill, run away
          * 2. Follow the midified Legacy strategy (no random moves for SUE, see getLegacyMove())
          *
-         * With probability of random_move_prob ghost does random move.
+         * With probability of randomMoveProb ghost does random move.
          */
 
         EnumMap<GHOST, MOVE> ghosts_moves = new EnumMap<GHOST, MOVE>(GHOST.class);
@@ -156,8 +154,8 @@ public class GuidedSimulator implements Simulator {
                 continue;
             }
 
-            /* with probability of random_move_prob, play a random move */
-            if (random.nextDouble()<random_move_prob) {
+            /* with probability of randomMoveProb, play a random move */
+            if (random.nextDouble()<getRandomMoveProb()) {
                 ghosts_moves.put(ghost, Utils.randomGhostsMove(game, ghost, random));
                 continue;
             }
@@ -184,7 +182,6 @@ public class GuidedSimulator implements Simulator {
         return new Moves(pacman_move, ghosts_moves);
     }
 
-    @Override
     public Pair<MCNode,Action> nodeStep(MCNode node) {
         if (node.pacmanOnTurn()) {
             MOVE pacman_move = choosePacmanMove(node.game);
@@ -199,29 +196,66 @@ public class GuidedSimulator implements Simulator {
         }
     }
 
-    @Override
     public void gameStep(Game game) {
         Moves moves = chooseMoves(game);
         game.advanceGameWithPowerPillReverseOnly(moves.pacmans, moves.ghosts.clone());
     }
 
-    @Override
-    public double simulate(Game game) {
+    public double simulate(Game game, long startDepth) {
         int max_score = MAX_SCORES[game.getCurrentLevel()%4];
-        int max_pills = game.getNumberOfPills();
 
         Game simulation = game.copy();
         int current_level = game.getCurrentLevel();
-        int depth = 0;
+        long depth = startDepth;
 
-        while (!simulation.wasPacManEaten()&&simulation.getCurrentLevel()==current_level&&depth<max_depth) {
+        while (!simulation.wasPacManEaten()&&simulation.getCurrentLevel()==current_level&&depth<getMaxDepth()) {
             Moves moves = chooseMoves(simulation);
             simulation.advanceGameWithPowerPillReverseOnly(moves.pacmans, moves.ghosts.clone());
             depth++;
         }
 
-        int curr_pills = simulation.getNumberOfActivePills();
+        return (1-getDeathWeight())*((simulation.getScore()) / (double)max_score) + getDeathWeight()*(simulation.wasPacManEaten()? 0: 1);
+    }
 
-        return (1-death_weight)*((simulation.getScore()) / (double)max_score) + death_weight*(1)*(simulation.wasPacManEaten()? 0: 1);
+    /**
+     * @return the randomMoveProb
+     */
+    public double getRandomMoveProb() {
+        return randomMoveProb;
+    }
+
+    /**
+     * @param randomMoveProb the randomMoveProb to set
+     */
+    public void setRandomMoveProb(double randomMoveProb) {
+        this.randomMoveProb = randomMoveProb;
+    }
+
+    /**
+     * @return the maxDepth
+     */
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+
+    /**
+     * @param maxDepth the maxDepth to set
+     */
+    public void setMaxDepth(int maxDepth) {
+        this.maxDepth = maxDepth;
+    }
+
+    /**
+     * @return the deathWeight
+     */
+    public double getDeathWeight() {
+        return deathWeight;
+    }
+
+    /**
+     * @param deathWeight the deathWeight to set
+     */
+    public void setDeathWeight(double deathWeight) {
+        this.deathWeight = deathWeight;
     }
 }

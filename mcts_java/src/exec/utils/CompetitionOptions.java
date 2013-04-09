@@ -25,7 +25,7 @@ public class CompetitionOptions implements PacmanControllerGenerator, GhostContr
         this.ghosts_delay = ghosts_delay;
         this.ghost_generator = ghost_generator;
     }
-           
+
     @Override
     public Controller<Constants.MOVE> pacmanController() {
         return pacman_generator.pacmanController();
@@ -45,4 +45,4 @@ public class CompetitionOptions implements PacmanControllerGenerator, GhostContr
     @Override
     public String ghostName() { return ghost_generator.ghostName(); }
 }
-    
+

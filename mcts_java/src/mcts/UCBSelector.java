@@ -8,15 +8,15 @@ import utils.Pair;
 
 public class UCBSelector implements Selector {
     private int trial_threshold;
-    private Simulator simulator;
-    
-    public UCBSelector(int trial_threshold, Simulator simulator) {
+    private GuidedSimulator simulator;
+
+    public UCBSelector(int trial_threshold, GuidedSimulator simulator) {
         assert trial_threshold>=0;
         this.trial_threshold = trial_threshold;
         this.simulator = trial_threshold>0? simulator: null;
     }
-    
-    private Pair<MCNode,Action> best(MCNode node) {            
+
+    private Pair<MCNode,Action> best(MCNode node) {
         double best_val = Double.NEGATIVE_INFINITY;
         MCNode best = null;
 
@@ -25,7 +25,7 @@ public class UCBSelector implements Selector {
             for (MOVE move: node.pacman_children.keySet()) {
                 MCNode child = node.pacman_children.get(move);
                 double curr_val = child.ucbValue();
-                
+
                 if (curr_val>best_val) {
                     best_val = curr_val;
                     best = child;
@@ -38,7 +38,7 @@ public class UCBSelector implements Selector {
             for (EnumMap<GHOST,MOVE> move: node.ghosts_children.keySet()) {
                 MCNode child = node.ghosts_children.get(move);
                 double curr_val = child.ucbValue();
-                
+
                 if (curr_val>best_val) {
                     best_val = curr_val;
                     best = child;
@@ -48,28 +48,28 @@ public class UCBSelector implements Selector {
             return new Pair<MCNode,Action>(best, new GhostAction(best_move));
         }
     }
-    
+
     @Override
     public Pair<MCNode,Action> select(MCNode node) {
         if (node.visitCount()<trial_threshold) {
             return simulator.nodeStep(node);
-        }   
-        
+        }
+
         return best(node);
     }
 
 //    @Override
 //    public MCNode select(MCNode node, List<Action> action_list) {
 //        MCNode result = select(node);
-//        
+//
 //        if (result.isPacmanNode()) {
 //            PacmanNode pacman_result = (PacmanNode)result;
 //            action_list.add(new PacmanAction(pacman_result.pacmanMove()));
 //        } else {
 //            GhostsNode ghost_result = (GhostsNode)result;
-//            action_list.add(new GhostAction(ghost_result.ghostsMoves()));           
+//            action_list.add(new GhostAction(ghost_result.ghostsMoves()));
 //        }
-//        
+//
 //        return result;
 //    }
 }

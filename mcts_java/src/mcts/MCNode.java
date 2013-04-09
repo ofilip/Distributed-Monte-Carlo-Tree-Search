@@ -21,92 +21,98 @@ public abstract class MCNode implements UCBNode {
     /* MCTS values */
     int visit_count;
     double value;
-    
+
     int ticks_to_go;
-    
+    long totalTicks; /* ticks from original root (before any updateTree() call */
+
     protected boolean halfstep = false;
-    
+
     /* Tree links and values */
     MCTree tree;
-    MCNode parent;    
+    MCNode parent;
     Map<MOVE, PacmanNode> pacman_children = null;
     Map<EnumMap<GHOST, MOVE>, GhostsNode> ghosts_children = null;
-    int pacman_decision_gap; /* before how mant ticks happened last pacman decision */    
+    int pacman_decision_gap; /* before how mant ticks happened last pacman decision */
     DecisionCause decision_cause = DecisionCause.NONE; /* NONE for "not set" */
     boolean terminal = false;
-    
+
     /* current game state */
     Game game; /* set only iff expanded()||isRoot() */
-    
-    protected MCNode copy(MCTree tree, MCNode parent) {
-        return copy(tree, parent, -1);
-    }
-    protected abstract MCNode copy(MCTree tree, MCNode parent, long depth);
-    
-    protected MCNode(MCTree tree, MCNode node, MCNode parent, long depth) {
-        this.tree = tree;
-        this.parent = parent;
-        this.game = node.game.copy();
-        this.pacman_decision_gap = node.pacman_decision_gap;
-        this.decision_cause = node.decision_cause;
-        if (depth!=0) {
-            if (node.pacman_children!=null) {
-                this.pacman_children = new EnumMap<MOVE, PacmanNode>(MOVE.class);
-                for (Entry<MOVE, PacmanNode> e: pacman_children.entrySet()) {
-                    this.pacman_children.put(e.getKey(), (PacmanNode)e.getValue().copy(tree, this, Math.max(-1, depth-1)));
-                }
-            }
-            if (node.ghosts_children!=null) {
-                for (Entry<EnumMap<GHOST, MOVE>, GhostsNode> e: ghosts_children.entrySet()) {
-                    this.ghosts_children.put(e.getKey().clone(), (GhostsNode)e.getValue().copy(tree, this, Math.max(-1, depth-1)));
-                }
-            }
-        } else {
-            this.expand(); /* leaves should be always expanded */
-        }
-    }
-    
-    protected MCNode(MCTree tree, MCNode parent, Game game, int initial_ticks, int pacman_decision_gap) {
+
+//    protected MCNode copy(MCTree tree, MCNode parent) {
+//        return copy(tree, parent, -1);
+//    }
+//    protected abstract MCNode copy(MCTree tree, MCNode parent, long depth);
+
+//    protected MCNode(MCTree tree, MCNode node, MCNode parent, long depth) {
+//        this.tree = tree;
+//        this.parent = parent;
+//        this.game = node.game.copy();
+//        this.pacman_decision_gap = node.pacman_decision_gap;
+//        this.decision_cause = node.decision_cause;
+//        if (depth!=0) {
+//            if (node.pacman_children!=null) {
+//                this.pacman_children = new EnumMap<MOVE, PacmanNode>(MOVE.class);
+//                for (Entry<MOVE, PacmanNode> e: pacman_children.entrySet()) {
+//                    this.pacman_children.put(e.getKey(), (PacmanNode)e.getValue().copy(tree, this, Math.max(-1, depth-1)));
+//                }
+//            }
+//            if (node.ghosts_children!=null) {
+//                for (Entry<EnumMap<GHOST, MOVE>, GhostsNode> e: ghosts_children.entrySet()) {
+//                    this.ghosts_children.put(e.getKey().clone(), (GhostsNode)e.getValue().copy(tree, this, Math.max(-1, depth-1)));
+//                }
+//            }
+//        } else {
+//            this.expand(); /* leaves should be always expanded */
+//        }
+//    }
+
+    protected MCNode(MCTree tree, MCNode parent, Game game, int initial_ticks, int pacman_decision_gap, long totalTicks) {
         this.tree = tree;
         this.parent = parent;
         this.game = game;
         this.ticks_to_go = initial_ticks;
         this.pacman_decision_gap = pacman_decision_gap;
         this.decision_cause = DecisionCause.NONE;
+        this.totalTicks = totalTicks;
     }
-    
+
     public boolean expanded() {
         return pacman_children!=null||ghosts_children!=null;
     }
-    
+
+    public long getTotalTicks() {
+        return totalTicks;
+    }
+
     /* Returns true if expanded() and next move is Pacman's */
     public boolean pacmanOnTurn() {
         return pacman_children!=null;
     }
-    
+
     public boolean ghostsOnTurn() {
         return ghosts_children!=null;
     }
-    
+
     public int ticksToGo() {
         return ticks_to_go;
     }
-    
+
     public double simulate() {
-        return tree.simulator.simulate(game);
+        return tree.simulator.simulate(game, totalTicks);
     }
-    
+
     public void backpropagate(double reward) {
         tree.backpropagator.backpropagate(this, reward);
     }
-    
+
     public PacmanNode child(MOVE next_pacman_move) {
         if (pacman_children==null) {
             return null;
         }
         return pacman_children.get(next_pacman_move);
     }
-    
+
     public GhostsNode child(EnumMap<GHOST, MOVE> next_ghosts_moves) {
         if (ghosts_children==null) {
             return null;
@@ -121,7 +127,7 @@ public abstract class MCNode implements UCBNode {
         }
         return node;
     }
-    
+
     public MCNode child(Action action) {
         if (action.type()==Action.Type.PACMAN) {
             return child(action.pacmanMove());
@@ -129,17 +135,17 @@ public abstract class MCNode implements UCBNode {
             return child(action.ghostMove());
         }
     }
-    
+
     public MCNode parent() { return parent; }
-    
+
     public MCNode selectNext() {
         return selectNextNodeActionPair().first;
     }
-    
+
     private Pair<MCNode,Action> selectNextNodeActionPair() {
         return tree.selector.select(this);
     }
-    
+
     public MCNode select() {
         if (visit_count==0||terminal) {
             return this;
@@ -147,7 +153,7 @@ public abstract class MCNode implements UCBNode {
             return selectNext().select();
         }
     }
-    
+
     public MCNode select(List<Action> action_list) {
         if (visit_count==0||terminal) {
             return this;
@@ -161,73 +167,74 @@ public abstract class MCNode implements UCBNode {
             }
         }
     }
-    
+
     public double value() {
         return value;
     }
-    
+
     public boolean halfstep() {
         return halfstep;
     }
-    
+
     public int pacmanDecisionGap() {
         return pacman_decision_gap;
     }
-    
-    /** 
-     * Node best to play by the player 
+
+    /**
+     * Node best to play by the player
      */
     public MCNode bestMove() {
         MCNode best = null;
-        
+
         for (MCNode child: children()) {
             if (best==null||child.visitCount()>best.visitCount()) {
                 best = child;
             }
         }
-        
+
         return best;
     }
-    
+
     public boolean isRoot() {
         return parent==null;
     }
-    
+
     @Override
     public int visitCount() {
         return this.visit_count;
     }
-    
+
     public Iterable<? extends MCNode> children() {
         if (pacmanOnTurn()) {
             return pacman_children.values();
-            
+
         } else if (ghostsOnTurn()) {
             return ghosts_children.values();
         } else {
             return null;
         }
     }
-            
+
     public Game game() {
         return game;
     }
-    
+
     public DecisionCause decisionCause() {
         return decision_cause;
     }
-        
+
     protected void pacmanExpand(Decision decision) {
         MOVE[] possible_pacman_moves = decision.pacman_possible_moves;
-        assert !expanded();        
+        assert !expanded();
         pacman_children = new EnumMap<MOVE, PacmanNode>(MOVE.class);
         MOVE[] pacman_moves = possible_pacman_moves;
         decision_cause = decision.pacman_decision_cause;
         for (MOVE possible_pacman_move: pacman_moves) {
-            pacman_children.put(possible_pacman_move, PacmanNode.createUnvisitedNode(tree, this, possible_pacman_move, decision.pacman_decision_gap));
+            pacman_children.put(possible_pacman_move, PacmanNode.createUnvisitedNode(tree, this,
+                                possible_pacman_move, decision.pacman_decision_gap, totalTicks+decision.ticks));
         }
     }
-    
+
     protected void ghostsExpand(Decision decision) {
         EnumMap<GHOST, MOVE[]> possible_ghosts_moves = decision.ghosts_possible_moves;
         assert !expanded();
@@ -240,34 +247,35 @@ public abstract class MCNode implements UCBNode {
         EnumMap<GHOST, MOVE> ghosts_moves = new EnumMap<GHOST, MOVE>(GHOST.class);
         for (MOVE blinky_move: blinky_moves) {
             ghosts_moves.put(GHOST.BLINKY, blinky_move);
-            for (MOVE inky_move: inky_moves) {                 
+            for (MOVE inky_move: inky_moves) {
                 ghosts_moves.put(GHOST.INKY, inky_move);
                 for (MOVE pinky_move: pinky_moves) {
                     ghosts_moves.put(GHOST.PINKY, pinky_move);
-                    for (MOVE sue_move: sue_moves) {                        
-                        ghosts_moves.put(GHOST.SUE, sue_move);  
+                    for (MOVE sue_move: sue_moves) {
+                        ghosts_moves.put(GHOST.SUE, sue_move);
                         EnumMap<GHOST, MOVE> ground_ghosts_moves = ghosts_moves.clone();
                         Utils.decisionMoves(ground_ghosts_moves, decision.game);
-                        ghosts_children.put(ground_ghosts_moves, GhostsNode.createUnvisitedNode(tree, this, ground_ghosts_moves, decision.pacman_decision_gap));
+                        ghosts_children.put(ground_ghosts_moves, GhostsNode.createUnvisitedNode(tree, this, ground_ghosts_moves, decision.pacman_decision_gap,
+                                                                                                this.totalTicks+decision.ticks));
                     }
                 }
             }
-        }   
+        }
     }
-    
+
     protected abstract void jointExpand(Decision decision);
-    
+
     /* Advances game accordingly to the direction of all agents.
      * Player's agent uses the move from node.
      * Opponents follow their path.
      */
     abstract protected void advanceGame(Game game);
-    
+
     public final void expand() {
         if (expanded()) {
             return;
         }
-        
+
         Decision decision;
         if (game==null) {
             /* Game not set => create game by advancing game until decision is required */
@@ -281,14 +289,14 @@ public abstract class MCNode implements UCBNode {
         } else if (isRoot()) {
             decision = Decision.nextDecision(game, pacman_decision_gap, false);
         } else {
-            /* Game already set => calculate possible moves using Decision object 
+            /* Game already set => calculate possible moves using Decision object
              * This case happens only if node is created using createJointNode() */
             assert parent.halfstep;
             decision = Decision.nextDecision(game, pacman_decision_gap, true);
         }
-        
+
         if (decision.jointDecision()) {
-            
+
             jointExpand(decision);
         } else if (decision.pacmansDecision()) {
             pacmanExpand(decision);
@@ -297,19 +305,19 @@ public abstract class MCNode implements UCBNode {
             ghostsExpand(decision);
         }
     }
-    
+
     public String toString(int depth_limit) {
         return this.toString(new StringBuilder(), 0, depth_limit).toString();
     }
 
     protected abstract StringBuilder movesToString(StringBuilder result);
     protected abstract StringBuilder typeToString(StringBuilder result);
-    
+
     protected StringBuilder toString(StringBuilder result, int depth, int depth_limit)  {
         for (int i=0; i<depth; i++) {
             result.append('\t');
         }
-        
+
         result.append("[");
         typeToString(result);
         result.append("|");
@@ -332,7 +340,7 @@ public abstract class MCNode implements UCBNode {
         result.append(")");
         if (game!=null&&game.wasPacManEaten()&&!isRoot()) {
             result.append(" /pacman eaten/\n");
-        } else {        
+        } else {
             if (depth_limit<=depth&&expanded()) {
                 result.append(" /subtree hidden/\n");
             } else {
@@ -344,16 +352,16 @@ public abstract class MCNode implements UCBNode {
                 }
             }
         }
-        
-        
+
+
         return result;
     }
-    
+
     @Override
     public String toString() {
         return toString(Integer.MAX_VALUE);
     }
-    
+
     public abstract boolean isPacmanNode();
     public boolean isGhostsNode() {
         return !isPacmanNode();

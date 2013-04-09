@@ -29,7 +29,11 @@ public class ExecMCTSPacmanTest
             double death_weight = Double.parseDouble(args[4]);
             double sim_random_prob = 1.0;
             Constructor ghost_constructor = ghost_class.getConstructor(new Class[]{});
-            MCTSPacman pacman_controller = new MCTSPacman(sim_depth, ucb_coef, random_prob, death_weight, false);
+            MCTSPacman pacman_controller = new MCTSPacman();
+            pacman_controller.setSimulationDepth(sim_depth);
+            pacman_controller.setUcbCoef(ucb_coef);
+            pacman_controller.setRandomSimulationMoveProbability(random_prob);
+            pacman_controller.setDeathWeight(death_weight);
             Controller<EnumMap<GHOST,MOVE>> ghost_controller = (Controller<EnumMap<GHOST,MOVE>>)ghost_constructor.newInstance(new Object[]{});
             Executor exec = new Executor();
 

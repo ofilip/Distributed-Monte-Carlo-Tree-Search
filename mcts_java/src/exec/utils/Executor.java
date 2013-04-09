@@ -19,6 +19,7 @@ import pacman.controllers.HumanController;
 import static pacman.game.Constants.*;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
+import pacman.game.FullGame;
 import pacman.game.Game;
 import pacman.game.GameView;
 
@@ -31,69 +32,66 @@ import pacman.game.GameView;
 public class Executor
 {
     public static void warmUp() {
-        int k = 0;
-        for (int i=0; i<50000; i++) {
-            for (int j=0; j<10000; j++) {
-                k++;
-            }
+        long start_time = System.currentTimeMillis();
+
+        while (System.currentTimeMillis()-start_time<50000) {
+            for (int i=0; i<1000000; i++) {}
         }
     }
 
-    public static void runTest() {
 
-    }
 
-       static boolean verbose = true;
-       public static void runCompetition(List<CompetitionOptions> options_list, int trials, boolean visual, boolean recorded, String path) {
-            try {
-                File dir = new File(path);
-                try {
-                    new File(path).mkdirs();
-                } catch (SecurityException ex) {
-                    System.err.printf("Cannot create folder %s, operation not permitted\n", path);
-                    return;
-                }
-                Executor exec = new Executor();
-                String date_string = new SimpleDateFormat("yyMMdd-hhmmss").format(new Date());
-                PrintWriter writer = new PrintWriter(String.format(path+"results-%s.txt", date_string));                ;
-                int replay_number = 0;
-                for (CompetitionOptions options: options_list) {
-                    int pacman_delay = options.pacmanDelay();
-                    int ghosts_delay = options.ghostsDelay();
-                    long total_score = 0;
-                    long min_score = Long.MAX_VALUE;
-                    long max_score = 0;
-                    String competition_id = String.format("%s\t%s\t%s\t%s", options.pacmanName(), pacman_delay, options.ghostName(), ghosts_delay);
-                    Game game;
-                    for (int i=1; i<=trials; i++) {
-                        if (recorded) {
-                            String replay_name = String.format(path+"%s-%s-%s_%s-%s_%s.replay", date_string, replay_number++, options.pacmanName(), pacman_delay, options.ghostName(), ghosts_delay);
-                            game = exec.runGameTimedRecorded(new Game(0), options.pacmanController(), options.ghostController(), visual, true, replay_name, pacman_delay, ghosts_delay);
-                        } else {
-                            game = exec.runGameTimed(options.pacmanController(), options.ghostController(), visual, true, pacman_delay, ghosts_delay);
-                        }
-                        String result_string = String.format("%s\t%s\t%s\n", i, competition_id, game.getScore());
-                        writer.write(result_string);
-                        writer.flush();
-                        System.out.print(result_string);
-                        total_score+=game.getScore();
-                        min_score = Math.min(min_score, game.getScore());
-                        max_score = Math.max(max_score, game.getScore());
-                    }
-                    String min_string = String.format("MIN\t%s\t%s\n", competition_id, min_score);
-                    String max_string = String.format("MAX\t%s\t%s\n", competition_id, max_score);
-                    String avg_string = String.format("AVG\t%s\t%s\n", competition_id, total_score/(double)trials);
-                    String stats_string = String.format("%s%s%s", min_string, max_string, avg_string);
-
-                    writer.write(stats_string);
-                    writer.flush();
-                    System.out.print(stats_string);
-                }
-                writer.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
+//       static boolean verbose = true;
+//       public static void runCompetition(List<CompetitionOptions> options_list, int trials, boolean visual, boolean recorded, String path) {
+//            try {
+//                File dir = new File(path);
+//                try {
+//                    new File(path).mkdirs();
+//                } catch (SecurityException ex) {
+//                    System.err.printf("Cannot create folder %s, operation not permitted\n", path);
+//                    return;
+//                }
+//                Executor exec = new Executor();
+//                String date_string = new SimpleDateFormat("yyMMdd-hhmmss").format(new Date());
+//                PrintWriter writer = new PrintWriter(String.format(path+"results-%s.txt", date_string));                ;
+//                int replay_number = 0;
+//                for (CompetitionOptions options: options_list) {
+//                    int pacman_delay = options.pacmanDelay();
+//                    int ghosts_delay = options.ghostsDelay();
+//                    long total_score = 0;
+//                    long min_score = Long.MAX_VALUE;
+//                    long max_score = 0;
+//                    String competition_id = String.format("%s\t%s\t%s\t%s", options.pacmanName(), pacman_delay, options.ghostName(), ghosts_delay);
+//                    Game game;
+//                    for (int i=1; i<=trials; i++) {
+//                        if (recorded) {
+//                            String replay_name = String.format(path+"%s-%s-%s_%s-%s_%s.replay", date_string, replay_number++, options.pacmanName(), pacman_delay, options.ghostName(), ghosts_delay);
+//                            game = exec.runGameTimedRecorded(new Game(0), options.pacmanController(), options.ghostController(), visual, true, replay_name, pacman_delay, ghosts_delay);
+//                        } else {
+//                            game = exec.runGameTimed(options.pacmanController(), options.ghostController(), visual, true, pacman_delay, ghosts_delay);
+//                        }
+//                        String result_string = String.format("%s\t%s\t%s\n", i, competition_id, game.getScore());
+//                        writer.write(result_string);
+//                        writer.flush();
+//                        System.out.print(result_string);
+//                        total_score+=game.getScore();
+//                        min_score = Math.min(min_score, game.getScore());
+//                        max_score = Math.max(max_score, game.getScore());
+//                    }
+//                    String min_string = String.format("MIN\t%s\t%s\n", competition_id, min_score);
+//                    String max_string = String.format("MAX\t%s\t%s\n", competition_id, max_score);
+//                    String avg_string = String.format("AVG\t%s\t%s\n", competition_id, total_score/(double)trials);
+//                    String stats_string = String.format("%s%s%s", min_string, max_string, avg_string);
+//
+//                    writer.write(stats_string);
+//                    writer.flush();
+//                    System.out.print(stats_string);
+//                }
+//                writer.close();
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
     /**
      * For running multiple games without visuals. This is useful to get a good idea of how well a controller plays
@@ -105,32 +103,32 @@ public class Executor
      * @param ghostController The Ghosts controller
      * @param trials The number of trials to be executed
      */
-    public void runExperiment(Controller<MOVE> pacManController, Controller<EnumMap<GHOST,MOVE>> ghostController, int trials)
-    {
-    	double avgScore=0;
-
-    	Random rnd=new Random(0);
-		Game game;
-
-		for(int i=0;i<trials;i++)
-		{
-			game=new Game(rnd.nextLong());
-
-			while(!game.gameOver())
-			{
-		        game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()+DELAY),
-		        		ghostController.getMove(game.copy(),System.currentTimeMillis()+DELAY));
-			}
-
-			avgScore+=game.getScore();
-			System.out.println(i+"\t"+game.getScore());
-		}
-
-		System.out.println(avgScore/trials);
-    }
+//    public void runExperiment(Controller<MOVE> pacManController, Controller<EnumMap<GHOST,MOVE>> ghostController, int trials)
+//    {
+//    	double avgScore=0;
+//
+//    	Random rnd=new Random(0);
+//		Game game;
+//
+//		for(int i=0;i<trials;i++)
+//		{
+//			game=new Game(rnd.nextLong());
+//
+//			while(!game.gameOver())
+//			{
+//		        game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()+DELAY),
+//		        		ghostController.getMove(game.copy(),System.currentTimeMillis()+DELAY));
+//			}
+//
+//			avgScore+=game.getScore();
+//			System.out.println(i+"\t"+game.getScore());
+//		}
+//
+//		System.out.println(avgScore/trials);
+//    }
 
         public Game runGame(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,int pacman_delay,int ghost_delay, boolean dispose_view){
-            return runGame(new Game(0), pacManController, ghostController, visual, pacman_delay, ghost_delay, dispose_view);
+            return runGame(new FullGame(0), pacManController, ghostController, visual, pacman_delay, ghost_delay, dispose_view);
         }
 
 	/**
@@ -185,7 +183,7 @@ public class Executor
      */
     public Game runGameTimed(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual, boolean dispose_view, int pacman_delay, int ghosts_delay)
 	{
-		Game game=new Game(0);
+		Game game=new FullGame(0);
 
 		GameView gv=null;
 
@@ -242,7 +240,7 @@ public class Executor
      */
     public Game runGameTimedSpeedOptimised(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean fixedTime,boolean visual, int delay)
  	{
- 		Game game=new Game(0);
+ 		Game game=new FullGame(0);
 
  		GameView gv=null;
 
@@ -368,7 +366,7 @@ public class Executor
 	{
 		ArrayList<String> timeSteps=loadReplay(fileName);
 
-		Game game=new Game(0);
+		Game game=new FullGame(0);
 
 		GameView gv=null;
 

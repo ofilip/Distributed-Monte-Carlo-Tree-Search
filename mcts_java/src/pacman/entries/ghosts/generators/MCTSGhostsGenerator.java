@@ -48,7 +48,13 @@ public class MCTSGhostsGenerator implements GhostControllerGenerator   {
 //        if (random_simulation_move_probability<0) {
 //            return new MCTSGhosts(simulation_depth, ucb_coef, verbose);
 //        } else {
-        return new MCTSGhosts(simulation_depth, ucb_coef, verbose, random_simulation_move_probability, death_weight);
+        MCTSGhosts ghosts = new MCTSGhosts();
+        ghosts.setSimulationDepth(simulation_depth);
+        ghosts.setUcbCoef(ucb_coef);
+        ghosts.setVerbose(verbose);
+        ghosts.setRandomSimulationMoveProbability(random_simulation_move_probability);
+        ghosts.setDeathWeight(death_weight);
+        return ghosts;
 //        }
     }
 

@@ -6,6 +6,7 @@ import exec.utils.GhostControllerGenerator;
 import communication.messages.Message;
 import exec.utils.CompetitionOptions;
 import exec.utils.Executor;
+import exec.utils.Experiment;
 import exec.utils.GhostControllerGenerator;
 import exec.utils.PacmanControllerGenerator;
 import java.io.BufferedReader;
@@ -47,84 +48,24 @@ import pacman.game.Game;
 import pacman.game.GameView;
 
 import static pacman.game.Constants.*;
+import pacman.game.FullGame;
 import utils.VerboseLevel;
 
-/**
- * This class may be used to execute the game in timed or un-timed modes, with or without
- * visuals. Competitors should implement their controllers in game.entries.ghosts and
- * game.entries.pacman respectively. The skeleton classes are already provided. The package
- * structure should not be changed (although you may create sub-packages in these packages).
- */
-public class ExecPlayground
-{
-	public static void main(String[] args) throws NoSuchMethodException	{
-            Executor exec = new Executor();
-//            GhostControllerGenerator gen = new RootExchangingGhostsGenerator(200, 0.7, 10000, VerboseLevel.QUIET);
-            //GhostControllerGenerator gen = new JointActionExchangingGhostsGenerator(200, 0.7, 10000, 10, VerboseLevel.DEBUGGING);
-            //exec.runGameTimed(new StarterPacMan(), gen.ghostController(), true, true, 40, 1000);
-            //exec.runGameTimed(new StarterPacMan(), new MCTSGhosts(200, 0.7, true), true, true, 40, 200);
-            final int simulation_depth = 120;
-            final double ucb_coef = 0.3;
-            final long channel_transmission_speed = 10000;
-            final long channel_buffer_size = 30*channel_transmission_speed; /* buffer size = 30 seconds */
+
+public class ExecPlayground {
+
+    public static void main(String[] args) throws NoSuchMethodException	{
+//        Controller<MOVE> pacmanController = new ICEP_IDDFS();
+//        Controller<EnumMap<GHOST,MOVE>> ghostController = new MCTSGhosts(120, 0.3, true, 1, 0);
+//        ghostController.set
 //
-//            PacmanControllerGenerator pgen_starter = StarterPacManGenerator.instance;
-//
-//            GhostControllerGenerator ggen_mcts = new MCTSGhostsGenerator(simulation_depth, ucb_coef, false);
-//            GhostControllerGenerator ggen_dummy = new DummyGhostsGenerator(simulation_depth, ucb_coef);
-//            GhostControllerGenerator ggen_action_exchange = new JointActionExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size, 5);
-//            GhostControllerGenerator ggen_root_exchange = new RootExchangingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size);
-//            GhostControllerGenerator ggen_simulation_results_passing = new SimulationResultsPassingGhostsGenerator(simulation_depth, ucb_coef, channel_transmission_speed, channel_buffer_size);
-//            GhostsGenerator ggen_legacy = new GhostsGenerator(Legacy.class);
-//
-//            List<CompetitionOptions> options_list = new ArrayList<CompetitionOptions>();
+//        Experiment experiment = new Experiment();
+//        experiment.setPacmanController(pacmanController);
+//        experiment.setGhostController(ghostController);
+//        experiment.setVisual(true);
+//        experiment.setGhostDelay(250);
+//        experiment.execute();
+    }
 
-            //options_list.add(new CompetitionOptions(pgen_starter, 40, ggen_legacy, 40));
-//            options_list.add(new CompetitionOptions(pgen_starter, 40, ggen_mcts, 400));
-//            options_list.add(new CompetitionOptions(pgen_starter, 40, ggen_dummy, 400));
-//            options_list.add(new CompetitionOptions(pgen_starter, 40, ggen_simulation_results_passing, 400));
-//
-//            runCompetition(options_list, 10, false, false, "d:\\pacman_test\\1\\");
-
-
-//            exec.runGameTimed(new StarterPacMan(), ggen_simulation_results_passing.ghostController(), true, true, 40, 400);
-            //exec.runGameTimed(new StarterPacMan(), ggen_mcts.ghostController(), true, true, 40, 100);
-//            exec.runGameTimed(new ICEP_IDDFS(), new MCTSGhosts(simulation_depth, ucb_coef, true, 1), true, true, 40, 220);
-            Game game = new Game(0);
-
-            game.random_reversal = false;
-            game.xGetPowerPills().clear();
-            //B - 1221
-
-            //exec.runGame(game , new MCTSPacman(simulation_depth, ucb_coef, 0.3, 0.1, true), new StarterGhosts(), true, 250, 40, true);
-            //exec.runGameTimedRecorded(game, new ICEP_IDDFS(), new MCTSGhosts(200, 0.3, true, 1, 0.5), true, false, "d:/pacman_test/ghost_test_"+System.currentTimeMillis()+".replay", 40, 500);
-            exec.runGame(game, new MCTSPacman(simulation_depth, ucb_coef, 0.2, 0.3, true), new StarterGhosts(), true, 200, 40, true);
-
-//            exec.runGame(new MCTSPacman(simulation_depth, ucb_coef, true), new Legacy(), true, 800, 40, true);
-
-
-//            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_dummy, 400));
-//            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_action_exchange, 400));
-//            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_root_exchange, 400));
-//            options_list.add(new CompetitionOptions(StarterPacManGenerator.instance, 40, gen_simulation_results_passing, 400));
-
-
-
-
-//            for (int ghosts_simulation_depth: new int[]{200}) {
-//                for (int ghosts_delay: new int[]{80, 200}) {
-//                    for (PacmanControllerGenerator pacman_generator: new PacmanControllerGenerator[]{new StarterPacManGenerator()}) {
-//                        options_list.add(new CompetitionOptions(pacman_generator, 40,
-//                                            new DummyGhostsGenerator(ghosts_simulation_depth, 0.7), ghosts_delay));
-//                        options_list.add(new CompetitionOptions(pacman_generator, 40,
-//                                            new JointActionExchangingGhostsGenerator(ghosts_simulation_depth, 0.7, 1), ghosts_delay));
-//                    }
-//                }
-//
-//            }
-
-//            runCompetition(options_list, 10, false, false, "d:\\pacman_test\\");
-//            runCompetition(options_list, 10, false, false, "d:\\pacman_test\\");
-	}
 
 }

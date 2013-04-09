@@ -56,11 +56,39 @@ MCTS calculate action. Strength measures say how strong is team guided by an alg
 \subsection{Backbone of the Distributed Algorithms}
 \label{sec_dmcts_common}
 
+\begin{algorithm}
+\DontPrintSemicolon
+\caption{$DistributedFullTreeAgent(tree)$}
+\KwData{$tree$\dots MCTS tree}
+\KwResult{$tree$ is enlarged by newly expanded nodes and results of playouts performed are
+added. Additional actions are performed during message receiving.
+Node representing the best evaluated position reachable by one action is returned}
+$i \leftarrow 1$\;
+\While(\tcp*[h]{Main MCTS loop}){$EnoughTime()$}{
+    \If{$i = 0$}{
+        $ReceiveMessages()$\;
+    }
+    $node \leftarrow Select(tree)$ \tcp*[h]{Phase 1: Selection}\;
+    $node \leftarrow Expand(node)$ \tcp*[h]{Phase 2: Expansion}\;
+    $rewards[\,] \leftarrow Playouts(node)$ \tcp*[h]{Phase 3: Simulation}\;
+    $Backpropagate(tree,node,rewards[\,])$ \tcp*[h]{Ph 4: Backpropagation}\;
+    \If{$i = 0$}{
+        $SendMessages()$\;
+    }
+    $i \leftarrow (i + 1) mod N_{it}$\;
+}
+\Return{$\argmax\limits_{n \in Children(root)}c_n$} \tcp*[h]{Return most visited child}\;
+\end{algorithm}
+
 MCTS-based agents will iteratively build MCTS tree exactly as plain MCTS algorithm does. In
 addition before certain set of MCTS iterations, the agent receives messages from its team-mates
 and performs appropriate actions. Similarly after the set of MCTS iterations, the agent
 broadcasts messages to the others. The communicaton between agents is the point differencing
-particular distributed algorithms. We call the agent building full MCTS tree 
+particular distributed algorithms. We call the agent building full MCTS tree
+\emph{distributed full-joint-tree agent} and the basic algorithm is depicted by Algorithm
+\ref{alg_dmcts_common}.
+
+
 
 
 

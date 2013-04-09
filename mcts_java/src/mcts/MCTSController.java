@@ -5,18 +5,15 @@ import java.util.EnumMap;
 import java.util.List;
 import mcts.Utils;
 import pacman.controllers.Controller;
-import pacman.game.Constants;
 import pacman.game.Game;
 
 public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<M> implements SimulationsStat, TreeSimulationsStat {
     protected T mctree = null;
-    protected int current_level;
-    protected Selector ucb_selector;
-    protected Backpropagator backpropagator;
-    protected GuidedSimulator my_simulator;
-    protected int iterations;
-    protected boolean verbose;
-    protected double ucb_coef;
+    protected int currentLevel;
+    protected Backpropagator backpropagator = AvgBackpropagator.getInstance();
+    protected GuidedSimulator guidedSimulator = new GuidedSimulator(System.currentTimeMillis());
+    protected UCBSelector ucbSelector = new UCBSelector(30, guidedSimulator);
+
     protected Game previous_game = null;
     protected int pacman_decision_gap = 1;
     protected M last_move;
@@ -26,29 +23,79 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
     protected long total_time_millis = 0;
     protected long decisions = 0;
 
-    public static final int DEFAULT_ITERATION_COUNT = 0;
-    public static final int MILLIS_TO_FINISH = 20;
+    private boolean verbose = false;
+    private double ucbCoef = 0.3;
+//    private double deathWeight = 1.0;
+//    private int simulationDepth = 120;
+//    private double randomSimulationMoveProbability = 1.0;
 
-//    public MCTSController(int simulation_depth, double ucb_coef, boolean verbose) {
-//        this(simulation_depth, ucb_coef, verbose, DEFAULT_ITERATION_COUNT, -1);
+    public static final long DEFAULT_TIME_MILLIS = 100;
+    public static final int MILLIS_TO_FINISH = 0;
+
+//    public MCTSController(int simulation_depth, double ucbCoef, boolean verbose) {
+//        this(simulation_depth, ucbCoef, verbose, DEFAULT_ITERATION_COUNT, -1);
 //    }
+    public MCTSController() {
 
-    public MCTSController(int simulation_depth, double ucb_coef, boolean verbose, double random_simulation_move_probability, double death_weight) {
-        this(simulation_depth, ucb_coef, verbose, DEFAULT_ITERATION_COUNT, random_simulation_move_probability, death_weight);
     }
 
-    //TODO: remove the constructor, iterations variable and related code
-    private MCTSController(int simulation_depth, double ucb_coef, boolean verbose, int iterations, double random_simulation_move_probability, double death_weight) {
-//        if (random_simulation_move_probability<-0.5) {
-//            this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis());
-//        } else {
-        this.my_simulator = new GuidedSimulator(simulation_depth, System.currentTimeMillis(), random_simulation_move_probability, death_weight);
-//        }
-        this.ucb_selector = new UCBSelector(30, my_simulator);
-        this.backpropagator = AvgBackpropagator.getInstance();
-        this.iterations = iterations;
-        this.ucb_coef = ucb_coef;
-        this.verbose = verbose;
+    public boolean isVerbose() { return verbose; }
+    public void setVerbose(boolean verbose) { this.verbose = verbose; }
+
+    /**
+     * @return the ucbCoef
+     */
+    public double getUcbCoef() {
+        return ucbCoef;
+    }
+
+    /**
+     * @param ucbCoef the ucbCoef to set
+     */
+    public void setUcbCoef(double ucbCoef) {
+        this.ucbCoef = ucbCoef;
+    }
+
+    /**
+     * @return the deathWeight
+     */
+    public double getDeathWeight() {
+        return guidedSimulator.getDeathWeight();
+    }
+
+    /**
+     * @param deathWeight the deathWeight to set
+     */
+    public void setDeathWeight(double deathWeight) {
+        guidedSimulator.setDeathWeight(deathWeight);
+    }
+
+    /**
+     * @return the simulationDepth
+     */
+    public int getSimulationDepth() {
+        return guidedSimulator.getMaxDepth();
+    }
+
+    /**
+     * @param simulationDepth the simulationDepth to set
+     */
+    public void setSimulationDepth(int simulationDepth) {
+        guidedSimulator.setMaxDepth(simulationDepth);
+    }
+
+    /**
+     * @return the randomSimulationMoveProbability
+     */
+    public double getRandomSimulationMoveProbability() {
+        return guidedSimulator.getRandomMoveProb();
+    }
+
+    /**
+     * @param randomSimulationMoveProbability the randomSimulationMoveProbability to set
+     */
+    public void setRandomSimulationMoveProbability(double randomSimulationMoveProbability) {
+        guidedSimulator.setRandomMoveProb(randomSimulationMoveProbability);
     }
 
     public T mcTree() {
@@ -60,6 +107,12 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
 
     @Override
     public M getMove(Game game, long timeDue) {
+        if (timeDue==-1) {
+            /* prevent infinite decisions */
+            System.err.printf("Warning: timeDue not set\n");
+            timeDue = System.currentTimeMillis()+DEFAULT_TIME_MILLIS;
+        }
+
         /* initialize timing */
         long start_time = System.currentTimeMillis();
         int iteration_count = 0;
@@ -73,7 +126,7 @@ public abstract class MCTSController<T extends MCTree<M>, M> extends Controller<
                 iteration_count++;
                 current_simulations++;
             }
-        } while (iteration_count<iterations||(System.currentTimeMillis()+MILLIS_TO_FINISH)<timeDue);
+        } while ((System.currentTimeMillis()+MILLIS_TO_FINISH)<timeDue);
 
         /* choose pacman's next move */
         M move = mctree.bestMove(game);

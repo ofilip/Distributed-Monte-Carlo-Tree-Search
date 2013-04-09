@@ -27,6 +27,7 @@ import pacman.game.Game;
 import pacman.game.GameView;
 
 import static pacman.game.Constants.*;
+import pacman.game.FullGame;
 @SuppressWarnings("unused")
 public class ExecReplay {
 	public static void main(String[] args)	{
@@ -44,7 +45,7 @@ public class ExecReplay {
 	{
 		ArrayList<String> timeSteps=loadReplay(fileName);
 
-		Game game=new Game(0);
+		Game game=new FullGame(0);
 
 		GameView gv=null;
 

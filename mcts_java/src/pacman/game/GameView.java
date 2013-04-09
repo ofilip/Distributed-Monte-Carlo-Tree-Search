@@ -23,15 +23,15 @@ import static pacman.game.Constants.*;
  * could be useful for debugging.
  */
 @SuppressWarnings("serial")
-public final class GameView extends JComponent 
-{	
+public final class GameView extends JComponent
+{
     private final Game game;
-    private Images images;    
+    private Images images;
     private MOVE lastPacManMove;
     private int time;
-    private GameFrame frame;    
-    private Graphics bufferGraphics; 
-    private BufferedImage offscreen; 
+    private GameFrame frame;
+    private Graphics bufferGraphics;
+    private BufferedImage offscreen;
 
     //for debugging/illustration purposes only: draw colors in the maze to check whether controller is working
     //correctly or not; can draw squares and lines (see NearestPillPacManVS for demonstration).
@@ -40,7 +40,7 @@ public final class GameView extends JComponent
     private static String imageFileName="";
     public static Vector<DebugPointer> debugPointers=new Vector<DebugPointer>();
     public static Vector<DebugLine> debugLines=new Vector<DebugLine>();
-    
+
     /**
      * Instantiates a new game view.
      *
@@ -49,12 +49,12 @@ public final class GameView extends JComponent
     public GameView(Game game)
     {
         this.game=game;
-       
+
         images=new Images();
         lastPacManMove=game.getPacmanLastMoveMade();
         time=game.getTotalTime();
     }
-    
+
     ///////////////////////////////////////////////
     ////// Visual aids for debugging: start ///////
     ///////////////////////////////////////////////
@@ -70,9 +70,9 @@ public final class GameView extends JComponent
     {
     	if(isVisible)
     		for(int i=0;i<nodeIndices.length;i++)
-    			debugPointers.add(new DebugPointer(game.getNodeXCood(nodeIndices[i]),game.getNodeYCood(nodeIndices[i]),color));    	
+    			debugPointers.add(new DebugPointer(game.getNodeXCood(nodeIndices[i]),game.getNodeYCood(nodeIndices[i]),color));
     }
-    
+
     /**
      * Adds a set of lines to be drawn using the color specified (fromNnodeIndices.length must be equals toNodeIndices.length)
      *
@@ -85,9 +85,9 @@ public final class GameView extends JComponent
     {
     	if(isVisible)
     		for(int i=0;i<fromNnodeIndices.length;i++)
-    			debugLines.add(new DebugLine(game.getNodeXCood(fromNnodeIndices[i]),game.getNodeYCood(fromNnodeIndices[i]),game.getNodeXCood(toNodeIndices[i]),game.getNodeYCood(toNodeIndices[i]),color));    	
+    			debugLines.add(new DebugLine(game.getNodeXCood(fromNnodeIndices[i]),game.getNodeYCood(fromNnodeIndices[i]),game.getNodeXCood(toNodeIndices[i]),game.getNodeYCood(toNodeIndices[i]),color));
     }
-    
+
     /**
      * Adds a line to be drawn using the color specified
      *
@@ -99,9 +99,9 @@ public final class GameView extends JComponent
     public synchronized static void addLines(Game game,Color color,int fromNnodeIndex,int toNodeIndex)
     {
     	if(isVisible)
-    		debugLines.add(new DebugLine(game.getNodeXCood(fromNnodeIndex),game.getNodeYCood(fromNnodeIndex),game.getNodeXCood(toNodeIndex),game.getNodeYCood(toNodeIndex),color));    	
+    		debugLines.add(new DebugLine(game.getNodeXCood(fromNnodeIndex),game.getNodeYCood(fromNnodeIndex),game.getNodeXCood(toNodeIndex),game.getNodeYCood(toNodeIndex),color));
     }
-        
+
     /**
      * Draw the debug info and the clear it - it is shown for a single time step only.
      */
@@ -113,21 +113,21 @@ public final class GameView extends JComponent
     		bufferGraphics.setColor(dp.color);
     		bufferGraphics.fillRect(dp.x*MAG+1,dp.y*MAG+5,10,10);
     	}
-    	
+
     	for(int i=0;i<debugLines.size();i++)
     	{
     		DebugLine dl=debugLines.get(i);
     		bufferGraphics.setColor(dl.color);
     		bufferGraphics.drawLine(dl.x1*MAG+5,dl.y1*MAG+10,dl.x2*MAG+5,dl.y2*MAG+10);
     	}
-    	
+
     	debugPointers.clear();
     	debugLines.clear();
     }
-    
+
     /**
      * Allows one to save the image of the current game state using the file name specified.
-     * 
+     *
      * @param fileName Name of the image.
      */
     public synchronized static void saveImage(String fileName)
@@ -135,59 +135,59 @@ public final class GameView extends JComponent
     	saveImage=true;
     	imageFileName=fileName;
     }
-    
+
     /*
      * Saves the actual image.
      */
 	private void saveImage()
 	{
-		try 
+		try
 		{
 			ImageIO.write(offscreen, "png", new File("myData/"+imageFileName+".png"));
-		} 
-		catch (IOException e) 
+		}
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		
+
 		saveImage=false;
 	}
-    
+
     /////////////////////////////////////////////
     ////// Visual aids for debugging: end ///////
     /////////////////////////////////////////////
-    
+
     /* (non-Javadoc)
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
-    public void paintComponent(Graphics g) 
+    public void paintComponent(Graphics g)
     {
     	time=game.getTotalTime();
-    	
+
     	if(offscreen==null)
     	{
-    		offscreen=(BufferedImage)createImage(this.getPreferredSize().width,this.getPreferredSize().height); 
+    		offscreen=(BufferedImage)createImage(this.getPreferredSize().width,this.getPreferredSize().height);
     		bufferGraphics=offscreen.getGraphics();
-    	}   	
-    	
-        drawMaze();        
-        drawDebugInfo();	//this will be used during testing only and will be disabled in the competition itself        
+    	}
+
+        drawMaze();
+        drawDebugInfo();	//this will be used during testing only and will be disabled in the competition itself
         drawPills();
         drawPowerPills();
         drawPacMan();
         drawGhosts();
         drawLives();
         drawGameInfo();
-        
+
         if(game.gameOver())
         	drawGameOver();
-        
+
         g.drawImage(offscreen,0,0,this);
-        
+
         if(saveImage)
         	saveImage();
     }
-    
+
     /**
      * Draw maze.
      */
@@ -195,7 +195,7 @@ public final class GameView extends JComponent
     {
     	bufferGraphics.setColor(Color.BLACK);
     	bufferGraphics.fillRect(0,0,GV_WIDTH*MAG,GV_HEIGHT*MAG+20);
-        
+
     	bufferGraphics.drawImage(images.getMaze(game.getMazeIndex()),2,6,null);
     }
 
@@ -205,37 +205,37 @@ public final class GameView extends JComponent
     private void drawPills()
     {
         int[] pillIndices=game.getPillIndices();
-        
+
         bufferGraphics.setColor(Color.white);
-        
+
         for(int i=0;i<pillIndices.length;i++)
         	if(game.isPillStillAvailable(i))
         		bufferGraphics.fillOval(game.getNodeXCood(pillIndices[i])*MAG+4,game.getNodeYCood(pillIndices[i])*MAG+8,3,3);
     }
-    
+
     /**
      * Draw power pills.
      */
     private void drawPowerPills()
     {
         int[] powerPillIndices=game.getPowerPillIndices();
-          
+
           bufferGraphics.setColor(Color.white);
-          
+
           for(int i=0;i<powerPillIndices.length;i++)
           	if(game.isPowerPillStillAvailable(i))
           		bufferGraphics.fillOval(game.getNodeXCood(powerPillIndices[i])*MAG+1,game.getNodeYCood(powerPillIndices[i])*MAG+5,8,8);
     }
-    
+
     /**
      * Draw pac man.
      */
     private void drawPacMan()
     {
     	int pacLoc=game.getPacmanCurrentNodeIndex();
-    	
+
     	MOVE tmpLastPacManMove=game.getPacmanLastMoveMade();
-    	
+
     	if(tmpLastPacManMove!=MOVE.NEUTRAL)
     		lastPacManMove=tmpLastPacManMove;
 
@@ -245,14 +245,14 @@ public final class GameView extends JComponent
     /**
      * Draw ghosts.
      */
-    private void drawGhosts() 
+    private void drawGhosts()
     {
     	for(GHOST ghostType : GHOST.values())
     	{
 	    	int currentNodeIndex=game.getGhostCurrentNodeIndex(ghostType);
 	    	int nodeXCood=game.getNodeXCood(currentNodeIndex);
 	    	int nodeYCood=game.getNodeYCood(currentNodeIndex);
-	    	
+
 	    	if(game.getGhostEdibleTime(ghostType)>0)
 	    	{
 	    		//what is the second clause for????
@@ -261,13 +261,13 @@ public final class GameView extends JComponent
 	            else
 	            	bufferGraphics.drawImage(images.getEdibleGhost(false,time),nodeXCood*MAG-1,nodeYCood*MAG+3,null);
 	    	}
-	    	else 
+	    	else
 	    	{
 	    		int index=ghostType.ordinal();
-	    		
-	    		if(game.getGhostLairTime(ghostType)>0) 		
+
+	    		if(game.getGhostLairTime(ghostType)>0)
 	    			bufferGraphics.drawImage(images.getGhost(ghostType,game.getGhostLastMoveMade(ghostType),time),nodeXCood*MAG-1+(index*5),nodeYCood*MAG+3,null);
-	    		else    
+	    		else
 	    			bufferGraphics.drawImage(images.getGhost(ghostType,game.getGhostLastMoveMade(ghostType),time),nodeXCood*MAG-1,nodeYCood*MAG+3,null);
 	    	}
     	}
@@ -281,7 +281,7 @@ public final class GameView extends JComponent
     	for(int i=0;i<game.getPacmanNumberOfLivesRemaining()-1;i++) //-1 as lives remaining includes the current life
     		bufferGraphics.drawImage(images.getPacManForExtraLives(),210-(30*i)/2,260,null);
     }
-    
+
     /**
      * Draw game info.
      */
@@ -289,13 +289,13 @@ public final class GameView extends JComponent
     {
     	bufferGraphics.setColor(Color.WHITE);
     	bufferGraphics.drawString("S: ",4,271);
-    	bufferGraphics.drawString(""+game.getScore(),16,271);        
+    	bufferGraphics.drawString(""+game.getScore(),16,271);
     	bufferGraphics.drawString("L: ",78,271);
-    	bufferGraphics.drawString(""+(game.getCurrentLevel()+1),90,271);        
+    	bufferGraphics.drawString(""+(game.getCurrentLevel()+1),90,271);
     	bufferGraphics.drawString("T: ",116,271);
     	bufferGraphics.drawString(""+game.getCurrentLevelTime(),129,271);
     }
-    
+
     /**
      * Draw game over.
      */
@@ -304,7 +304,7 @@ public final class GameView extends JComponent
     	bufferGraphics.setColor(Color.WHITE);
     	bufferGraphics.drawString("Game Over",80,150);
     }
-    
+
     /* (non-Javadoc)
      * @see javax.swing.JComponent#getPreferredSize()
      */
@@ -312,11 +312,11 @@ public final class GameView extends JComponent
     {
         return new Dimension(GV_WIDTH*MAG,GV_HEIGHT*MAG+20);
     }
-    
+
     public GameView showGame() {
         return showGame("");
     }
-    
+
     /**
      * Show game.
      *
@@ -325,13 +325,13 @@ public final class GameView extends JComponent
     public GameView showGame(String title)
     {
         this.frame=new GameFrame(this, title);
-              
+
         //just wait for a bit for player to be ready
         //try{Thread.sleep(2000);}catch(Exception e){}
-        
+
         return this;
     }
-    
+
     /**
      * Gets the frame.
      *
@@ -341,16 +341,16 @@ public final class GameView extends JComponent
     {
     	return frame;
     }
-    
+
     /**
      * The Class GameFrame.
      */
     public class GameFrame extends JFrame
-    {        
+    {
         public GameFrame(JComponent comp) {
             this(comp, "");
         }
-        
+
         /**
          * Instantiates a new game frame.
          *
@@ -361,20 +361,20 @@ public final class GameView extends JComponent
             getContentPane().add(BorderLayout.CENTER,comp);
             pack();
             Dimension screen=Toolkit.getDefaultToolkit().getScreenSize();
-            this.setLocation((int)(screen.getWidth()*3/8),(int)(screen.getHeight()*3/8));            
+            this.setLocation((int)(screen.getWidth()*3/8),(int)(screen.getHeight()*3/8));
             this.setVisible(true);
             this.setResizable(false);
             this.setTitle(title);
             setDefaultCloseOperation(EXIT_ON_CLOSE);
-            repaint();            
+            repaint();
         }
     }
-    
+
     private static class DebugPointer
     {
 	    public int x,y;
 	    public Color color;
-    	
+
 	    public DebugPointer(int x,int y,Color color)
     	{
     		this.x=x;
@@ -382,7 +382,7 @@ public final class GameView extends JComponent
     		this.color=color;
     	}
     }
-    
+
     private static class DebugLine
     {
 	    public int x1,y1,x2,y2;
@@ -411,33 +411,33 @@ public final class GameView extends JComponent
     		pacman.put(MOVE.UP,new BufferedImage[]{		_loadImage("mspacman-up-normal.png"),
     													_loadImage("mspacman-up-open.png"),
     													_loadImage("mspacman-up-closed.png")});
-    		
+
     		pacman.put(MOVE.RIGHT,new BufferedImage[]{	_loadImage("mspacman-right-normal.png"),
     													_loadImage("mspacman-right-open.png"),
     													_loadImage("mspacman-right-closed.png")});
-    		
+
     		pacman.put(MOVE.DOWN,new BufferedImage[]{	_loadImage("mspacman-down-normal.png"),
     													_loadImage("mspacman-down-open.png"),
     													_loadImage("mspacman-down-closed.png")});
-    		
+
     		pacman.put(MOVE.LEFT,new BufferedImage[]{	_loadImage("mspacman-left-normal.png"),
     													_loadImage("mspacman-left-open.png"),
     													_loadImage("mspacman-left-closed.png")});
-    		
+
     		ghosts=new EnumMap<GHOST,EnumMap<MOVE,BufferedImage[]>>(GHOST.class);
-    		
+
     		ghosts.put(GHOST.BLINKY,new EnumMap<MOVE,BufferedImage[]>(MOVE.class));
     		ghosts.get(GHOST.BLINKY).put(MOVE.UP,new BufferedImage[]{_loadImage("blinky-up-1.png"), _loadImage("blinky-up-2.png")});
     		ghosts.get(GHOST.BLINKY).put(MOVE.RIGHT,new BufferedImage[]{_loadImage("blinky-right-1.png"), _loadImage("blinky-right-2.png")});
     		ghosts.get(GHOST.BLINKY).put(MOVE.DOWN,new BufferedImage[]{_loadImage("blinky-down-1.png"), _loadImage("blinky-down-2.png")});
     		ghosts.get(GHOST.BLINKY).put(MOVE.LEFT,new BufferedImage[]{_loadImage("blinky-left-1.png"), _loadImage("blinky-left-2.png")});
-            
+
     		ghosts.put(GHOST.PINKY,new EnumMap<MOVE,BufferedImage[]>(MOVE.class));
     		ghosts.get(GHOST.PINKY).put(MOVE.UP,new BufferedImage[]{_loadImage("pinky-up-1.png"), _loadImage("pinky-up-2.png")});
     		ghosts.get(GHOST.PINKY).put(MOVE.RIGHT,new BufferedImage[]{_loadImage("pinky-right-1.png"), _loadImage("pinky-right-2.png")});
     		ghosts.get(GHOST.PINKY).put(MOVE.DOWN,new BufferedImage[]{_loadImage("pinky-down-1.png"), _loadImage("pinky-down-2.png")});
     		ghosts.get(GHOST.PINKY).put(MOVE.LEFT,new BufferedImage[]{_loadImage("pinky-left-1.png"), _loadImage("pinky-left-2.png")});
-            
+
     		ghosts.put(GHOST.INKY,new EnumMap<MOVE,BufferedImage[]>(MOVE.class));
     		ghosts.get(GHOST.INKY).put(MOVE.UP,new BufferedImage[]{_loadImage("inky-up-1.png"), _loadImage("inky-up-2.png")});
     		ghosts.get(GHOST.INKY).put(MOVE.RIGHT,new BufferedImage[]{_loadImage("inky-right-1.png"), _loadImage("inky-right-2.png")});
@@ -449,20 +449,20 @@ public final class GameView extends JComponent
     		ghosts.get(GHOST.SUE).put(MOVE.RIGHT,new BufferedImage[]{_loadImage("sue-right-1.png"), _loadImage("sue-right-2.png")});
     		ghosts.get(GHOST.SUE).put(MOVE.DOWN,new BufferedImage[]{_loadImage("sue-down-1.png"), _loadImage("sue-down-2.png")});
     		ghosts.get(GHOST.SUE).put(MOVE.LEFT,new BufferedImage[]{_loadImage("sue-left-1.png"), _loadImage("sue-left-2.png")});
-            
+
     		edibleGhosts=new BufferedImage[2];
     		edibleGhosts[0]=_loadImage("edible-ghost-1.png");
     		edibleGhosts[1]=_loadImage("edible-ghost-2.png");
-    		
+
     		edibleBlinkingGhosts=new BufferedImage[2];
     		edibleBlinkingGhosts[0]=_loadImage("edible-ghost-blink-1.png");
     		edibleBlinkingGhosts[1]=_loadImage("edible-ghost-blink-2.png");
-    		
+
     		mazes=new BufferedImage[4];
             for(int i=0;i<mazes.length;i++)
-            	mazes[i]=_loadImage(mazeNames[i]); 
+            	mazes[i]=_loadImage(mazeNames[i]);
     	}
-    	
+
 	    public BufferedImage getPacMan(MOVE move, int time)
     	{
     		return pacman.get(move)[(time%6)/2];
@@ -472,7 +472,7 @@ public final class GameView extends JComponent
     	{
     		return pacman.get(MOVE.RIGHT)[0];
     	}
-    	
+
 	    public BufferedImage getGhost(GHOST ghost,MOVE move,int time)
     	{
     		if(move==MOVE.NEUTRAL)
@@ -488,25 +488,25 @@ public final class GameView extends JComponent
     		else
     			return edibleBlinkingGhosts[(time%6)/3];
     	}
-    	
+
 	    public BufferedImage getMaze(int mazeIndex)
     	{
     		return mazes[mazeIndex];
     	}
-    	
-        private BufferedImage _loadImage(String fileName) 
+
+        private BufferedImage _loadImage(String fileName)
         {
             BufferedImage image=null;
-            
+
             try
             {
             	image=ImageIO.read(new File(pathImages+System.getProperty("file.separator")+fileName));
             }
-            catch(IOException e) 
+            catch(IOException e)
             {
                 e.printStackTrace();
             }
-            
+
             return image;
         }
     }

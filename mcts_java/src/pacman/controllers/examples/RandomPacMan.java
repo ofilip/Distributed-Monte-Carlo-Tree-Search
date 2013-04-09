@@ -12,7 +12,7 @@ public final class RandomPacMan extends Controller<MOVE>
 {
 	private Random rnd=new Random();
 	private MOVE[] allMoves=MOVE.values();
-	
+
 	/* (non-Javadoc)
 	 * @see pacman.controllers.Controller#getMove(pacman.game.Game, long)
 	 */

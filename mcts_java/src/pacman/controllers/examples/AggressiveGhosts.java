@@ -13,19 +13,19 @@ import static pacman.game.Constants.*;
  * The Class AggressiveGhosts.
  */
 public final class AggressiveGhosts extends Controller<EnumMap<GHOST,MOVE>>
-{	
+{
 	private final static float CONSISTENCY=1.0f;	//carry out intended move with this probability
 	private Random rnd=new Random();
 	private EnumMap<GHOST,MOVE> myMoves=new EnumMap<GHOST,MOVE>(GHOST.class);
 	private MOVE[] moves=MOVE.values();
-		
+
 	/* (non-Javadoc)
 	 * @see pacman.controllers.Controller#getMove(pacman.game.Game, long)
 	 */
 	public EnumMap<GHOST,MOVE> getMove(Game game,long timeDue)
-	{		
+	{
 		myMoves.clear();
-		
+
 		for(GHOST ghost : GHOST.values())				//for each ghost
 			if(game.doesGhostRequireAction(ghost))		//if it requires an action
 			{

@@ -1,6 +1,7 @@
 package pacman.entries.pacman.generators;
 
 import exec.utils.PacmanControllerGenerator;
+import mcts.entries.ghosts.MCTSGhosts;
 import pacman.controllers.Controller;
 import mcts.entries.pacman.MCTSPacman;
 import pacman.game.Constants.MOVE;
@@ -20,7 +21,11 @@ public class MCTSPacmanGenerator implements PacmanControllerGenerator {
 
     @Override
     public Controller<MOVE> pacmanController() {
-        return new MCTSPacman(simulation_depth, ucb_coef, random_simulation_move_probability, death_weigth, false);
+            MCTSPacman pacman = new MCTSPacman();
+        pacman.setSimulationDepth(simulation_depth);
+        pacman.setUcbCoef(ucb_coef);
+        pacman.setRandomSimulationMoveProbability(random_simulation_move_probability);
+        return pacman;
     }
 
     @Override

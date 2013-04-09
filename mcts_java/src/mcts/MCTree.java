@@ -54,13 +54,13 @@ public abstract class MCTree<M> {
         node.backpropagate(simulation_result);
     }
 
-    protected MCTree(MCTree tree, long depth) {
-        this.selector = tree.selector;
-        this.simulator = tree.simulator;
-        this.backpropagator = tree.backpropagator;
-        this.ucb1_coef = tree.ucb1_coef;
-        this.root = tree.root.copy(this, null, depth);
-    }
+//    protected MCTree(MCTree tree, long depth) {
+//        this.selector = tree.selector;
+//        this.simulator = tree.simulator;
+//        this.backpropagator = tree.backpropagator;
+//        this.ucb1_coef = tree.ucb1_coef;
+//        this.root = tree.root.copy(this, null, depth);
+//    }
 
     public MCTree(Game game, Selector selector, GuidedSimulator simulator, Backpropagator backpropagator, double ucb1_coef) {
         this.selector = selector;
