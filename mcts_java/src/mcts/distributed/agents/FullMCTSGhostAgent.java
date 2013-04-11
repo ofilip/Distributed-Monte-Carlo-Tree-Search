@@ -22,36 +22,37 @@ import utils.VerboseLevel;
 public abstract class FullMCTSGhostAgent extends GhostAgent {
     protected MOVE move = MOVE.NEUTRAL;
     protected GhostsTree mctree;
-    protected Game current_game;
-    protected int current_level;
-    protected EnumMap<GHOST, MOVE> last_full_move;
+    protected Game currentGame;
+    protected int currentLevel;
+    protected EnumMap<GHOST, MOVE> lastFullMove;
+    protected long decisions = 0;
 
-    public FullMCTSGhostAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
-        super(controller, ghost, simulation_depth, ucb_coef, verbose);
+    public FullMCTSGhostAgent(DistributedMCTSController controller, GHOST ghost) {
+        super(controller, ghost);
     }
 
     private void initializeTree(Game game) {
-        mctree = new GhostsTree(game, ucb_selector, my_simulator, backpropagator, ucb_coef);
+        mctree = new GhostsTree(game, ucbSelector, mySimulator, backpropagator, ucbCoef);
     }
 
     @Override public MCTree getTree() { return mctree; }
 
     @Override public void updateTree(Game game) {
         if (mctree==null /* new game or synchronization fail */
-                ||game.getCurrentLevel()!=current_level /* new level */
+                ||game.getCurrentLevel()!=currentLevel /* new level */
                 ||game.wasPacManEaten() /* pacman eaten */
                 ||Utils.globalReversalHappened(game) /* accidental reversal */
-                ||last_full_move==null /* last getMove() didn't finish in limit */
-                ||!Utils.compareGhostsMoves(last_full_move, Utils.lastGhostsMoves(game))
+                ||lastFullMove==null /* last getMove() didn't finish in limit */
+                ||!Utils.compareGhostsMoves(lastFullMove, Utils.lastGhostsMoves(game))
                 ) {
             /* (re)initialize MC-tree and its components */
             initializeTree(game);
 
             /* remember current level */
-            current_level = game.getCurrentLevel();
+            currentLevel = game.getCurrentLevel();
         } else {
-            assert current_game!=null;
-            EnumMap<Constants.GHOST, MOVE> last_ghosts_moves = Utils.lastGhostsDecisionMoves(game, current_game);
+            assert currentGame!=null;
+            EnumMap<Constants.GHOST, MOVE> last_ghosts_moves = Utils.lastGhostsDecisionMoves(game, currentGame);
 
             if (mctree.root().ticksToGo()==0) {
                 initializeTree(game);
@@ -60,8 +61,11 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
             }
         }
 
-        current_game = game.copy();
-        last_full_move = null;
+        currentGame = game.copy();
+        lastFullMove = null;
+        if (mctree.decisionNeeded()) {
+            decisions++;
+        }
     }
 
     private Comparator<Map.Entry<EnumMap<GHOST,MOVE>, Pair<Integer,GHOST>>> move_strength_entry_comparator = new Comparator<Map.Entry<EnumMap<GHOST,MOVE>, Pair<Integer,GHOST>>>() {
@@ -94,7 +98,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
             @Override
             public void handleMessage(GhostAgent agent, Message message) {
                 MoveMessage moves_message = (MoveMessage)message;
-                if (verbose.check(VerboseLevel.DEBUGGING)) {
+                if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
                     System.out.printf("%s: Receiving %s\n", ghost, moves_message);
                 }
                 received_moves.put(agent.ghost(), moves_message);
@@ -103,9 +107,9 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
     }
 
     protected void broadcastMoveMessage(Priority priority) {
-            EnumMap<GHOST, MOVE> best_move = mctree.bestMove(current_game);
+            EnumMap<GHOST, MOVE> best_move = mctree.bestMove(currentGame);
             MoveMessage message = new MoveMessage(best_move);
-            if (verbose.check(VerboseLevel.DEBUGGING)) {
+            if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
                 System.out.printf("%s: Broadcasting %s (size %s)\n", ghost, message, message.length());
             }
             broadcastMessage(Priority.MEDIUM, message);
@@ -114,7 +118,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
     protected MOVE getMoveFromMessages(final Map<GHOST, MoveMessage> received_moves) {
                 /* Return strongest move (move supported by the most agents)
          * with priority defined by ordering on GHOST enum. */
-        EnumMap<GHOST, MOVE> my_best_move = mctree.bestMove(current_game);
+        EnumMap<GHOST, MOVE> my_best_move = mctree.bestMove(currentGame);
         received_moves.put(ghost, new MoveMessage(my_best_move)); /* add my current best move to received messages */
 
         Map<EnumMap<GHOST,MOVE>, Pair<Integer, GHOST>> move_strength = new HashMap<EnumMap<GHOST,MOVE>, Pair<Integer, GHOST>>();
@@ -129,13 +133,18 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
                 current_value.first++;
             }
         }
-        last_full_move = Collections.min(move_strength.entrySet(), move_strength_entry_comparator).getKey();
+        lastFullMove = Collections.min(move_strength.entrySet(), move_strength_entry_comparator).getKey();
 
-        if (verbose.check(VerboseLevel.VERBOSE)) {
+        if (verboseLevel.check(VerboseLevel.VERBOSE)) {
             System.out.printf(ghost+": ");
             System.out.printf("my best move: %s\n", my_best_move);
-            System.out.printf("\tchosen best move: %s\n", last_full_move);
+            System.out.printf("\tchosen best move: %s\n", lastFullMove);
         }
-        return last_full_move.get(ghost);
+        return lastFullMove.get(ghost);
+    }
+
+
+    public double averageDecisionSimulations() {
+        return totalSimulations()/(double)decisions;
     }
 }

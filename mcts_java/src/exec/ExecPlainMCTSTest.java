@@ -3,8 +3,8 @@ package exec;
 import exec.utils.Executor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import mcts.MCTSController;
-import mcts.entries.ghosts.MCTSGhosts;
+import mcts.PlainMCTSController;
+import mcts.entries.MCTSGhosts;
 import pacman.controllers.Controller;
 import pacman.game.Constants.MOVE;
 import pacman.game.FullGame;
@@ -37,7 +37,7 @@ public class ExecPlainMCTSTest
 
         FullGame game = new FullGame(System.currentTimeMillis());
         game.random_reversal = false;
-        Game result = exec.runGame(game, pacman_controller, ghost_controller, false, 40, ghost_time+MCTSController.MILLIS_TO_FINISH, false);
+        Game result = exec.runGame(game, pacman_controller, ghost_controller, false, 40, ghost_time, false);
         System.out.printf("%s\t%s\t%s\t%s\t"
                 + "%s\t%s\t%s\t%f\t"
                 +"%f\t%d",

@@ -6,10 +6,11 @@ import gnu.getopt.LongOpt;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
-import mcts.MCTSController;
-import mcts.entries.ghosts.MCTSGhosts;
+import mcts.Constants;
+import mcts.MCTSControllerStats;
+import mcts.PlainMCTSController;
+import mcts.distributed.DistributedMCTSController;
 import pacman.controllers.Controller;
-import pacman.controllers.ICEP_IDDFS;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.examples.StarterPacMan;
 import pacman.game.Constants.GHOST;
@@ -30,6 +31,7 @@ enum Option {
     GHOST_UCB_COEF("ghost-ucb-coef"),
     GHOST_RANDOM_PROB("ghost-random-prob"),
     GHOST_DEATH_WEIGHT("ghost-death-weight"),
+    CHANNEL_SPEED("channel-speed"),
     TRIAL_NO("trial-no"),
     VISUAL("visual", LongOpt.NO_ARGUMENT),
     HEADER("header", LongOpt.NO_ARGUMENT);
@@ -69,15 +71,11 @@ enum Option {
 }
 
 public class ExecExperiment {
-    private final static int DEFAULT_SIMULATION_DEPTH = 120;
-    private final static double DEFAULT_UCB_COEF = 0.3;
-    private final static double DEFAULT_RANDOM_PROB = 1;
-    private final static double DEFAULT_DEATH_WEIGHT = 0.0;
     private final static String[] CONTROLLER_PACKAGES = {
         "pacman.controllers.examples",
-        "mcts.entries.pacman",
-        "mcts.entries.ghosts",
-        "pacman.controllers"
+        "pacman.controllers",
+        "mcts.entries",
+        "mcts.distributed.entries",
     };
 
     private static Class lookupClass(String className) throws ClassNotFoundException {
@@ -99,19 +97,30 @@ public class ExecExperiment {
         return param.toLowerCase().equals("default");
     }
 
-    @SuppressWarnings("unchecked")
     private static <T> Controller<T> buildController(Class c, int simulationDepth, double ucbCoef, double randomProb, double deathWeight)
+            throws NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
+        return buildController(c, simulationDepth, ucbCoef, randomProb, deathWeight, 0);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Controller<T> buildController(Class c, int simulationDepth, double ucbCoef, double randomProb, double deathWeight, long channelSpeed)
             throws NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Constructor constructor = c.getConstructor();
         Controller<T> controller = (Controller<T>)constructor.newInstance();
 
-        if (controller instanceof MCTSController) {
-            MCTSController mctsController = (MCTSController)controller;
+        if (controller instanceof MCTSControllerStats) {
+            MCTSControllerStats mctsController = (MCTSControllerStats)controller;
             mctsController.setSimulationDepth(simulationDepth);
             mctsController.setUcbCoef(ucbCoef);
             mctsController.setRandomSimulationMoveProbability(randomProb);
             mctsController.setDeathWeight(deathWeight);
+        }
 
+        if (controller instanceof DistributedMCTSController) {
+            DistributedMCTSController dmctsController = (DistributedMCTSController)controller;
+
+            dmctsController.getNetwork().setChannelTransmissionSpeed(channelSpeed);
         }
 
         return controller;
@@ -119,9 +128,12 @@ public class ExecExperiment {
 
     private static void printControllerHeader(String prefix, Controller controller) {
         System.out.printf("%sclass\t%stime\t", prefix, prefix);
-        if (controller instanceof MCTSController) {
+        if (controller instanceof MCTSControllerStats) {
             System.out.printf("%ssim_depth\t%sucb_coef\t%sdeath_weight\t%savg_decision_sims\t%ssims_per_sec\t",
                               prefix, prefix, prefix, prefix, prefix);
+        }
+        if (controller instanceof DistributedMCTSController) {
+            System.out.append("channel_speed\t");
         }
     }
 
@@ -134,12 +146,15 @@ public class ExecExperiment {
 
     private static void printControllerInfo(Controller controller, int time) {
         System.out.printf("%s\t%s\t", controller.getClass().getSimpleName(), time);
-        if (controller instanceof MCTSController) {
-            MCTSController mctsController = (MCTSController)controller;
+        if (controller instanceof MCTSControllerStats) {
+            MCTSControllerStats mctsController = (MCTSControllerStats)controller;
             System.out.printf("%s\t%s\t%s\t%s\t%s\t",
                              mctsController.getSimulationDepth(), mctsController.getUcbCoef(),
                              mctsController.getDeathWeight(), mctsController.averageDecisionSimulations(),
                              mctsController.simulationsPerSecond());
+        }
+        if (controller instanceof DistributedMCTSController) {
+            //TODO
         }
     }
 
@@ -157,21 +172,21 @@ public class ExecExperiment {
         boolean header = false;
 
         Class pacmanClass = StarterPacMan.class;
-        int pacmanSimulationDepth = DEFAULT_SIMULATION_DEPTH;
-        double pacmanUcbCoef = DEFAULT_UCB_COEF;
-        double pacmanRandomProb = DEFAULT_RANDOM_PROB;
-        double pacmanDeathWeight = DEFAULT_DEATH_WEIGHT;
+        int pacmanSimulationDepth = Constants.DEFAULT_SIMULATION_DEPTH;
+        double pacmanUcbCoef = Constants.DEFAULT_UCB_COEF;
+        double pacmanRandomProb = Constants.DEFAULT_RANDOM_PROB;
+        double pacmanDeathWeight = Constants.DEFAULT_DEATH_WEIGHT;
 
         Class ghostClass = StarterGhosts.class;
-        int ghostSimulationDepth = DEFAULT_SIMULATION_DEPTH;
-        double ghostUcbCoef = DEFAULT_UCB_COEF;
-        double ghostRandomProb = DEFAULT_RANDOM_PROB;
+        int ghostSimulationDepth = Constants.DEFAULT_SIMULATION_DEPTH;
+        double ghostUcbCoef = Constants.DEFAULT_UCB_COEF;
+        double ghostRandomProb = Constants.DEFAULT_RANDOM_PROB;
         Experiment experiment = new Experiment();
-        double ghostDeathWeight = DEFAULT_DEATH_WEIGHT;
+        double ghostDeathWeight = Constants.DEFAULT_DEATH_WEIGHT;
+        long channelSpeed = Constants.DEFAULT_CHANNEL_TRANSMISSION_SPEED;
 
-        Getopt getopt = new Getopt(ExecDummyGhosts.class.getSimpleName(), args, "", Option.LONG_OPTIONS);
+        Getopt getopt = new Getopt(ExecExperiment.class.getSimpleName(), args, "", Option.LONG_OPTIONS);
         int c;
-        String arg;
 
         while ((c = getopt.getopt())!=-1) {
             Option option = Option.values()[c];
@@ -219,6 +234,9 @@ public class ExecExperiment {
                 case GHOST_DEATH_WEIGHT:
                     ghostDeathWeight = Double.parseDouble(getopt.getOptarg());
                     break;
+                case CHANNEL_SPEED:
+                    channelSpeed = Long.parseLong(getopt.getOptarg());
+                    break;
                 case VISUAL:
                     visual = true;
                     break;
@@ -236,7 +254,7 @@ public class ExecExperiment {
         }
 
         Controller<MOVE> pacmanController = buildController(pacmanClass, pacmanSimulationDepth, pacmanUcbCoef, pacmanRandomProb, pacmanDeathWeight);
-        Controller<EnumMap<GHOST,MOVE>> ghostController = buildController(ghostClass, ghostSimulationDepth, ghostUcbCoef, ghostRandomProb, ghostDeathWeight);
+        Controller<EnumMap<GHOST,MOVE>> ghostController = buildController(ghostClass, ghostSimulationDepth, ghostUcbCoef, ghostRandomProb, ghostDeathWeight, channelSpeed);
 
         if (header) {
             printHeader(pacmanController, ghostController);

@@ -20,8 +20,6 @@ import utils.Pair;
  * StarterPacMan and the Legacy ghosts.
  */
 public class GuidedSimulator {
-    public final static double DEFAULT_RANDOM_MOVE_PROB = 0.5;
-    public final static double DEFAULT_DEATH_WEIGHT = 0.05;
     public final static int MIN_DISTANCE = 20;
     public final static int PILL_PROXIMITY = 15;
 
@@ -35,10 +33,11 @@ public class GuidedSimulator {
         }
     }
 
-    private double randomMoveProb = 1;
-    private int maxDepth = 120;
+    private double randomMoveProb = Constants.DEFAULT_RANDOM_PROB;
+    private int simulationDepth = Constants.DEFAULT_SIMULATION_DEPTH;
+    private double deathWeight = Constants.DEFAULT_DEATH_WEIGHT;
+
     private Random random;
-    private double deathWeight = 0;
 
     public static double sigm(double x) {
         return 1/(1+Math.exp(-x));
@@ -49,8 +48,8 @@ public class GuidedSimulator {
 //    }
 
 
-    public GuidedSimulator(long seed) {
-        this.random = new Random(seed);
+    public GuidedSimulator(Random random) {
+        this.random = random;
     }
 
     private MOVE choosePacmanMove(Game game) {
@@ -235,14 +234,14 @@ public class GuidedSimulator {
      * @return the maxDepth
      */
     public int getMaxDepth() {
-        return maxDepth;
+        return simulationDepth;
     }
 
     /**
      * @param maxDepth the maxDepth to set
      */
     public void setMaxDepth(int maxDepth) {
-        this.maxDepth = maxDepth;
+        this.simulationDepth = maxDepth;
     }
 
     /**

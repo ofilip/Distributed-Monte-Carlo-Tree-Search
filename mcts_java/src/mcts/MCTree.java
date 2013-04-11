@@ -9,7 +9,7 @@ import pacman.game.Game;
 
 public abstract class MCTree<M> {
     Selector selector;
-    Selector best_move_selector = new UCBSelector(0, null);
+    Selector best_move_selector = new UCBSelector(null, 0);
     GuidedSimulator simulator;
     Backpropagator backpropagator;
     double ucb1_coef;

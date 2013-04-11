@@ -1,11 +1,11 @@
-package mcts.entries.ghosts;
+package mcts.entries;
 
 import java.util.EnumMap;
 import mcts.Utils;
 import mcts.AvgBackpropagator;
 import mcts.Backpropagator;
 import mcts.GhostsTree;
-import mcts.MCTSController;
+import mcts.PlainMCTSController;
 import mcts.GuidedSimulator;
 import mcts.PacmanTree;
 import mcts.Selector;
@@ -15,7 +15,7 @@ import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
-public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>> {
+public class MCTSGhosts extends PlainMCTSController<GhostsTree, EnumMap<GHOST, MOVE>> {
 //    public MCTSGhosts() {
 //        this(120, 0.3, false, GuidedSimulator.DEFAULT_RANDOM_MOVE_PROB, GuidedSimulator.DEFAULT_DEATH_WEIGHT);
 //    }
@@ -44,8 +44,8 @@ public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>>
                 ||game.getCurrentLevel()!=currentLevel /* new level */
                 ||game.wasPacManEaten() /* pacman eaten */
                 ||Utils.globalReversalHappened(game) /* accidental reversal */
-                ||last_move==null /* last getMove() didn't finish in limit */
-                ||!Utils.compareGhostsMoves(last_move, Utils.lastGhostsMoves(game))
+                ||prevousMove==null /* last getMove() didn't finish in limit */
+                ||!Utils.compareGhostsMoves(prevousMove, Utils.lastGhostsMoves(game))
                 ||mctree.root().getTotalTicks()>guidedSimulator.getMaxDepth()/2 /* simulation is too much shortened */
                 ) {
             /* (re)initialize MC-tree and its components */
@@ -54,8 +54,8 @@ public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>>
             /* remember current level */
             currentLevel = game.getCurrentLevel();
         } else {
-            assert previous_game!=null;
-            EnumMap<GHOST, MOVE> last_ghosts_moves = Utils.lastGhostsDecisionMoves(game, previous_game);
+            assert previousGame!=null;
+            EnumMap<GHOST, MOVE> last_ghosts_moves = Utils.lastGhostsDecisionMoves(game, previousGame);
 
             if (mcTree().root().ticksToGo()==0) {
                 initializeTree(game);
@@ -63,7 +63,7 @@ public class MCTSGhosts extends MCTSController<GhostsTree, EnumMap<GHOST, MOVE>>
                 mcTree().advanceTree(game.getPacmanLastMoveMade(), last_ghosts_moves);
             }
         }
-        last_move = null;
+        prevousMove = null;
     }
 
     @Override

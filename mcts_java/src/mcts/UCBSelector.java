@@ -7,13 +7,16 @@ import pacman.game.Constants.MOVE;
 import utils.Pair;
 
 public class UCBSelector implements Selector {
-    private int trial_threshold;
+    private int trial_threshold = Constants.DEFAULT_UCB_SELECTION_TRIAL_THRESHOLD;
     private GuidedSimulator simulator;
 
-    public UCBSelector(int trial_threshold, GuidedSimulator simulator) {
-        assert trial_threshold>=0;
+    public UCBSelector(GuidedSimulator simulator) {
+        this.simulator = simulator;
+    }
+
+    public UCBSelector(GuidedSimulator simulator, int trial_threshold) {
+        this.simulator = simulator;
         this.trial_threshold = trial_threshold;
-        this.simulator = trial_threshold>0? simulator: null;
     }
 
     private Pair<MCNode,Action> best(MCNode node) {

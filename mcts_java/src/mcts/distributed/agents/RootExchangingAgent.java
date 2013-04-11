@@ -21,8 +21,8 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
     private long last_message_sending_time = 0;
     private long total_simulations;
 
-    public RootExchangingAgent(DistributedMCTSController controller, final GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
-        super(controller, ghost, simulation_depth, ucb_coef, verbose);
+    public RootExchangingAgent(DistributedMCTSController controller, final GHOST ghost) {
+        super(controller, ghost);
         hookMessageHandler(RootMessage.class, new MessageHandler() {
             @Override
             public void handleMessage(GhostAgent agent, Message message) {
@@ -30,10 +30,6 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
                 received_roots.put(agent.ghost(), roots_message.getRoots());
             }
         });
-    }
-
-    public RootExchangingAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef) {
-        this(controller, ghost, simulation_depth, ucb_coef, VerboseLevel.QUIET);
     }
 
     private Map<EnumMap<GHOST, MOVE>, Long> extractRoot(MCNode subtree) {

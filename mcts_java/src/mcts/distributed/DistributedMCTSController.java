@@ -6,44 +6,43 @@ import communication.messages.Message;
 import communication.Channel;
 import communication.Network;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import mcts.Constants;
+import mcts.MCTSControllerStats;
 import mcts.SimulationsStat;
+import mcts.TreeSimulationsStat;
 import pacman.controllers.Controller;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
+import utils.VerboseLevel;
 
-public class DistributedMCTSController<G extends GhostAgent> extends Controller<EnumMap<GHOST,MOVE>> implements VirtualTimer, SimulationsStat {
-    protected Network network;
+public class DistributedMCTSController
+        extends Controller<EnumMap<GHOST,MOVE>>
+        implements VirtualTimer, MCTSControllerStats {
+
+    protected Network network = new Network();
     protected Map<GHOST, GhostAgent> agents = new EnumMap<GHOST, GhostAgent>(GHOST.class);
-    protected int current_ghost = 0;
+    protected int currentGhost = 0;
     protected EnumMap<GHOST,MOVE> moves = new EnumMap<GHOST,MOVE>(GHOST.class);
-    protected boolean verbose;
-    private long channel_buffer_size;
+    protected VerboseLevel verboseLevel = VerboseLevel.QUIET;
+    private long channelBufferSize = Constants.DEFAULT_CHANNEL_BUFFER_SIZE;
 
     private static GHOST ghosts[] = {GHOST.BLINKY, GHOST.PINKY, GHOST.INKY, GHOST.SUE};
-    public static final int MILLIS_TO_FINISH = 20;
-    private long move_number = 0;
+    private long moveNumber = 0;
 
-    protected long total_time_millis = 0;
+    protected long totalTimeMillis = 0;
 
-    /**
-     *
-     * @param channel_transmission_speed Transmission speed in bytes per second.
-     * @param verbose Verbose level.
-     */
-    public DistributedMCTSController(long channel_transmission_speed, long channel_buffer_size, boolean verbose) {
-        this.network = new Network(channel_transmission_speed);
+    public DistributedMCTSController()  {
         this.network.setTimer(this);
-        this.verbose = verbose;
-        this.channel_buffer_size = channel_buffer_size;
     }
 
     public DistributedMCTSController addGhostAgent(GhostAgent ghost_agent) {
         assert !agents.containsKey(ghost_agent.ghost());
         for (GhostAgent ally: agents.values()) {
-            Channel out_channel = network.openChannel(String.format("%s$%s", ghost_agent.ghostName(), ally.ghostName()), channel_buffer_size);
-            Channel in_channel = network.openChannel(String.format("%s$%s", ally.ghostName(), ghost_agent.ghostName()), channel_buffer_size);
+            Channel out_channel = network.openChannel(String.format("%s$%s", ghost_agent.ghostName(), ally.ghostName()), channelBufferSize);
+            Channel in_channel = network.openChannel(String.format("%s$%s", ally.ghostName(), ghost_agent.ghostName()), channelBufferSize);
             ghost_agent.addAlly(out_channel, ally);
             ally.addAlly(in_channel, ghost_agent);
         }
@@ -57,7 +56,7 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
     public EnumMap<GHOST, MOVE> getMove(Game game, long timeDue) {
         long start_time = System.currentTimeMillis();
         assert agents.size()==4;
-        move_number++;
+        moveNumber++;
 
         /* update agents' trees */
         for (GHOST ghost: GHOST.values()) {
@@ -67,15 +66,15 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
 
         /* alternately run logic of agents (simulates parallel run) */
         do {
-            agents.get(ghosts[current_ghost]).step();
-            current_ghost = (current_ghost+1)%4;
-        } while ((System.currentTimeMillis()+MILLIS_TO_FINISH)<timeDue);
+            agents.get(ghosts[currentGhost]).step();
+            currentGhost = (currentGhost+1)%4;
+        } while ((System.currentTimeMillis()+Constants.MILLIS_TO_FINISH)<timeDue);
 
         /* gather ghosts' moves and return result */
         for (GHOST ghost: GHOST.values()) {
             moves.put(ghost, agents.get(ghost).getMove());
         }
-        if (verbose) {
+        if (verboseLevel.check(VerboseLevel.VERBOSE)) {
             int total_simulations_count = 0;
 
             for (GhostAgent agent: agents.values()) {
@@ -83,19 +82,19 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
             }
             double computation_time = (System.currentTimeMillis()-start_time)/1000.0;
             System.out.printf("MOVE INFO [node_index=%d]: computation time: %.3f s, simulations: %s, move (no.%s): %s\n",
-                    game.getPacmanCurrentNodeIndex(), computation_time, total_simulations_count, move_number, moves);
+                    game.getPacmanCurrentNodeIndex(), computation_time, total_simulations_count, moveNumber, moves);
             if (timeDue - System.currentTimeMillis()<0) {
                 System.err.printf("Missed turn, delay: %d ms\n", -(timeDue - System.currentTimeMillis()));
             }
         }
 
-        total_time_millis += System.currentTimeMillis() - start_time;
+        totalTimeMillis += System.currentTimeMillis() - start_time;
         return moves;
     }
 
     @Override
     public long totalTimeMillis() {
-        return total_time_millis;
+        return totalTimeMillis;
     }
 
     @Override
@@ -110,5 +109,72 @@ public class DistributedMCTSController<G extends GhostAgent> extends Controller<
     @Override
     public double simulationsPerSecond() {
         return totalSimulations()/(0.001*totalTimeMillis());
+    }
+
+    @Override
+    public void setUcbCoef(double ucbCoef) {
+        for (GhostAgent agent: agents.values()) {
+            agent.setUcbCoef(ucbCoef);
+        }
+    }
+
+    @Override
+    public void setDeathWeight(double deathWeight) {
+        for (GhostAgent agent: agents.values()) {
+            agent.setDeathWeight(deathWeight);
+        }
+    }
+
+    @Override
+    public void setSimulationDepth(int simulationDepth) {
+        for (GhostAgent agent: agents.values()) {
+            agent.setSimulationDepth(simulationDepth);
+        }
+    }
+
+    @Override
+    public void setRandomSimulationMoveProbability(double randomSimulationMoveProbability) {
+        for (GhostAgent agent: agents.values()) {
+            agent.setRandomSimulationMoveProbability(randomSimulationMoveProbability);
+        }
+    }
+
+    @Override
+    public double averageDecisionSimulations() {
+        double sum = 0;
+        for (GhostAgent agent: agents.values()) {
+            sum += agent.averageDecisionSimulations();
+        }
+
+        return sum/agents.size();
+    }
+
+
+    public Network getNetwork() {
+        return network;
+    }
+
+    public VerboseLevel getVerboseLevel() {
+        return verboseLevel;
+    }
+
+    @Override public void setVerboseLevel(VerboseLevel verboseLevel) {
+        this.verboseLevel = verboseLevel;
+    }
+
+    public double getUcbCoef() {
+        return agents.get(GHOST.BLINKY).getUcbCoef();
+    }
+
+    public double getDeathWeight() {
+        return agents.get(GHOST.BLINKY).getDeathWeight();
+    }
+
+    public int getSimulationDepth() {
+        return agents.get(GHOST.BLINKY).getSimulationDepth();
+    }
+
+    public double getRandomSimulationMoveProbability() {
+        return agents.get(GHOST.BLINKY).getRandomSimulationMoveProbability();
     }
 }

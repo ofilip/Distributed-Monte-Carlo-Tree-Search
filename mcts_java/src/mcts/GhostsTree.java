@@ -7,24 +7,6 @@ import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
 public class GhostsTree extends MCTree<EnumMap<GHOST, MOVE>> implements Cloneable {
-//    public GhostsTree copy(long depth)  {
-//        return new GhostsTree(this, depth);
-//    }
-
-//    public GhostsTree copyGhostsMoves() {
-//        if (this.root.pacmanOnTurn()) {
-//            /* if pacman is on turn then joint turn happens so it is necessary
-//             * to return the tree containing two levels. */
-//            return copy(2);
-//        } else {
-//            /* ghost is on turn => return first level only */
-//            return copy(1);
-//        }
-//    }
-//
-//    public GhostsTree(GhostsTree tree, long depth) {
-//        super(tree, depth);
-//    }
 
     public GhostsTree(Game game, Selector selector, GuidedSimulator simulator, Backpropagator backpropagator, double ucb1_coef) {
         super(game, selector, simulator, backpropagator, ucb1_coef);

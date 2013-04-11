@@ -21,8 +21,8 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
     private final Map<GHOST, MoveMessage> received_moves = new EnumMap<GHOST, MoveMessage>(GHOST.class);
     private long total_simulations = 0;
 
-    public SimulationResultsPassingAgent(DistributedMCTSController controller, final GHOST ghost, int simulation_depth, double ucb_coef, VerboseLevel verbose) {
-        super(controller, ghost, simulation_depth, ucb_coef, verbose);
+    public SimulationResultsPassingAgent(DistributedMCTSController controller, final GHOST ghost) {
+        super(controller, ghost);
 
         hookMoveMessageHandler(received_moves);
 
@@ -34,10 +34,6 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
                 } catch (InvalidActionListException e) { assert(false); }
             }
         });
-    }
-
-    public SimulationResultsPassingAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef) {
-        this(controller, ghost, simulation_depth, ucb_coef, VerboseLevel.QUIET);
     }
 
     private void sendMessages(List<Action> action_list, double simulation_result) {

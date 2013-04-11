@@ -1,10 +1,10 @@
-package mcts.entries.pacman;
+package mcts.entries;
 
 import java.util.EnumMap;
 import mcts.*;
 import mcts.AvgBackpropagator;
 import mcts.Backpropagator;
-import mcts.MCTSController;
+import mcts.PlainMCTSController;
 import mcts.MCTree;
 import mcts.GuidedSimulator;
 import mcts.PacmanTree;
@@ -17,7 +17,7 @@ import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 import pacman.game.GameView;
 
-public class MCTSPacman extends MCTSController<PacmanTree, MOVE> {
+public class MCTSPacman extends PlainMCTSController<PacmanTree, MOVE> {
 
 
 //    public MCTSPacman(int simulation_depth, double ucb_coef, boolean verbose, int iterations) {
@@ -30,8 +30,8 @@ public class MCTSPacman extends MCTSController<PacmanTree, MOVE> {
                 ||game.getCurrentLevel()!=currentLevel /* new level */
                 ||game.wasPacManEaten() /* pacman eaten */
                 ||Utils.globalReversalHappened(game) /* accidental reversal */
-                ||last_move==MOVE.NEUTRAL /* last getMove() didn't finish in limit */
-                ||last_move!=game.getPacmanLastMoveMade()
+                ||prevousMove==MOVE.NEUTRAL /* last getMove() didn't finish in limit */
+                ||prevousMove!=game.getPacmanLastMoveMade()
                 ||mctree.root().getTotalTicks()>guidedSimulator.getMaxDepth()/2 /* simulation is too much shortened */
                 ) {
             /* (re)initialize MC-tree and its components */
@@ -40,11 +40,11 @@ public class MCTSPacman extends MCTSController<PacmanTree, MOVE> {
             /* remember current level */
             currentLevel = game.getCurrentLevel();
         } else {
-            assert previous_game!=null;
-            EnumMap<Constants.GHOST, Constants.MOVE> last_ghosts_moves = Utils.lastGhostsDecisionMoves(game, previous_game);
+            assert previousGame!=null;
+            EnumMap<Constants.GHOST, Constants.MOVE> last_ghosts_moves = Utils.lastGhostsDecisionMoves(game, previousGame);
             mcTree().advanceTree(game.getPacmanLastMoveMade(), last_ghosts_moves);
         }
-        last_move = MOVE.NEUTRAL;
+        prevousMove = MOVE.NEUTRAL;
     }
 
     @Override

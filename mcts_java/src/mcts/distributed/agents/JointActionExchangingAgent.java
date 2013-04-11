@@ -9,35 +9,32 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import mcts.Constants;
 import mcts.distributed.DistributedMCTSController;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import utils.Pair;
 import utils.VerboseLevel;
 
-public class JointActionExchangingAgent extends FullMCTSGhostAgent {
+public class JointActionExchangingAgent extends FullMCTSGhostAgent implements AgentSendingRegularMessages {
     private final Map<GHOST, MoveMessage> received_moves = new EnumMap<GHOST, MoveMessage>(GHOST.class);
-    private int moves_message_interval;
-    private long last_message_sending_time = 0;
-    private long total_simulations = 0;
+    private long moveMessageInterval = Constants.DEFAULT_MESSAGE_INTERVAL;
+    private long lastMessageSendTime = 0;
+    private long totalSimulations = 0;
 
 
-    public JointActionExchangingAgent(DistributedMCTSController controller, final GHOST ghost, int simulation_depth, double ucb_coef, int moves_message_interval, final VerboseLevel verbose) {
-        super(controller, ghost, simulation_depth, ucb_coef, verbose);
+    public JointActionExchangingAgent(DistributedMCTSController controller, final GHOST ghost, int moves_message_interval) {
+        super(controller, ghost);
         hookMoveMessageHandler(received_moves);
-        this.moves_message_interval = moves_message_interval;
-    }
-
-    public JointActionExchangingAgent(DistributedMCTSController controller, GHOST ghost, int simulation_depth, double ucb_coef, int moves_message_interval) {
-        this(controller, ghost, simulation_depth, ucb_coef, moves_message_interval, VerboseLevel.QUIET);
+        this.moveMessageInterval = moves_message_interval;
     }
 
     private void sendMessages() {
-        long current_time = controller.currentMillis();
+        long currentTime = controller.currentMillis();
 
-        if (current_time-last_message_sending_time>moves_message_interval) {
+        if (currentTime-lastMessageSendTime>moveMessageInterval) {
             broadcastMoveMessage(Priority.HIGH);
-            last_message_sending_time = current_time;
+            lastMessageSendTime = currentTime;
         }
     }
 
@@ -45,7 +42,7 @@ public class JointActionExchangingAgent extends FullMCTSGhostAgent {
     public void step() {
         receiveMessages();
         if (!Double.isNaN(mctree.iterate())) {
-            total_simulations++;
+            totalSimulations++;
         }
         sendMessages();
     }
@@ -57,7 +54,15 @@ public class JointActionExchangingAgent extends FullMCTSGhostAgent {
 
     @Override
     public long totalSimulations() {
-        return total_simulations;
+        return totalSimulations;
+    }
+
+    public long getMessageInterval() {
+        return moveMessageInterval;
+    }
+
+    public void setMessageInterval(long interval) {
+        this.moveMessageInterval = interval;
     }
 
 }

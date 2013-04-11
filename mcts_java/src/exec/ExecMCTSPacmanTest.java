@@ -3,9 +3,10 @@ package exec;
 import exec.utils.Executor;
 import java.lang.reflect.Constructor;
 import java.util.EnumMap;
-import mcts.MCTSController;
-import mcts.entries.ghosts.MCTSGhosts;
-import mcts.entries.pacman.MCTSPacman;
+import mcts.Constants;
+import mcts.PlainMCTSController;
+import mcts.entries.MCTSGhosts;
+import mcts.entries.MCTSPacman;
 import pacman.controllers.Controller;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
@@ -21,7 +22,7 @@ public class ExecMCTSPacmanTest
     public static void main(String[] args) {
         try {
             int pacman_time = Integer.parseInt(args[0]);
-            int ghost_time = 40+MCTSController.MILLIS_TO_FINISH;
+            int ghost_time = 40+Constants.MILLIS_TO_FINISH;
             Class ghost_class = Class.forName(args[1]);
             int sim_depth = 120;
             double ucb_coef = Double.parseDouble(args[2]);
@@ -37,7 +38,7 @@ public class ExecMCTSPacmanTest
             Controller<EnumMap<GHOST,MOVE>> ghost_controller = (Controller<EnumMap<GHOST,MOVE>>)ghost_constructor.newInstance(new Object[]{});
             Executor exec = new Executor();
 
-            Game result = exec.runGame(pacman_controller, ghost_controller, false, pacman_time+MCTSController.MILLIS_TO_FINISH, ghost_time, false);
+            Game result = exec.runGame(pacman_controller, ghost_controller, false, pacman_time, ghost_time, false);
             System.out.printf("%s\t%s\t%s\t%s\t"
                     + "%s\t%s\t%s\t%s\t"
                     + "%f\t%f\t%d",

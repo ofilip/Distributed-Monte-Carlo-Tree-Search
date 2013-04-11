@@ -22,7 +22,7 @@ import pacman.controllers.KeyBoardInput;
 import pacman.controllers.examples.*;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.examples.StarterPacMan;
-import mcts.entries.ghosts.MCTSGhosts;
+import mcts.entries.MCTSGhosts;
 import pacman.game.Game;
 import pacman.game.GameView;
 
