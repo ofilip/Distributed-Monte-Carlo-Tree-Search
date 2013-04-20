@@ -34,27 +34,31 @@ public class DistributedMCTSController
 
     protected long totalTimeMillis = 0;
 
+    private long endTime;
+    private long startTime;
+
     public DistributedMCTSController()  {
         this.network.setTimer(this);
     }
 
-    public DistributedMCTSController addGhostAgent(GhostAgent ghost_agent) {
-        assert !agents.containsKey(ghost_agent.ghost());
+    public DistributedMCTSController addGhostAgent(GhostAgent ghostAgent) {
+        assert !agents.containsKey(ghostAgent.ghost());
         for (GhostAgent ally: agents.values()) {
-            Channel out_channel = network.openChannel(String.format("%s$%s", ghost_agent.ghostName(), ally.ghostName()), channelBufferSize);
-            Channel in_channel = network.openChannel(String.format("%s$%s", ally.ghostName(), ghost_agent.ghostName()), channelBufferSize);
-            ghost_agent.addAlly(out_channel, ally);
-            ally.addAlly(in_channel, ghost_agent);
+            Channel out_channel = network.openChannel(String.format("%s$%s", ghostAgent.ghostName(), ally.ghostName()), channelBufferSize);
+            Channel in_channel = network.openChannel(String.format("%s$%s", ally.ghostName(), ghostAgent.ghostName()), channelBufferSize);
+            ghostAgent.addAlly(out_channel, ally);
+            ally.addAlly(in_channel, ghostAgent);
         }
-        agents.put(ghost_agent.ghost(), ghost_agent);
+        agents.put(ghostAgent.ghost(), ghostAgent);
         return this;
     }
 
-    @Override public long currentMillis() { return System.currentTimeMillis()/agents.size(); }
+    public long currentMillis() { return totalTimeMillis+(startTime>endTime? (System.currentTimeMillis()-startTime): 0); }
+    @Override public long currentVirtualMillis() { return currentMillis()/agents.size(); }
 
     @Override
     public EnumMap<GHOST, MOVE> getMove(Game game, long timeDue) {
-        long start_time = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
         assert agents.size()==4;
         moveNumber++;
 
@@ -80,7 +84,7 @@ public class DistributedMCTSController
             for (GhostAgent agent: agents.values()) {
                 total_simulations_count += agent.getTree().size();
             }
-            double computation_time = (System.currentTimeMillis()-start_time)/1000.0;
+            double computation_time = (System.currentTimeMillis()-startTime)/1000.0;
             System.out.printf("MOVE INFO [node_index=%d]: computation time: %.3f s, simulations: %s, move (no.%s): %s\n",
                     game.getPacmanCurrentNodeIndex(), computation_time, total_simulations_count, moveNumber, moves);
             if (timeDue - System.currentTimeMillis()<0) {
@@ -88,7 +92,8 @@ public class DistributedMCTSController
             }
         }
 
-        totalTimeMillis += System.currentTimeMillis() - start_time;
+        endTime = System.currentTimeMillis();
+        totalTimeMillis += System.currentTimeMillis() - startTime;
         return moves;
     }
 
@@ -176,5 +181,21 @@ public class DistributedMCTSController
 
     public double getRandomSimulationMoveProbability() {
         return agents.get(GHOST.BLINKY).getRandomSimulationMoveProbability();
+    }
+
+    public double transmittedSuccessfullyPerSecond() {
+        long transmittedSuccessfully = 0;
+        for (Channel channel: network.getChannels().values()) {
+            transmittedSuccessfully += channel.transmittedSuccessfully();
+        }
+        return 1000*transmittedSuccessfully/(4.0*totalTimeMillis());
+    }
+
+    public double transmittedTotalPerSecond() {
+        long transmittedTotal = 0;
+        for (Channel channel: network.getChannels().values()) {
+            transmittedTotal += channel.transmittedTotal();
+        }
+        return 1000*transmittedTotal/(double)(network.getChannels().size()*(totalTimeMillis()/4.0));
     }
 }

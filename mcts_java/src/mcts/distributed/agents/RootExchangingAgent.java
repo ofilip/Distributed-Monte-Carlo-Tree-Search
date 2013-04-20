@@ -10,15 +10,11 @@ import mcts.GhostsNode;
 import mcts.MCNode;
 import mcts.PacmanNode;
 import mcts.distributed.DistributedMCTSController;
-import mcts.distributed.IntervalHistory;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
-import utils.VerboseLevel;
 
 public class RootExchangingAgent extends FullMCTSGhostAgent {
     private Map<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>> received_roots = new EnumMap<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>>(GHOST.class);
-    private IntervalHistory interval_history = new IntervalHistory(5);
-    private long last_message_sending_time = 0;
     private long total_simulations;
 
     public RootExchangingAgent(DistributedMCTSController controller, final GHOST ghost) {
@@ -63,16 +59,13 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
     }
 
     private void sendMessages() {
-        long current_time = controller.currentMillis();
         EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> roots = extractRoots();
 
         /* send messages only if next turn is ghosts turn */
         if (roots==null) return;
 
         RootMessage message = new RootMessage(roots);
-        broadcastMessageIfLowBuffer(Priority.MEDIUM, message, (long)Math.floor(0.8*interval_history.averageInterval()));
-        if (current_time!=0) interval_history.putTime(current_time-last_message_sending_time);
-        last_message_sending_time = current_time;
+        broadcastMessage(Priority.MEDIUM, message, true);
     }
 
     @Override

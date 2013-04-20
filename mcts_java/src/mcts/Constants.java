@@ -5,7 +5,7 @@ public class Constants {
     public static final int MILLIS_TO_FINISH = 0;
     public static final long DEFAULT_CHANNEL_TRANSMISSION_SPEED = 1024;
     public static final long DEFAULT_CHANNEL_BUFFER_SIZE = 8192;
-    public static final double DEFAULT_UCB_COEF = 0.3;
+    public static final double DEFAULT_UCB_COEF = 0.1;
     public static final double DEFAULT_DEATH_WEIGHT = 0.25;
     public static final int DEFAULT_SIMULATION_DEPTH = 120;
     public static final double DEFAULT_RANDOM_PROB = 1;

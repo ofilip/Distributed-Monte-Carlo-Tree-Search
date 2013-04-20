@@ -1,16 +1,12 @@
 package communication;
 
 import communication.messages.Message;
+import static org.junit.Assert.*;
+import org.junit.Test;
+import utils.AnotherDummyMessage;
 import utils.DummyMessage;
 import utils.SecondsToSend;
 import utils.TestUtils;
-import java.util.Random;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class ChannelTest {
 
@@ -105,6 +101,52 @@ public class ChannelTest {
         assertEquals(0, channel.receiveQueueItemsCount());
         assertEquals(0, channel.receiveQueueLength());
         assertEquals(0, channel.secondsToSendAll(), 1e-6);
+    }
+
+    @Test
+    public void testClearUnsent() {
+        Network network = new Network(20);
+        Channel channel = network.openChannel("channel", 100);
+
+        channel.send(Priority.MEDIUM, new DummyMessage(5));
+        channel.send(Priority.MEDIUM, new DummyMessage(5));
+        channel.send(Priority.MEDIUM, new DummyMessage(5));
+        channel.send(Priority.MEDIUM, new DummyMessage(5));
+        channel.send(Priority.MEDIUM, new DummyMessage(5));
+
+        channel.flushUnsent();
+
+        assertEquals(false, channel.sendQueueEmpty());
+        assertEquals(1, channel.sendQueueItemsCount());
+        assertEquals(5, channel.sendQueueLength());
+        assertEquals(true, channel.receiveQueueEmpty());
+
+        TestUtils.sleep(300);
+
+        assertEquals(true, channel.sendQueueEmpty());
+        assertEquals(false, channel.receiveQueueEmpty());
+        assertEquals(1, channel.receiveQueueItemsCount());
+        assertEquals(5, channel.receiveQueueLength());
+    }
+
+    @Test
+    public void testSendQueueFlushUnsentWithClass() {
+        Network network = new Network(1);
+        Channel channel = network.openChannel("channel", 1000);
+
+        channel.send(Priority.MEDIUM, new DummyMessage(0x01));
+        channel.send(Priority.MEDIUM, new AnotherDummyMessage(0x02));
+        channel.send(Priority.MEDIUM, new DummyMessage(0x04));
+        channel.send(Priority.MEDIUM, new AnotherDummyMessage(0x08));
+        channel.send(Priority.MEDIUM, new DummyMessage(0x10));
+        channel.send(Priority.MEDIUM, new AnotherDummyMessage(0x20));
+        channel.send(Priority.MEDIUM, new AnotherDummyMessage(0x40));
+        channel.send(Priority.MEDIUM, new DummyMessage(0x80));
+        channel.send(Priority.MEDIUM, new AnotherDummyMessage(0x100));
+
+        channel.sendQueueFlushUnsent(AnotherDummyMessage.class);
+
+        assertEquals(0x95, channel.sendQueueLength());
     }
 
     @Test
@@ -391,7 +433,7 @@ public class ChannelTest {
 
         TestUtils.sleep(50);
 
-        channel.clear();
+        channel.flush();
 
         assertEquals(true, channel.sendQueueEmpty());
         assertEquals(0, channel.sendQueueItemsCount());

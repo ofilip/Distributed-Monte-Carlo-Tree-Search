@@ -70,6 +70,7 @@ public abstract class MCTree<M> {
     }
 
     public abstract M bestMove(Game game);
+    public abstract M bestDecisionMove();
     public abstract boolean decisionNeeded();
 
     public void moveToNode(MCNode node) {
@@ -79,10 +80,10 @@ public abstract class MCTree<M> {
     }
 
     public void advanceTree(MOVE last_pacman_move, EnumMap<GHOST, MOVE> last_ghosts_moves) {
-        root.ticks_to_go--;
-        assert root.ticks_to_go>=-2;
+        root.ticksToGo--;
+        assert root.ticksToGo>=-2;
 
-        while (root.ticks_to_go==-1) {
+        while (root.ticksToGo==-1) {
             MCNode next_node;
             if (root.pacmanOnTurn()) {
                 next_node = root.child(last_pacman_move);
@@ -91,7 +92,7 @@ public abstract class MCTree<M> {
             }
             next_node.expand();
             root = next_node;
-            root.ticks_to_go += -1; /* propagate -1 delay */
+            root.ticksToGo += -1; /* propagate -1 delay */
             root.parent = null; /* drop unreachable paths */
         }
     }

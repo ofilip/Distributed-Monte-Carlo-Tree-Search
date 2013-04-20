@@ -36,14 +36,14 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
         });
     }
 
-    private void sendMessages(List<Action> action_list, double simulation_result) {
+    private void sendMessages(List<Action> actionList, double simulationResults) {
         //TODO:
         // * aggregated information passing
         // * load ballancing
         // * push message at the beginning of message queue
 
         /* Broadcast simulation results and enqueue messages before prevously enqueued simulation messages */
-        SimulationResultMessage message = new SimulationResultMessage(action_list, simulation_result);
+        SimulationResultMessage message = new SimulationResultMessage(actionList, simulationResults);
         broadcastMessage(Priority.MEDIUM, message, true);
 
         /* Each MOVE_MESSAGE_INTERVAL simulation messages add a move message */

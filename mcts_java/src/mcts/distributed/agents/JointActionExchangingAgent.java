@@ -1,40 +1,30 @@
 package mcts.distributed.agents;
 
 import communication.Priority;
-import communication.messages.Message;
 import communication.messages.MoveMessage;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import mcts.Constants;
+import mcts.Utils;
 import mcts.distributed.DistributedMCTSController;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
-import utils.Pair;
-import utils.VerboseLevel;
 
-public class JointActionExchangingAgent extends FullMCTSGhostAgent implements AgentSendingRegularMessages {
-    private final Map<GHOST, MoveMessage> received_moves = new EnumMap<GHOST, MoveMessage>(GHOST.class);
-    private long moveMessageInterval = Constants.DEFAULT_MESSAGE_INTERVAL;
-    private long lastMessageSendTime = 0;
+public class JointActionExchangingAgent extends FullMCTSGhostAgent {
+    private final Map<GHOST, MoveMessage> receivedMoves = new EnumMap<GHOST, MoveMessage>(GHOST.class);
     private long totalSimulations = 0;
+    private EnumMap<GHOST, MOVE> lastBestMove = Utils.NEUTRAL_GHOSTS_MOVES; /* best move during last message sending */
 
 
-    public JointActionExchangingAgent(DistributedMCTSController controller, final GHOST ghost, int moves_message_interval) {
+    public JointActionExchangingAgent(DistributedMCTSController controller, final GHOST ghost) {
         super(controller, ghost);
-        hookMoveMessageHandler(received_moves);
-        this.moveMessageInterval = moves_message_interval;
+        hookMoveMessageHandler(receivedMoves);
     }
 
     private void sendMessages() {
-        long currentTime = controller.currentMillis();
-
-        if (currentTime-lastMessageSendTime>moveMessageInterval) {
+        EnumMap<GHOST,MOVE> currentBestMove = mctree.bestDecisionMove();
+        if (!Utils.ghostMovesEqual(currentBestMove,Utils.NEUTRAL_GHOSTS_MOVES)&&!Utils.ghostMovesEqual(lastBestMove, currentBestMove)) {
+            lastBestMove = currentBestMove;
             broadcastMoveMessage(Priority.HIGH);
-            lastMessageSendTime = currentTime;
         }
     }
 
@@ -49,20 +39,11 @@ public class JointActionExchangingAgent extends FullMCTSGhostAgent implements Ag
 
     @Override
     public MOVE getMove() {
-        return getMoveFromMessages(received_moves);
+        return getMoveFromMessages(receivedMoves);
     }
 
     @Override
     public long totalSimulations() {
         return totalSimulations;
     }
-
-    public long getMessageInterval() {
-        return moveMessageInterval;
-    }
-
-    public void setMessageInterval(long interval) {
-        this.moveMessageInterval = interval;
-    }
-
 }

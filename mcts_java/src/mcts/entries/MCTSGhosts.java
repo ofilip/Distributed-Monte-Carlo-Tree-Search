@@ -45,7 +45,7 @@ public class MCTSGhosts extends PlainMCTSController<GhostsTree, EnumMap<GHOST, M
                 ||game.wasPacManEaten() /* pacman eaten */
                 ||Utils.globalReversalHappened(game) /* accidental reversal */
                 ||prevousMove==null /* last getMove() didn't finish in limit */
-                ||!Utils.compareGhostsMoves(prevousMove, Utils.lastGhostsMoves(game))
+                ||!Utils.ghostMovesEqual(prevousMove, Utils.lastGhostsMoves(game))
                 ||mctree.root().getTotalTicks()>guidedSimulator.getMaxDepth()/2 /* simulation is too much shortened */
                 ) {
             /* (re)initialize MC-tree and its components */

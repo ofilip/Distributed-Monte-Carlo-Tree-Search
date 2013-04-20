@@ -225,7 +225,7 @@ public class Utils {
         return g1.getGameState().equals(g2.getGameState());
     }
 
-    public static boolean compareGhostsMoves(EnumMap<GHOST, MOVE> m1, EnumMap<GHOST, MOVE> m2) {
+    public static boolean ghostMovesEqual(EnumMap<GHOST, MOVE> m1, EnumMap<GHOST, MOVE> m2) {
         for (GHOST ghost: GHOST.values()) {
             if (m1.get(ghost)!=m2.get(ghost)) {
                 return false;

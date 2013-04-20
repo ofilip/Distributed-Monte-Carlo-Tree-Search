@@ -6,27 +6,27 @@ import mcts.Utils;
 import pacman.game.Constants.*;
 
 public class SimulationResultMessage extends Message {
-    private List<Action> tree_moves; /* Moves defining node where the simulation began */
-    private double simulation_result;
-    
-    public SimulationResultMessage(List<Action> tree_moves, double simulation_result) {
+    private List<Action> treeMoves; /* Moves defining node where the simulation began */
+    private double simulationResult;
+
+    public SimulationResultMessage(List<Action> treeMoves, double simulationResult) {
         super("simulation_result");
-        this.tree_moves = tree_moves;
-        this.simulation_result = simulation_result;
+        this.treeMoves = treeMoves;
+        this.simulationResult = simulationResult;
     }
-    
-    public List<Action> treeMoves() { return tree_moves; }
-    public double simulationResult() { return simulation_result; }
-    
+
+    public List<Action> treeMoves() { return treeMoves; }
+    public double simulationResult() { return simulationResult; }
+
     @Override
     public long length() {
-        long bits_length = 8; /* size of double */
-        
-        for (Action action: tree_moves) {
-            bits_length += action.type().bitLength();
+        long bitsLength = 8; /* size of double */
+
+        for (Action action: treeMoves) {
+            bitsLength += action.type().bitLength();
         }
-        
-        return Utils.bitsToBytes(bits_length);
+
+        return Utils.bitsToBytes(bitsLength);
     }
 
 }

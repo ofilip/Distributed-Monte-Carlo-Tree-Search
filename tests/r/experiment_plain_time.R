@@ -1,13 +1,13 @@
-setwd("d:/diplomka/git/Distributed-Monte-Carlo-Tree-Search/tests")
+setwd("d:/diplomka/git/tests")
 library(reshape)
 library(gplots)
-source(file="r/utils.r")
+source(file="r/utils.R")
 
 plot_data <- function(my_data) {
-	melted_data <- melt(my_data, id=c("ghost_death_weight", "ghost_time", "ghost_class"))
+	melted_data <- melt(my_data, id=c("ghost_death_weight", "ghost_time", "ghost_class", "ghost_sim_depth"))
 
-scores <- cast(melted_data, ghost_death_weight+ghost_class+ghost_time~variable, mean)
-	scores_matrix <- data.matrix(cast(scores, ghost_death_weight+ghost_time~ghost_class, value="score"))	
+	scores <- cast(melted_data, ghost_death_weight+ghost_class+ghost_time+ghost_sim_depth~variable, mean)
+	scores_matrix <- data.matrix(cast(scores, ghost_death_weight+ghost_time+ghost_sim_depth~ghost_class, value="score"))	
 	#scores_matrix <- scores_matrix[,4:4]
 
 	#cils <- cast(melted_data, ghost_death_weight+ghost_class~variable, cil)
@@ -30,8 +30,8 @@ scores <- cast(melted_data, ghost_death_weight+ghost_class+ghost_time~variable, 
 	)
 }
 
-data <- read.delim("results/20130410-plain-mcts-dw-test.txt", row.names=NULL)
-data <- data[c("score", "ghost_class", "ghost_death_weight", "ghost_time")]
+data <- read.delim("results/20130413-1017-simdepth-tuning.txt", row.names=NULL)
+data <- data[c("score", "ghost_class", "ghost_death_weight", "ghost_time", "ghost_sim_depth")]
 plot_data(data)
 
 #plot_data(data[data$pacman_class=="ICEP_IDDFS",])

@@ -22,7 +22,7 @@ public abstract class MCNode implements UCBNode {
     int visit_count;
     double value;
 
-    int ticks_to_go;
+    int ticksToGo;
     long totalTicks; /* ticks from original root (before any updateTree() call */
 
     protected boolean halfstep = false;
@@ -71,7 +71,7 @@ public abstract class MCNode implements UCBNode {
         this.tree = tree;
         this.parent = parent;
         this.game = game;
-        this.ticks_to_go = initial_ticks;
+        this.ticksToGo = initial_ticks;
         this.pacman_decision_gap = pacman_decision_gap;
         this.decision_cause = DecisionCause.NONE;
         this.totalTicks = totalTicks;
@@ -95,7 +95,7 @@ public abstract class MCNode implements UCBNode {
     }
 
     public int ticksToGo() {
-        return ticks_to_go;
+        return ticksToGo;
     }
 
     public double simulate() {
@@ -186,6 +186,10 @@ public abstract class MCNode implements UCBNode {
     public MCNode bestMove() {
         MCNode best = null;
 
+        if (children()==null) {
+            return null;
+        }
+        
         for (MCNode child: children()) {
             if (best==null||child.visitCount()>best.visitCount()) {
                 best = child;
@@ -285,7 +289,7 @@ public abstract class MCNode implements UCBNode {
             decision = Decision.nextDecision(game, (pacman_decision_gap+1)%Decision.PACMAN_DECISION_GAP, true);
             game = decision.game;
             decision.ticks++; /* +1 for advanceGame(game) */
-            ticks_to_go = decision.ticks;
+            ticksToGo = decision.ticks;
         } else if (isRoot()) {
             decision = Decision.nextDecision(game, pacman_decision_gap, false);
         } else {
@@ -332,7 +336,7 @@ public abstract class MCNode implements UCBNode {
             result.append("/halfstep");
         }
         result.append(" c=").append(this.visit_count)
-                .append(" t=").append(this.ticks_to_go)
+                .append(" t=").append(this.ticksToGo)
                 .append(" v=").append(this.value());
 
 

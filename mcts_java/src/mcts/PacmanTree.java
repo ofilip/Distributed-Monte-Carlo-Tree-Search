@@ -16,20 +16,36 @@ public class PacmanTree extends MCTree<MOVE> {
         root = GhostsNode.createRoot(this, game);
     }
 
+
+
     @Override
-    public MOVE bestMove(Game current_game) {
+    public MOVE bestMove(Game currentGame) {
         MCNode node = root;
 
         /* skip ghosts decisions */
-        while (node.ghostsOnTurn()&&node.ticks_to_go==0) {
+        while (node!=null&&node.ghostsOnTurn()&&node.ticksToGo==0) {
             node = node.bestMove();
         }
 
-        if (node.pacmanOnTurn()&&node.ticks_to_go==0) {
+        if (node==null) {
+            return MOVE.NEUTRAL;
+        } else if (node.ghostsOnTurn()&&node.ticksToGo==0) {
             return ((PacmanNode)node.bestMove()).pacmanMove();
         } else {
-            return Utils.pacmanFollowRoad(current_game);
+            return Utils.pacmanFollowRoad(currentGame);
         }
+    }
+
+    @Override
+    public MOVE bestDecisionMove() {
+                MCNode node = root;
+
+        /* skip ghosts decisions */
+        while (node!=null&&node.ghostsOnTurn()) {
+            node = node.bestMove();
+        }
+
+        return node==null? MOVE.NEUTRAL: ((PacmanNode)node.bestMove()).pacmanMove();
     }
 
     @Override
@@ -37,10 +53,10 @@ public class PacmanTree extends MCTree<MOVE> {
         MCNode node = root;
 
         /* skip ghosts decisions */
-        while (node.ghostsOnTurn()&&node.ticks_to_go==0) {
+        while (node.ghostsOnTurn()&&node.ticksToGo==0) {
             node = node.bestMove();
         }
 
-        return node.pacmanOnTurn()&&node.ticks_to_go==0;
+        return node.pacmanOnTurn()&&node.ticksToGo==0;
     }
 }

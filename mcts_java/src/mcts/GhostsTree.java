@@ -8,25 +8,39 @@ import pacman.game.Game;
 
 public class GhostsTree extends MCTree<EnumMap<GHOST, MOVE>> implements Cloneable {
 
-    public GhostsTree(Game game, Selector selector, GuidedSimulator simulator, Backpropagator backpropagator, double ucb1_coef) {
-        super(game, selector, simulator, backpropagator, ucb1_coef);
+    public GhostsTree(Game game, Selector selector, GuidedSimulator simulator, Backpropagator backpropagator, double ucbCoef) {
+        super(game, selector, simulator, backpropagator, ucbCoef);
         root = PacmanNode.createRoot(this, game);
     }
 
     @Override
-    public EnumMap<GHOST, MOVE> bestMove(Game current_game) {
+    public EnumMap<GHOST, MOVE> bestMove(Game currentGame) {
         MCNode node = root;
 
         /* skip pacman decisions */
-        while (node.pacmanOnTurn()&&node.ticks_to_go==0) {
+        while (node!=null&&node.pacmanOnTurn()&&node.ticksToGo==0) {
             node = node.bestMove();
         }
 
-        if (node.ghostsOnTurn()&&node.ticks_to_go==0) {
+        if (node==null) {
+            return Utils.NEUTRAL_GHOSTS_MOVES;
+        } else if (node.ghostsOnTurn()&&node.ticksToGo==0) {
             return ((GhostsNode)node.bestMove()).ghostsMoves();
         } else {
-            return Utils.ghostsFollowRoads(current_game);
+            return Utils.ghostsFollowRoads(currentGame);
         }
+    }
+
+    @Override
+    public EnumMap<GHOST, MOVE> bestDecisionMove() {
+        MCNode node = root;
+
+        /* skip pacman decisions */
+        while (node!=null&&node.pacmanOnTurn()) {
+            node = node.bestMove();
+        }
+
+        return (node==null||node.bestMove()==null)? Utils.NEUTRAL_GHOSTS_MOVES: ((GhostsNode)node.bestMove()).ghostsMoves();
     }
 
     @Override
@@ -34,10 +48,10 @@ public class GhostsTree extends MCTree<EnumMap<GHOST, MOVE>> implements Cloneabl
          MCNode node = root;
 
         /* skip pacman decisions */
-        while (node.pacmanOnTurn()&&node.ticks_to_go==0) {
+        while (node.pacmanOnTurn()&&node.ticksToGo==0) {
             node = node.bestMove();
         }
 
-        return node.ghostsOnTurn()&&node.ticks_to_go==0;
+        return node.ghostsOnTurn()&&node.ticksToGo==0;
     }
 }

@@ -1,5 +1,6 @@
 package mcts.distributed.agents;
 
+import communication.MessageSender;
 import communication.Priority;
 import communication.messages.Message;
 import communication.messages.MoveMessage;
@@ -43,7 +44,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
                 ||game.wasPacManEaten() /* pacman eaten */
                 ||Utils.globalReversalHappened(game) /* accidental reversal */
                 ||lastFullMove==null /* last getMove() didn't finish in limit */
-                ||!Utils.compareGhostsMoves(lastFullMove, Utils.lastGhostsMoves(game))
+                ||!Utils.ghostMovesEqual(lastFullMove, Utils.lastGhostsMoves(game))
                 ) {
             /* (re)initialize MC-tree and its components */
             initializeTree(game);
@@ -68,7 +69,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
         }
     }
 
-    private Comparator<Map.Entry<EnumMap<GHOST,MOVE>, Pair<Integer,GHOST>>> move_strength_entry_comparator = new Comparator<Map.Entry<EnumMap<GHOST,MOVE>, Pair<Integer,GHOST>>>() {
+    private Comparator<Map.Entry<EnumMap<GHOST,MOVE>, Pair<Integer,GHOST>>> moveStrengthEntryComparator = new Comparator<Map.Entry<EnumMap<GHOST,MOVE>, Pair<Integer,GHOST>>>() {
         @Override
         public int compare(Map.Entry<EnumMap<GHOST, MOVE>, Pair<Integer, GHOST>> t1, Map.Entry<EnumMap<GHOST, MOVE>, Pair<Integer, GHOST>> t2) {
             int i1 = t1.getValue().first;
@@ -107,37 +108,47 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
     }
 
     protected void broadcastMoveMessage(Priority priority) {
-            EnumMap<GHOST, MOVE> best_move = mctree.bestMove(currentGame);
-            MoveMessage message = new MoveMessage(best_move);
-            if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
-                System.out.printf("%s: Broadcasting %s (size %s)\n", ghost, message, message.length());
-            }
-            broadcastMessage(Priority.MEDIUM, message);
+        EnumMap<GHOST, MOVE> bestMove = mctree.bestDecisionMove();
+        MoveMessage message = new MoveMessage(bestMove);
+        if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
+            System.out.printf("%s: Broadcasting %s (size %s)\n", ghost, message, message.length());
+        }
+        
+        flushMessages(MoveMessage.class);
+        broadcastMessage(Priority.MEDIUM, message, true);
     }
 
-    protected MOVE getMoveFromMessages(final Map<GHOST, MoveMessage> received_moves) {
-                /* Return strongest move (move supported by the most agents)
+    protected MOVE nextMoveFromMessages(Game currentGame, final Map<GHOST, MoveMessage> receivedMoves) {
+        if (mctree.decisionNeeded()) {
+            return getMoveFromMessages(receivedMoves);
+        } else {
+            return Utils.ghostsFollowRoads(currentGame).get(ghost);
+        }
+    }
+
+    protected MOVE getMoveFromMessages(final Map<GHOST, MoveMessage> receivedMoves) {
+        /* Return strongest move (move supported by the most agents)
          * with priority defined by ordering on GHOST enum. */
-        EnumMap<GHOST, MOVE> my_best_move = mctree.bestMove(currentGame);
-        received_moves.put(ghost, new MoveMessage(my_best_move)); /* add my current best move to received messages */
+        EnumMap<GHOST, MOVE> myBestMove = mctree.bestMove(currentGame);
+        receivedMoves.put(ghost, new MoveMessage(myBestMove)); /* add my current best move to received messages */
 
-        Map<EnumMap<GHOST,MOVE>, Pair<Integer, GHOST>> move_strength = new HashMap<EnumMap<GHOST,MOVE>, Pair<Integer, GHOST>>();
+        Map<EnumMap<GHOST,MOVE>, Pair<Integer, GHOST>> moveStrength = new HashMap<EnumMap<GHOST,MOVE>, Pair<Integer, GHOST>>();
 
-        for (Map.Entry<GHOST, MoveMessage> entry: received_moves.entrySet()) {
+        for (Map.Entry<GHOST, MoveMessage> entry: receivedMoves.entrySet()) {
             GHOST g = entry.getKey();
             MoveMessage message = entry.getValue();
-            Pair<Integer, GHOST> current_value = move_strength.get(message.moves());
-            if (current_value==null) {
-                move_strength.put(message.moves(), new Pair<Integer, GHOST>(1, g));
+            Pair<Integer, GHOST> currentValue = moveStrength.get(message.moves());
+            if (currentValue==null) {
+                moveStrength.put(message.moves(), new Pair<Integer, GHOST>(1, g));
             } else {
-                current_value.first++;
+                currentValue.first++;
             }
         }
-        lastFullMove = Collections.min(move_strength.entrySet(), move_strength_entry_comparator).getKey();
+        lastFullMove = Collections.min(moveStrength.entrySet(), moveStrengthEntryComparator).getKey();
 
         if (verboseLevel.check(VerboseLevel.VERBOSE)) {
             System.out.printf(ghost+": ");
-            System.out.printf("my best move: %s\n", my_best_move);
+            System.out.printf("my best move: %s\n", myBestMove);
             System.out.printf("\tchosen best move: %s\n", lastFullMove);
         }
         return lastFullMove.get(ghost);

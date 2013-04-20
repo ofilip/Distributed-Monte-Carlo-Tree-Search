@@ -6,7 +6,7 @@
 \todo{Upravit podle toho, co bude skutečně v kapitole \ref{chap_mas}}
 
 We have already reviewed the Monte-Carlo Tree Search algorithm and its parallelization in
- Chapter \ref{chap_mcts} and distributed coordination algorithms and in Chapter \ref{chap_mas}.
+ Chapter \ref{chap_mcts} and distributed coordination algorithms in Chapter \ref{chap_mas}.
  The purpose of this chapter is design of distributed coordination algorithms based on
  Monte-Carlo Tree Search. Presented algorithms will work with MCTS tree kept indepentently in
  each cooperating agent. The tree will contain full information about actions done by all
@@ -58,7 +58,7 @@ MCTS calculate action. Strength measures say how strong is team guided by an alg
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$DistributedFullTreeAgent(tree)$}
+\caption{$DistributedMCTSLoop(tree)$\label{alg_dmcts_common}}
 \KwData{$tree$\dots MCTS tree}
 \KwResult{$tree$ is enlarged by newly expanded nodes and results of playouts performed are
 added. Additional actions are performed during message receiving.
@@ -75,31 +75,91 @@ $i \leftarrow 1$\;
     \If{$i = 0$}{
         $SendMessages()$\;
     }
-    $i \leftarrow (i + 1) mod N_{it}$\;
+    $i \leftarrow (i + 1)\;\mathrm{mod}\;N_{it}$\;
 }
 \Return{$\argmax\limits_{n \in Children(root)}c_n$} \tcp*[h]{Return most visited child}\;
 \end{algorithm}
 
 MCTS-based agents will iteratively build MCTS tree exactly as plain MCTS algorithm does. In
-addition before certain set of MCTS iterations, the agent receives messages from its team-mates
+addition, before certain set of MCTS iterations, the agent receives messages from its team-mates
 and performs appropriate actions. Similarly after the set of MCTS iterations, the agent
-broadcasts messages to the others. The communicaton between agents is the point differencing
-particular distributed algorithms. We call the agent building full MCTS tree
-\emph{distributed full-joint-tree agent} and the basic algorithm is depicted by Algorithm
-\ref{alg_dmcts_common}.
-
-
-
-
-
+broadcasts messages to the team-mates. The communicaton between agents is the point differencing
+particular distributed algorithms. Algorithms can also differ in other details such as random
+seed intialization. Following subsections describe particular distributed algorithms.
 
 
 \subsection{Independent Agents}
 
+We will first describe the algorithm which is supposed to be the weakest one since no
+communication between agents is performed. It serves as lower bound on performance of the
+algorithms. The only trick used for the algorithm is setting of the random seed for the
+simulation. Because there si no communication between agents, it can easily happen that agents
+discovers different local minima. To avoid such a behaviour, the random seed for all agents are
+set to same value during agent initialization. And because the agents have equal time to
+compute the answer, the size of trees at the end of computation will be similar (this may not
+be true for agents with inequal computational strength). If we suppose that all agents
+calculate exactly the same number of iterations, time proposed to the agents is $t$ and the 
+number of agents is $N$, then the
+strength of this algorithm is supposed to be equal to the plain MCTS algorithm with computation
+time equal to $t \over N$. This is obvious since the size of the tree of such a plain MCTS
+algorithm is equal to trees computed by the independent agents. The only difference is that
+independent agents have to calcupate their trees $N$-times since no communication is allowed.
+
+Advantage of the algoritmh is that no communication is needed so it is not affected by
+unreliability of the communication network.
 
 
 
-\subsection{Joint Action Exchange}
-\subsection{Root Exchange}
-\subsection{Simulation Results Passing}
-\subsection{Tree Cut Exchange}
+\subsection{Joint-Action Exchanging Agents}
+
+Simple way how to synchronize the movement of the agents is exchanging of the messages
+containing the information about the actual best joint-action (tuple of actions of all
+cooperating agents). The joint-action exchanging agents uses such a synchronization. When it is
+a time to decide which action should be played, simple voting is used. Each agent sumarizes
+most recent joint-actions received from all team-mates and uses the most frequent one. For
+situations when multiple joint-actions with same frequency occurs, ordering on agents is
+defined action played by agent higher in the ordering is played. To improve advantages of the
+algorithms, different random seeds are used for initialization of the agents and so possibly
+different local minima are considered during voting phase.
+
+Such a communication is very low-cost and so does not require wide network channel. Since the
+actual best joint-action does not change after very often, we can send the message only when it
+is changed to further reduce costs on channel and computations related to networking. For cases
+when network is too slow to handle all joint-action messages, all unsent messages (except one
+which is being already transmitted) are flushed and the recent one is enqueued.
+
+
+\subsection{Root Exchanging Agents}
+
+Joint-action exchanging agents are voting for the best joint-move but the tree from which the
+joint-move is calculated contains only simulations done by the winning agent. Root exchanging
+agents increase the strength of chosen action by merging of strengths of all possible 
+joint-actions calculated by
+all agents and so resulting joint-move is based on results from trees of all team-mates. This
+strategy is based on root parallelization algorithm described in Section
+\ref{sec_root_parallelization}.
+
+Since the results from trees are merged, we want to build different trees in each action, so 
+random seeds
+are initialized to different values for each agent. The term "root" in this case means set of
+actions $Actions(r)$ playable from the root $r$ of the MCTS tree together with their visit
+counts $n_i, i \in Children(r)$. After the root merging, all agents have identical
+set of joint-action -- visit-count pairs. Joint-action with highest summed visit count is
+selected (ordering on joint-actions is used when multiple joint-actions have same visit count).
+
+In case of single-player game, previous description of algorithm works well but there is a little
+difficulty when any oponent is considered because set $Children(r)$ may not be a set of actions of
+our team. We could simply wait for opponents turn and exchange our messages during the period
+when our team is on turn but this approach has two weaknesses. The first one is that this
+perios may be very short what may, along with unreliable networking channel, lead to no
+exchanging performed at all. The second weakness is that such a period for message
+exchanging may not be present at all in case of turn-based game converted from simultaneous
+game if current state was created by splitting simultaneous turn (see Section 
+\ref{sec_turn_based_game_conversion}). We resolve this situation by extending definition of the
+root for turn-based games with multiple teams. \todo{Popsat Next-action Tree Cut}
+
+
+
+
+\subsection{Simulation Results Exchanging Agents}
+\subsection{Tree-Cut Exchanging Agents}

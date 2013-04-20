@@ -8,7 +8,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
 import mcts.Constants;
 import mcts.MCTSControllerStats;
-import mcts.PlainMCTSController;
 import mcts.distributed.DistributedMCTSController;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
@@ -133,7 +132,7 @@ public class ExecExperiment {
                               prefix, prefix, prefix, prefix, prefix);
         }
         if (controller instanceof DistributedMCTSController) {
-            System.out.append("channel_speed\t");
+            System.out.append("channel_speed\ttransmitted_per_second_total\ttransmitted_per_second_successfully\t");
         }
     }
 
@@ -154,7 +153,9 @@ public class ExecExperiment {
                              mctsController.simulationsPerSecond());
         }
         if (controller instanceof DistributedMCTSController) {
-            //TODO
+            DistributedMCTSController dmctsController = (DistributedMCTSController)controller;
+            System.out.printf("%s\t%s\t%s\t", dmctsController.getNetwork().getChannelTransmissionSpeed(),
+                    dmctsController.transmittedTotalPerSecond(), dmctsController.transmittedSuccessfullyPerSecond());
         }
     }
 

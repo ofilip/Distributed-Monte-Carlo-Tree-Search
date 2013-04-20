@@ -1,5 +1,5 @@
 package utils;
 
 public interface VirtualTimer {
-    public long currentMillis();
+    public long currentVirtualMillis();
 }

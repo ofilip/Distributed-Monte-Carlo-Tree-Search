@@ -11,7 +11,7 @@ public class DummyGhosts extends DistributedMCTSController {
         for (GHOST ghost: GHOST.values()) {
             DummyGhostAgent agent = new DummyGhostAgent(this, ghost);
             agent.setRandomSeed(seed);
-            agents.put(ghost, agent);
+            addGhostAgent(agent);
         }
     }
 }

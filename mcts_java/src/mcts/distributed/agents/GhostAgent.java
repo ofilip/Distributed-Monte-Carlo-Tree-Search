@@ -71,10 +71,10 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
 
     public void truncateNetworkBuffers() {
         for (MessageSender sender: messageSenders.values()) {
-            sender.channel().clear();
+            sender.channel().flush();
         }
         for (MessageReceiver receiver: messageReceivers.values()) {
-            receiver.channel().clear();
+            receiver.channel().flush();
         }
     }
 
@@ -108,9 +108,15 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
         broadcastMessage(priority, message, false);
     }
 
-    protected void broadcastMessage(Priority priority, Message message, boolean send_first) {
+    protected void flushMessages(Class messageClass) {
         for (MessageSender sender: messageSenders.values()) {
-            if (send_first) {
+            sender.sendQueueFlushUnsent(messageClass);
+        }
+    }
+
+    protected void broadcastMessage(Priority priority, Message message, boolean sendFirst) {
+        for (MessageSender sender: messageSenders.values()) {
+            if (sendFirst) {
                 sender.sendFirst(priority, message);
             } else {
                 sender.send(priority, message);
@@ -118,9 +124,9 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
         }
     }
 
-    protected void broadcastMessageIfLowBuffer(Priority priority, Message message, long sending_interval) {
+    protected void broadcastMessageIfLowBuffer(Priority priority, Message message, long sendingInterval) {
         for (MessageSender sender: messageSenders.values()) {
-            if (sender.secondsToSendAll()<sending_interval) {
+            if (sender.secondsToSendAll()<sendingInterval) {
                 sender.send(priority, message);
             }
         }
@@ -130,7 +136,7 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
     @Override public void setVerboseLevel(VerboseLevel verboseLevel) { this.verboseLevel = verboseLevel; }
     @Override public double getUcbCoef() { return ucbCoef; }
     @Override public void setUcbCoef(double ucbCoef) { this.ucbCoef = ucbCoef; }
-    @Override public double getDeathWeight() { return this.mySimulator.getMaxDepth(); }
+    @Override public double getDeathWeight() { return this.mySimulator.getDeathWeight(); }
     @Override public void setDeathWeight(double deathWeight) { this.mySimulator.setDeathWeight(deathWeight); }
     @Override public int getSimulationDepth() { return this.mySimulator.getMaxDepth(); }
     @Override public void setSimulationDepth(int simulationDepth) { this.mySimulator.setMaxDepth(simulationDepth); }

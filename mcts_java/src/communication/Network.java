@@ -16,6 +16,10 @@ public class Network {
     public Network() {
     }
 
+    public Map<String, Channel> getChannels() {
+        return channels;
+    }
+
     public Network(long channelTransmissionSpeed) {
         this.channelTransmissionSpeed = channelTransmissionSpeed;
     }
@@ -60,9 +64,15 @@ public class Network {
         this.reliability = reliability;
     }
 
-    public void reset() {
+    public void clearUnsent() {
         for (Channel channel: channels.values()) {
-            channel.clear();
+            channel.flush();
+        }
+    }
+
+    public void clear() {
+        for (Channel channel: channels.values()) {
+            channel.flush();
         }
     }
 }
