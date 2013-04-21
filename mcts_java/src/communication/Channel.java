@@ -155,33 +155,33 @@ public class Channel implements MessageSender, MessageReceiver {
         return name;
     }
 
-    public void receiveQueueFlush() {
+    public synchronized void receiveQueueFlush() {
         receivedQueue.clear();
     }
 
     @Override
-    public void sendQueueFlush() {
+    public synchronized void sendQueueFlush() {
         sendingQueue.flush();
         transmittedMessage = null;
         queueMillibytesTransmitted = 0;
     }
 
     @Override
-    public void sendQueueFlushUnsent() {
+    public synchronized void sendQueueFlushUnsent() {
         sendingQueue.flush();
     }
 
     @Override
-    public void sendQueueFlushUnsent(Class messageClass) {
+    public synchronized void sendQueueFlushUnsent(Class messageClass) {
         sendingQueue.flush(messageClass);
     }
 
-    public void flushUnsent() {
+    public synchronized void flushUnsent() {
         receiveQueueFlush();
         sendQueueFlushUnsent();
     }
 
-    public void flush() {
+    public synchronized void flush() {
         receiveQueueFlush();
         sendQueueFlush();
     }

@@ -4,13 +4,14 @@ import mcts.distributed.DistributedMCTSController;
 import mcts.distributed.agents.DummyGhostAgent;
 import pacman.game.Constants.GHOST;
 
-public class DummyGhosts extends DistributedMCTSController {
-    public DummyGhosts() {
+public class SynchronizedDummyGhosts extends DistributedMCTSController {
+    public SynchronizedDummyGhosts() {
         long seed = System.currentTimeMillis();
 
         for (GHOST ghost: GHOST.values()) {
             DummyGhostAgent agent = new DummyGhostAgent(this, ghost);
-            agent.setRandomSeed(seed+ghost.ordinal());
+            agent.setRandomSeed(seed);
+            agent.setEqualRandomSeed(true);
             addGhostAgent(agent);
         }
     }

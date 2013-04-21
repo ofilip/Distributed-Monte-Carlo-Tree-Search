@@ -90,9 +90,9 @@ public class PrioritySendingQueue {
             for (Iterator<Message> it = queue.iterator(); it.hasNext(); ) {
                 Message message = it.next();
                 if (messageClass.isInstance(message)) {
-                    it.remove();
                     count--;
                     length -= message.length();
+                    it.remove();
                 }
             }
         }

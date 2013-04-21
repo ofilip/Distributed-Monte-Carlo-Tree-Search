@@ -43,10 +43,6 @@ public class GuidedSimulator {
         return 1/(1+Math.exp(-x));
     }
 
-//    public GuidedSimulator(int maxDepth, long seed) {
-//        this(maxDepth, seed, DEFAULT_RANDOM_MOVE_PROB, DEFAULT_DEATH_WEIGHT);
-//    }
-
 
     public GuidedSimulator(Random random) {
         this.random = random;

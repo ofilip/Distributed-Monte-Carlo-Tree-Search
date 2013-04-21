@@ -5,6 +5,7 @@ import communication.MessageReceiver;
 import communication.MessageSender;
 import communication.Priority;
 import communication.messages.Message;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -12,7 +13,7 @@ import mcts.AvgBackpropagator;
 import mcts.Backpropagator;
 import mcts.Constants;
 import mcts.GuidedSimulator;
-import mcts.MCTSControllerStats;
+import mcts.MCTSController;
 import mcts.MCTSEntity;
 import mcts.MCTree;
 import mcts.Selector;
@@ -25,7 +26,7 @@ import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 import utils.VerboseLevel;
 
-public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, TreeSimulationsStat {
+public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, TreeSimulationsStat, Runnable {
     protected interface MessageHandler {
         void handleMessage(GhostAgent agent, Message message);
     }
@@ -33,7 +34,8 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
     protected final GHOST ghost;
     protected Map<GhostAgent, MessageSender> messageSenders = new HashMap<GhostAgent, MessageSender>();
     protected Map<GhostAgent, MessageReceiver> messageReceivers = new HashMap<GhostAgent, MessageReceiver>();
-    protected Random random = new Random(System.currentTimeMillis());
+    protected long randomSeed = System.currentTimeMillis();
+    protected Random random = new Random(randomSeed);
     protected GuidedSimulator mySimulator = new GuidedSimulator(random);
     protected Backpropagator backpropagator = AvgBackpropagator.getInstance();
     protected Selector ucbSelector = new UCBSelector(mySimulator);
@@ -41,8 +43,15 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
     protected VerboseLevel verboseLevel = VerboseLevel.QUIET;
     protected Map<Class<?>, MessageHandler> messageHandlers = new  HashMap<Class<?>, MessageHandler>();
     protected DistributedMCTSController controller;
+    protected boolean equalRandomSeed = false;
+
+    /* Thread data */
+    protected long timeDue;
+    protected Game currentGame;
 
 
+    public boolean getEqualRandomSeed() { return equalRandomSeed; }
+    public void setEqualRandomSeed(boolean equalRandomSeed) { this.equalRandomSeed = equalRandomSeed; }
 
     public GhostAgent(DistributedMCTSController controller, GHOST ghost) {
         this.controller = controller;
@@ -50,7 +59,12 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
     }
 
     public void setRandomSeed(long seed) {
+        randomSeed = seed;
         this.random.setSeed(seed);
+    }
+
+    public Random getRandom() {
+        return random;
     }
 
     public GHOST ghost() {
@@ -78,10 +92,25 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
         }
     }
 
+    public void putThreadData(Game currentGame, long timeDue) {
+        this.currentGame = currentGame.copy();
+        this.timeDue = timeDue;
+    }
+
+    @Override
+    public void run() {
+        truncateNetworkBuffers();
+        updateTree(currentGame);
+        while (System.currentTimeMillis()<timeDue) {
+            step();
+        }
+    }
+
     public abstract void updateTree(Game game);
     public abstract MCTree getTree();
     public abstract void step();
     public abstract MOVE getMove();
+    public abstract EnumMap<GHOST,MOVE> getFullMove();
 
     protected void hookMessageHandler(Class c, MessageHandler handler) {
         messageHandlers.put(c, handler);
@@ -141,5 +170,5 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
     @Override public int getSimulationDepth() { return this.mySimulator.getMaxDepth(); }
     @Override public void setSimulationDepth(int simulationDepth) { this.mySimulator.setMaxDepth(simulationDepth); }
     @Override public double getRandomSimulationMoveProbability() { return this.mySimulator.getRandomMoveProb(); }
-    @Override public void setRandomSimulationMoveProbability(double randomSimulationMoveProbability) { this.mySimulator.setRandomMoveProb(ucbCoef); }
+    @Override public void setRandomSimulationMoveProbability(double randomSimulationMoveProbability) { this.mySimulator.setRandomMoveProb(randomSimulationMoveProbability); }
 }

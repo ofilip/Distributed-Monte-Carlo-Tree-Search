@@ -1,10 +1,34 @@
 package exec.utils;
 
 import java.util.EnumMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import pacman.controllers.Controller;
+import pacman.controllers.HumanController;
 import pacman.game.*;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
+
+class ControllerThread<M> extends Thread {
+    private Controller<M> controller;
+    private M move = null;
+    private Game game;
+    private long timeDue;
+
+    public ControllerThread(Controller<M> controller, Game game, long timeDue) {
+        this.controller = controller;
+        this.game = game.copy();
+        this.timeDue = timeDue;
+    }
+
+    public void run() {
+        move = controller.getMove(game, timeDue);
+    }
+
+    public M getMove() {
+        return move;
+    }
+}
 
 public class Experiment {
     private Game game = new SimplifiedGame(System.currentTimeMillis());
@@ -15,6 +39,7 @@ public class Experiment {
     private boolean disposeView = true;
     private int pacmanDelay = 40;
     private int ghostDelay = 40;
+    private boolean multithreaded = false;
 
     public Experiment() {
     }
@@ -25,9 +50,30 @@ public class Experiment {
 
         GameView gv = isVisual()? new GameView(getGame()).showGame(getVisualTitle()): null;
 
+
         while (!game.gameOver()) {
-            MOVE pacmanMove = getPacmanController().getMove(getGame(), System.currentTimeMillis()+getPacmanDelay());
-            EnumMap<GHOST,MOVE> ghostMove = getGhostController().getMove(getGame(), System.currentTimeMillis()+getGhostDelay());
+            MOVE pacmanMove;
+            EnumMap<GHOST,MOVE> ghostMove;
+            if (multithreaded) {
+                ControllerThread<MOVE> pacmanThread = new ControllerThread<MOVE>(pacmanController, game, System.currentTimeMillis()+getPacmanDelay());
+                ControllerThread<EnumMap<GHOST,MOVE>> ghostThread = new ControllerThread<EnumMap<GHOST,MOVE>>(ghostController, game, System.currentTimeMillis()+getGhostDelay());
+
+                pacmanThread.start();
+                ghostThread.start();
+                try {
+                    pacmanThread.join();
+                    ghostThread.join();
+                } catch (InterruptedException ex) {
+                    pacmanThread.interrupt();
+                    ghostThread.interrupt();
+                }
+
+                pacmanMove = pacmanThread.getMove();
+                ghostMove = ghostThread.getMove();
+            } else {
+                pacmanMove = getPacmanController().getMove(getGame(), System.currentTimeMillis()+getPacmanDelay());
+                ghostMove = getGhostController().getMove(getGame(), System.currentTimeMillis()+getGhostDelay());
+            }
             getGame().advanceGame(pacmanMove, ghostMove);
             if (isVisual()) {
                 gv.repaint();
@@ -40,6 +86,7 @@ public class Experiment {
 
         return getGame();
     }
+
 
     /**
      * @return the game
@@ -96,6 +143,9 @@ public class Experiment {
     public void setVisual(boolean visual) {
         this.visual = visual;
     }
+
+    public boolean isMultithreaded() { return multithreaded; }
+    public void setMultithreaded(boolean multithreaded) { this.multithreaded = multithreaded; }
 
     /**
      * @return the visualTitle

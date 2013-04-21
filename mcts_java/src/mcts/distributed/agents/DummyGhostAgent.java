@@ -1,5 +1,7 @@
 package mcts.distributed.agents;
 
+import java.util.EnumMap;
+import mcts.Utils;
 import mcts.distributed.DistributedMCTSController;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
@@ -21,6 +23,10 @@ public class DummyGhostAgent extends FullMCTSGhostAgent {
 
     @Override
     public MOVE getMove() {
+        if (verboseLevel.check(VerboseLevel.DEBUGGING)&&Utils.ghostsNeedAction(currentGame)) {
+            System.out.print(mctree.toString(2));
+            System.out.printf("%s's full move: %s\n", ghost, mctree.bestMove(currentGame));
+        }
         lastFullMove = mctree.bestMove(currentGame); /* in this context previous_game is current game */
         return lastFullMove.get(ghost);
     }

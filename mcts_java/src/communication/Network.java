@@ -51,7 +51,7 @@ public class Network {
         return timer;
     }
 
-    public void setTimer(VirtualTimer timer) {
+    public synchronized void setTimer(VirtualTimer timer) {
         if (timer==null) {
             this.timer = SystemTimer.instance;
         } else {
@@ -60,17 +60,17 @@ public class Network {
     }
 
     public Reliability getReliability() { return reliability; }
-    public void setReliability(Reliability reliability) {
+    public synchronized void setReliability(Reliability reliability) {
         this.reliability = reliability;
     }
 
-    public void clearUnsent() {
+    public synchronized void clearUnsent() {
         for (Channel channel: channels.values()) {
             channel.flush();
         }
     }
 
-    public void clear() {
+    public synchronized void clear() {
         for (Channel channel: channels.values()) {
             channel.flush();
         }

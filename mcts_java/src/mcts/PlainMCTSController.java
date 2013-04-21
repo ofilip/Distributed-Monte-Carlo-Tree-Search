@@ -9,7 +9,7 @@ import utils.VerboseLevel;
 
 public abstract class PlainMCTSController<T extends MCTree<M>, M>
                         extends Controller<M>
-                        implements MCTSControllerStats {
+                        implements MCTSController {
     protected T mctree = null;
     protected int currentLevel;
     protected Backpropagator backpropagator = AvgBackpropagator.getInstance();
@@ -107,8 +107,8 @@ public abstract class PlainMCTSController<T extends MCTree<M>, M>
         }
 
         /* initialize timing */
-        long start_time = System.currentTimeMillis();
-        int iteration_count = 0;
+        long startTime = System.currentTimeMillis();
+        int iterationCount = 0;
 
         /* update MC-tree */
         updateTree(game);
@@ -116,7 +116,7 @@ public abstract class PlainMCTSController<T extends MCTree<M>, M>
         /* do the iteration until time/iterations limit reached */
         do {
             if (!Double.isNaN(mcTree().iterate())) {
-                iteration_count++;
+                iterationCount++;
             }
         } while ((System.currentTimeMillis()+Constants.MILLIS_TO_FINISH)<timeDue);
 
@@ -135,11 +135,11 @@ public abstract class PlainMCTSController<T extends MCTree<M>, M>
 
         /* print information about move */
         if (verboseLevel.check(VerboseLevel.VERBOSE)) {
-            double computation_time = (System.currentTimeMillis()-start_time)/1000.0;
+            double computationTime = (System.currentTimeMillis()-startTime)/1000.0;
             int pacman_pos = game.getPacmanCurrentNodeIndex();
             System.out.printf("MOVE INFO [node_index=%d[%d;%d],gap=%d]: iterations: %d, computation time: %.3f s, move: %s, tree size: %d\n",
                     pacman_pos, game.getNodeXCood(pacman_pos), game.getNodeYCood(pacman_pos),
-                    pacmanDecisionGap, iteration_count, computation_time, move, mcTree().size());
+                    pacmanDecisionGap, iterationCount, computationTime, move, mcTree().size());
 
             /* print MC-tree if pacman (or ghosts) has to choose a move */
             if (mcTree().root().ticksToGo()==0) {
@@ -150,12 +150,8 @@ public abstract class PlainMCTSController<T extends MCTree<M>, M>
         /* return move */
         previousGame = game.copy();
         prevousMove = cloneMove(move);
-        if (verboseLevel.check(VerboseLevel.VERBOSE) &&timeDue - System.currentTimeMillis()<0) {
-            System.err.printf("Missed turn, delay: %d ms\n", -(timeDue - System.currentTimeMillis()));
-        }
-        totalTimeMillis += System.currentTimeMillis()-start_time;
-        totalSimulations += iteration_count;
-//        System.err.printf("sims: %s, millis: %s, sps: %s\n", totalSimulations(), totalTimeMillis(), simulationsPerSecond());
+        totalTimeMillis += System.currentTimeMillis()-startTime;
+        totalSimulations += iterationCount;
 
         if (mctree.decisionNeeded()) {
             decisions++;

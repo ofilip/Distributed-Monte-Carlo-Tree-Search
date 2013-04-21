@@ -7,7 +7,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
 import mcts.Constants;
-import mcts.MCTSControllerStats;
+import mcts.MCTSController;
 import mcts.distributed.DistributedMCTSController;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
@@ -15,6 +15,7 @@ import pacman.controllers.examples.StarterPacMan;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
+import utils.VerboseLevel;
 
 
 enum Option {
@@ -31,9 +32,13 @@ enum Option {
     GHOST_RANDOM_PROB("ghost-random-prob"),
     GHOST_DEATH_WEIGHT("ghost-death-weight"),
     CHANNEL_SPEED("channel-speed"),
+    MULTITHREADED("multithreaded", LongOpt.NO_ARGUMENT),
     TRIAL_NO("trial-no"),
     VISUAL("visual", LongOpt.NO_ARGUMENT),
-    HEADER("header", LongOpt.NO_ARGUMENT);
+    VERBOSE("verbose", LongOpt.NO_ARGUMENT),
+    DEBUG("debug", LongOpt.NO_ARGUMENT),
+    HEADER("header", LongOpt.NO_ARGUMENT),
+    WITH_HEADER("with-header", LongOpt.NO_ARGUMENT);
 
     private LongOpt longopt;
     public final static LongOpt LONG_OPTIONS[];
@@ -99,27 +104,29 @@ public class ExecExperiment {
     private static <T> Controller<T> buildController(Class c, int simulationDepth, double ucbCoef, double randomProb, double deathWeight)
             throws NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
-        return buildController(c, simulationDepth, ucbCoef, randomProb, deathWeight, 0);
+        return buildController(c, simulationDepth, ucbCoef, randomProb, deathWeight, 0, false, VerboseLevel.QUIET);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Controller<T> buildController(Class c, int simulationDepth, double ucbCoef, double randomProb, double deathWeight, long channelSpeed)
+    private static <T> Controller<T> buildController(Class c, int simulationDepth, double ucbCoef, double randomProb, double deathWeight, long channelSpeed, boolean multithreaded, VerboseLevel verboseLevel)
             throws NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Constructor constructor = c.getConstructor();
         Controller<T> controller = (Controller<T>)constructor.newInstance();
 
-        if (controller instanceof MCTSControllerStats) {
-            MCTSControllerStats mctsController = (MCTSControllerStats)controller;
+        if (controller instanceof MCTSController) {
+            MCTSController mctsController = (MCTSController)controller;
             mctsController.setSimulationDepth(simulationDepth);
             mctsController.setUcbCoef(ucbCoef);
             mctsController.setRandomSimulationMoveProbability(randomProb);
             mctsController.setDeathWeight(deathWeight);
+            mctsController.setVerboseLevel(verboseLevel);
         }
 
         if (controller instanceof DistributedMCTSController) {
             DistributedMCTSController dmctsController = (DistributedMCTSController)controller;
 
             dmctsController.getNetwork().setChannelTransmissionSpeed(channelSpeed);
+            dmctsController.setMultithreaded(multithreaded);
         }
 
         return controller;
@@ -127,12 +134,12 @@ public class ExecExperiment {
 
     private static void printControllerHeader(String prefix, Controller controller) {
         System.out.printf("%sclass\t%stime\t", prefix, prefix);
-        if (controller instanceof MCTSControllerStats) {
+        if (controller instanceof MCTSController) {
             System.out.printf("%ssim_depth\t%sucb_coef\t%sdeath_weight\t%savg_decision_sims\t%ssims_per_sec\t",
                               prefix, prefix, prefix, prefix, prefix);
         }
         if (controller instanceof DistributedMCTSController) {
-            System.out.append("channel_speed\ttransmitted_per_second_total\ttransmitted_per_second_successfully\t");
+            System.out.append("channel_speed\ttransmitted_per_second_total\ttransmitted_per_second_successfully\tsynchronization_ratio\t");
         }
     }
 
@@ -145,8 +152,8 @@ public class ExecExperiment {
 
     private static void printControllerInfo(Controller controller, int time) {
         System.out.printf("%s\t%s\t", controller.getClass().getSimpleName(), time);
-        if (controller instanceof MCTSControllerStats) {
-            MCTSControllerStats mctsController = (MCTSControllerStats)controller;
+        if (controller instanceof MCTSController) {
+            MCTSController mctsController = (MCTSController)controller;
             System.out.printf("%s\t%s\t%s\t%s\t%s\t",
                              mctsController.getSimulationDepth(), mctsController.getUcbCoef(),
                              mctsController.getDeathWeight(), mctsController.averageDecisionSimulations(),
@@ -154,8 +161,9 @@ public class ExecExperiment {
         }
         if (controller instanceof DistributedMCTSController) {
             DistributedMCTSController dmctsController = (DistributedMCTSController)controller;
-            System.out.printf("%s\t%s\t%s\t", dmctsController.getNetwork().getChannelTransmissionSpeed(),
-                    dmctsController.transmittedTotalPerSecond(), dmctsController.transmittedSuccessfullyPerSecond());
+            System.out.printf("%s\t%s\t%s\t%s\t", dmctsController.getNetwork().getChannelTransmissionSpeed(),
+                    dmctsController.transmittedTotalPerSecond(), dmctsController.transmittedSuccessfullyPerSecond(),
+                    dmctsController.coordinatedDecisionsRatio());
         }
     }
 
@@ -169,14 +177,15 @@ public class ExecExperiment {
 
     public static void main(String[] args) throws Exception {
         int trialNo = 1;
-        boolean visual = false;
         boolean header = false;
+        boolean dontRun = false;
 
         Class pacmanClass = StarterPacMan.class;
         int pacmanSimulationDepth = Constants.DEFAULT_SIMULATION_DEPTH;
         double pacmanUcbCoef = Constants.DEFAULT_UCB_COEF;
         double pacmanRandomProb = Constants.DEFAULT_RANDOM_PROB;
         double pacmanDeathWeight = Constants.DEFAULT_DEATH_WEIGHT;
+        boolean multithreaded = false;
 
         Class ghostClass = StarterGhosts.class;
         int ghostSimulationDepth = Constants.DEFAULT_SIMULATION_DEPTH;
@@ -185,6 +194,7 @@ public class ExecExperiment {
         Experiment experiment = new Experiment();
         double ghostDeathWeight = Constants.DEFAULT_DEATH_WEIGHT;
         long channelSpeed = Constants.DEFAULT_CHANNEL_TRANSMISSION_SPEED;
+        VerboseLevel verboseLevel = VerboseLevel.QUIET;
 
         Getopt getopt = new Getopt(ExecExperiment.class.getSimpleName(), args, "", Option.LONG_OPTIONS);
         int c;
@@ -238,10 +248,24 @@ public class ExecExperiment {
                 case CHANNEL_SPEED:
                     channelSpeed = Long.parseLong(getopt.getOptarg());
                     break;
+                case MULTITHREADED:
+                    experiment.setMultithreaded(true);
+                    multithreaded = true;
+                    break;
                 case VISUAL:
-                    visual = true;
+                    experiment.setVisual(true);
+                    break;
+                case VERBOSE:
+                    verboseLevel = VerboseLevel.VERBOSE;
+                    break;
+                case DEBUG:
+                    verboseLevel = VerboseLevel.DEBUGGING;
                     break;
                 case HEADER:
+                    header = true;
+                    dontRun = true;
+                    break;
+                case WITH_HEADER:
                     header = true;
                     break;
                 case TRIAL_NO:
@@ -255,12 +279,13 @@ public class ExecExperiment {
         }
 
         Controller<MOVE> pacmanController = buildController(pacmanClass, pacmanSimulationDepth, pacmanUcbCoef, pacmanRandomProb, pacmanDeathWeight);
-        Controller<EnumMap<GHOST,MOVE>> ghostController = buildController(ghostClass, ghostSimulationDepth, ghostUcbCoef, ghostRandomProb, ghostDeathWeight, channelSpeed);
+        Controller<EnumMap<GHOST,MOVE>> ghostController = buildController(ghostClass, ghostSimulationDepth, ghostUcbCoef, ghostRandomProb, ghostDeathWeight, channelSpeed, multithreaded, verboseLevel);
 
         if (header) {
             printHeader(pacmanController, ghostController);
-        } else {
-            experiment.setVisual(visual);
+        }
+
+        if (!dontRun) {
             experiment.setPacmanController(pacmanController);
             experiment.setGhostController(ghostController);
 

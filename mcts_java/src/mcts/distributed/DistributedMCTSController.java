@@ -8,10 +8,13 @@ import communication.Network;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import mcts.Constants;
-import mcts.MCTSControllerStats;
+import mcts.MCTSController;
 import mcts.SimulationsStat;
 import mcts.TreeSimulationsStat;
+import mcts.Utils;
 import pacman.controllers.Controller;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
@@ -20,7 +23,7 @@ import utils.VerboseLevel;
 
 public class DistributedMCTSController
         extends Controller<EnumMap<GHOST,MOVE>>
-        implements VirtualTimer, MCTSControllerStats {
+        implements VirtualTimer, MCTSController {
 
     protected Network network = new Network();
     protected Map<GHOST, GhostAgent> agents = new EnumMap<GHOST, GhostAgent>(GHOST.class);
@@ -28,6 +31,7 @@ public class DistributedMCTSController
     protected EnumMap<GHOST,MOVE> moves = new EnumMap<GHOST,MOVE>(GHOST.class);
     protected VerboseLevel verboseLevel = VerboseLevel.QUIET;
     private long channelBufferSize = Constants.DEFAULT_CHANNEL_BUFFER_SIZE;
+    private boolean multithreaded = false;
 
     private static GHOST ghosts[] = {GHOST.BLINKY, GHOST.PINKY, GHOST.INKY, GHOST.SUE};
     private long moveNumber = 0;
@@ -37,9 +41,15 @@ public class DistributedMCTSController
     private long endTime;
     private long startTime;
 
+    private long totalDecisions = 0;
+    private long coordinatedDecisions;
+
     public DistributedMCTSController()  {
         this.network.setTimer(this);
     }
+
+    public void setMultithreaded(boolean multithreaded) { this.multithreaded = multithreaded; }
+    public boolean isMultithreaded() { return multithreaded; }
 
     public DistributedMCTSController addGhostAgent(GhostAgent ghostAgent) {
         assert !agents.containsKey(ghostAgent.ghost());
@@ -54,48 +64,82 @@ public class DistributedMCTSController
     }
 
     public long currentMillis() { return totalTimeMillis+(startTime>endTime? (System.currentTimeMillis()-startTime): 0); }
-    @Override public long currentVirtualMillis() { return currentMillis()/agents.size(); }
+    @Override public long currentVirtualMillis() { return currentMillis()/(multithreaded? 1: 4); }
 
     @Override
     public EnumMap<GHOST, MOVE> getMove(Game game, long timeDue) {
+        if (timeDue==-1) {
+            /* prevent infinite decisions */
+            System.err.printf("Warning: timeDue not set\n");
+            timeDue = System.currentTimeMillis()+ Constants.DEFAULT_TIME_MILLIS;
+        }
+
         startTime = System.currentTimeMillis();
         assert agents.size()==4;
         moveNumber++;
 
         /* update agents' trees */
-        for (GHOST ghost: GHOST.values()) {
-            agents.get(ghost).truncateNetworkBuffers();
-            agents.get(ghost).updateTree(game);
-        }
+        if (multithreaded) {
+            EnumMap<GHOST, Thread> agentThreads = new EnumMap<GHOST, Thread>(GHOST.class);
 
-        /* alternately run logic of agents (simulates parallel run) */
-        do {
-            agents.get(ghosts[currentGhost]).step();
-            currentGhost = (currentGhost+1)%4;
-        } while ((System.currentTimeMillis()+Constants.MILLIS_TO_FINISH)<timeDue);
+            for (GhostAgent agent: agents.values()) {
+                agent.putThreadData(game, timeDue);
+                Thread t = new Thread(agent);
+                agentThreads.put(agent.ghost(), t);
+                t.start();
+            }
+
+            for (Thread t: agentThreads.values()) {
+                try {
+                    t.join();
+                } catch (InterruptedException ex) {
+                    t.interrupt();
+                }
+            }
+        } else {
+            for (GHOST ghost: GHOST.values()) {
+                agents.get(ghost).truncateNetworkBuffers();
+                agents.get(ghost).updateTree(game);
+            }
+
+            /* alternately run logic of agents (simulates parallel run) */
+            do {
+                agents.get(ghosts[currentGhost]).step();
+                currentGhost = (currentGhost+1)%4;
+            } while ((System.currentTimeMillis()+Constants.MILLIS_TO_FINISH)<timeDue);
+        }
 
         /* gather ghosts' moves and return result */
         for (GHOST ghost: GHOST.values()) {
             moves.put(ghost, agents.get(ghost).getMove());
         }
-        if (verboseLevel.check(VerboseLevel.VERBOSE)) {
-            int total_simulations_count = 0;
+
+        /* Print verbose info */
+        if (verboseLevel.check(VerboseLevel.VERBOSE)&&Utils.ghostsNeedAction(game)) {
+            int totalSimulationsCount = 0;
 
             for (GhostAgent agent: agents.values()) {
-                total_simulations_count += agent.getTree().size();
+                totalSimulationsCount += agent.getTree().size();
             }
-            double computation_time = (System.currentTimeMillis()-startTime)/1000.0;
+            double computationTime = (System.currentTimeMillis()-startTime)/1000.0;
             System.out.printf("MOVE INFO [node_index=%d]: computation time: %.3f s, simulations: %s, move (no.%s): %s\n",
-                    game.getPacmanCurrentNodeIndex(), computation_time, total_simulations_count, moveNumber, moves);
-            if (timeDue - System.currentTimeMillis()<0) {
-                System.err.printf("Missed turn, delay: %d ms\n", -(timeDue - System.currentTimeMillis()));
-            }
+                    game.getPacmanCurrentNodeIndex(), computationTime, totalSimulationsCount, moveNumber, moves);
         }
 
         endTime = System.currentTimeMillis();
         totalTimeMillis += System.currentTimeMillis() - startTime;
+        if (Utils.ghostsNeedAction(game)) {
+            totalDecisions++;
+            if (Utils.ghostMovesEqual(agents.get(GHOST.BLINKY).getFullMove(), agents.get(GHOST.PINKY).getFullMove())
+                    &&Utils.ghostMovesEqual(agents.get(GHOST.PINKY).getFullMove(), agents.get(GHOST.INKY).getFullMove())
+                    &&Utils.ghostMovesEqual(agents.get(GHOST.INKY).getFullMove(), agents.get(GHOST.SUE).getFullMove())) {
+                coordinatedDecisions++;
+            }
+        }
         return moves;
     }
+
+    public double coordinatedDecisionsRatio() { return coordinatedDecisions/(double)Math.max(totalDecisions, 1); }
 
     @Override
     public long totalTimeMillis() {
@@ -165,6 +209,9 @@ public class DistributedMCTSController
 
     @Override public void setVerboseLevel(VerboseLevel verboseLevel) {
         this.verboseLevel = verboseLevel;
+        for (GhostAgent agent: agents.values()) {
+            agent.setVerboseLevel(verboseLevel);
+        }
     }
 
     public double getUcbCoef() {

@@ -12,7 +12,6 @@ import pacman.game.GameView;
  * Miscellaneous functions.
  */
 public class Utils {
-//    static Random random = new Random(10);
     public final static EnumMap<GHOST, MOVE> NEUTRAL_GHOSTS_MOVES = new EnumMap<GHOST, MOVE>(GHOST.class);
 
     static {
@@ -22,10 +21,6 @@ public class Utils {
     }
 
     private Utils() {}
-
-//    public static Random rnd() {
-//        return random;
-//    }
 
     public static double UCB1(double v_i, double n_p, double n_i, double coef) {
         return n_i==0? Double.POSITIVE_INFINITY: (v_i + coef*Math.sqrt(Math.log(n_p)/(n_i)));
@@ -40,10 +35,6 @@ public class Utils {
 
         return false;
     }
-
-//    public static MOVE reverseLastMove(Game game, int pos, MOVE last_move) {
-//        return reverse(game, pos, last_move.opposite());
-//    }
 
     public static MOVE reverse(Game game, int pos, MOVE move) {
         //assert move!=MOVE.NEUTRAL;

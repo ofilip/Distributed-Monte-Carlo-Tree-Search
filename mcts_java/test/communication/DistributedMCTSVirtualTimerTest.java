@@ -2,7 +2,7 @@ package communication;
 
 import java.util.EnumMap;
 import mcts.distributed.DistributedMCTSController;
-import mcts.distributed.entries.DummyGhosts;
+import mcts.distributed.entries.SynchronizedDummyGhosts;
 import org.junit.Test;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
@@ -14,7 +14,7 @@ import utils.TestUtils;
 public class DistributedMCTSVirtualTimerTest {
     @Test
     public void testTimer() {
-        DistributedMCTSController controller = new DummyGhosts();
+        DistributedMCTSController controller = new SynchronizedDummyGhosts();
         Game game = new SimplifiedGame(0);
         long startTime = controller.currentVirtualMillis();
 

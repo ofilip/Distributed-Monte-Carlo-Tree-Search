@@ -39,26 +39,33 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
     @Override public MCTree getTree() { return mctree; }
 
     @Override public void updateTree(Game game) {
+
         if (mctree==null /* new game or synchronization fail */
                 ||game.getCurrentLevel()!=currentLevel /* new level */
                 ||game.wasPacManEaten() /* pacman eaten */
                 ||Utils.globalReversalHappened(game) /* accidental reversal */
                 ||lastFullMove==null /* last getMove() didn't finish in limit */
                 ||!Utils.ghostMovesEqual(lastFullMove, Utils.lastGhostsMoves(game))
+                ||mctree.root().getTotalTicks()>mySimulator.getMaxDepth()/2 /* simulation is too much shortened */
                 ) {
             /* (re)initialize MC-tree and its components */
             initializeTree(game);
 
             /* remember current level */
             currentLevel = game.getCurrentLevel();
+
+            /* restore random seed */
+            if (equalRandomSeed) {
+                random.setSeed(randomSeed);
+            }
         } else {
             assert currentGame!=null;
-            EnumMap<Constants.GHOST, MOVE> last_ghosts_moves = Utils.lastGhostsDecisionMoves(game, currentGame);
+            EnumMap<Constants.GHOST, MOVE> lastGhostsMoves = Utils.lastGhostsDecisionMoves(game, currentGame);
 
             if (mctree.root().ticksToGo()==0) {
                 initializeTree(game);
             } else {
-                mctree.advanceTree(game.getPacmanLastMoveMade(), last_ghosts_moves);
+                mctree.advanceTree(game.getPacmanLastMoveMade(), lastGhostsMoves);
             }
         }
 
@@ -113,7 +120,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
         if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
             System.out.printf("%s: Broadcasting %s (size %s)\n", ghost, message, message.length());
         }
-        
+
         flushMessages(MoveMessage.class);
         broadcastMessage(Priority.MEDIUM, message, true);
     }
@@ -129,7 +136,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
     protected MOVE getMoveFromMessages(final Map<GHOST, MoveMessage> receivedMoves) {
         /* Return strongest move (move supported by the most agents)
          * with priority defined by ordering on GHOST enum. */
-        EnumMap<GHOST, MOVE> myBestMove = mctree.bestMove(currentGame);
+        EnumMap<GHOST, MOVE> myBestMove = mctree.bestDecisionMove();
         receivedMoves.put(ghost, new MoveMessage(myBestMove)); /* add my current best move to received messages */
 
         Map<EnumMap<GHOST,MOVE>, Pair<Integer, GHOST>> moveStrength = new HashMap<EnumMap<GHOST,MOVE>, Pair<Integer, GHOST>>();
@@ -144,14 +151,25 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
                 currentValue.first++;
             }
         }
-        lastFullMove = Collections.min(moveStrength.entrySet(), moveStrengthEntryComparator).getKey();
+        lastFullMove = Collections.max(moveStrength.entrySet(), moveStrengthEntryComparator).getKey();
 
         if (verboseLevel.check(VerboseLevel.VERBOSE)) {
             System.out.printf(ghost+": ");
             System.out.printf("my best move: %s\n", myBestMove);
             System.out.printf("\tchosen best move: %s\n", lastFullMove);
+            if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
+                for (EnumMap<GHOST,MOVE> ghostMove: moveStrength.keySet()) {
+                    Pair<Integer, GHOST> valuePair = moveStrength.get(ghostMove);
+                    System.out.printf("\tvariant: %s (%s,%s)\n", ghostMove, valuePair.first, valuePair.second);
+                }
+            }
         }
         return lastFullMove.get(ghost);
+    }
+
+    @Override
+    public EnumMap<GHOST, MOVE> getFullMove() {
+        return lastFullMove;
     }
 
 
