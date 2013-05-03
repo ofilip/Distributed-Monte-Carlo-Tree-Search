@@ -36,10 +36,13 @@ public class Channel implements MessageSender, MessageReceiver {
 
     private void doTransmission() {
         long currentTime = network.timer().currentVirtualMillis();
-        queueMillibytesTransmitted += (currentTime-lastTransmissionTime)*transmissionSpeed;
+        queueMillibytesTransmitted += (currentTime-lastTransmissionTime)*getTransmissionSpeed();
 
         if (transmittedMessage==null) {
             transmittedMessage = sendingQueue.removeFirst();
+            if (transmittedMessage!=null) {
+                transmittedMessage.onSendingStarted();
+            }
         }
 
         while (transmittedMessage!=null&&1000*transmittedMessage.length()<queueMillibytesTransmitted) {
@@ -51,6 +54,9 @@ public class Channel implements MessageSender, MessageReceiver {
             }
 
             transmittedMessage = sendingQueue.removeFirst();
+            if (transmittedMessage!=null) {
+                transmittedMessage.onSendingStarted();
+            }
         }
 
         if (transmittedMessage==null) {
@@ -117,7 +123,7 @@ public class Channel implements MessageSender, MessageReceiver {
 
     @Override
     synchronized public double secondsToSendAll() {
-        return 0.001*sendQueueMillisLength()/transmissionSpeed;
+        return 0.001*sendQueueMillisLength()/getTransmissionSpeed();
     }
 
     @Override
@@ -135,7 +141,7 @@ public class Channel implements MessageSender, MessageReceiver {
     }
 
     public long transmissionSpeed() {
-        return transmissionSpeed;
+        return getTransmissionSpeed();
     }
 
     public MessageSender sender() {
@@ -193,4 +199,20 @@ public class Channel implements MessageSender, MessageReceiver {
     public long transmittedSuccessfully() {
         return transmittedSuccessfully;
     }
+
+    /**
+     * @return the transmissionSpeed
+     */
+    public long getTransmissionSpeed() {
+        return transmissionSpeed;
+    }
+
+    /**
+     * @param transmissionSpeed the transmissionSpeed to set
+     */
+    public void setTransmissionSpeed(long transmissionSpeed) {
+        this.transmissionSpeed = transmissionSpeed;
+    }
+
+    
 }

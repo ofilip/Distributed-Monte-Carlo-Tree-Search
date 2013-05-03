@@ -29,4 +29,14 @@ public class SimulationResultMessage extends Message {
         return Utils.bitsToBytes(bitsLength);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(this.name);
+        sb.append(String.format("[%s] val:%s, bytes: %s, path:", this.hashCode(), simulationResult, length()));
+        for (Action action: treeMoves) {
+            sb.append(' ');
+            sb.append(action.toString());
+        }
+        return sb.toString();
+    }
 }

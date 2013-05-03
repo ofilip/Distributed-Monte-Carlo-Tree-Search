@@ -22,6 +22,8 @@ public class ChannelTest {
         assertEquals(0, channel.receiveQueueItemsCount());
         assertEquals(0, channel.receiveQueueLength());
         assertEquals(0, channel.secondsToSendAll(), 1e-3);
+        assertEquals(0, channel.transmittedSuccessfully());
+        assertEquals(0, channel.transmittedTotal());
 
         channel.send(Priority.MEDIUM, new DummyMessage(1));
         SecondsToSend sts = new SecondsToSend(1, 20);
@@ -33,6 +35,8 @@ public class ChannelTest {
         assertEquals(true, channel.receiveQueueEmpty());
         assertEquals(0, channel.receiveQueueItemsCount());
         assertEquals(0, channel.receiveQueueLength());
+        assertEquals(0, channel.transmittedSuccessfully());
+        assertEquals(0, channel.transmittedTotal());
 
         TestUtils.sleep(100);
 
@@ -43,6 +47,8 @@ public class ChannelTest {
         assertEquals(1, channel.receiveQueueItemsCount());
         assertEquals(1, channel.receiveQueueLength());
         assertEquals(0, channel.secondsToSendAll(), 1e-6);
+        assertEquals(1, channel.transmittedSuccessfully());
+        assertEquals(1, channel.transmittedTotal());
 
         channel.receive();
 
@@ -53,6 +59,8 @@ public class ChannelTest {
         assertEquals(0, channel.receiveQueueItemsCount());
         assertEquals(0, channel.receiveQueueLength());
         assertEquals(0, channel.secondsToSendAll(), 1e-6);
+        assertEquals(1, channel.transmittedSuccessfully());
+        assertEquals(1, channel.transmittedTotal());
     }
 
     @Test
@@ -71,6 +79,8 @@ public class ChannelTest {
         assertEquals(0, channel.receiveQueueItemsCount());
         assertEquals(0, channel.receiveQueueLength());
         assertEquals(sts.remaining(), channel.secondsToSendAll(), 0.003);
+        assertEquals(0, channel.transmittedSuccessfully());
+        assertEquals(0, channel.transmittedTotal());
 
         TestUtils.sleep(50);
 
@@ -81,6 +91,8 @@ public class ChannelTest {
         assertEquals(0, channel.receiveQueueItemsCount());
         assertEquals(0, channel.receiveQueueLength());
         assertEquals(sts.remaining(), channel.secondsToSendAll(), 0.003);
+        assertEquals(0, channel.transmittedSuccessfully());
+        assertEquals(0, channel.transmittedTotal());
 
         TestUtils.sleep(150);
 
@@ -91,6 +103,8 @@ public class ChannelTest {
         assertEquals(1, channel.receiveQueueItemsCount());
         assertEquals(2000, channel.receiveQueueLength());
         assertEquals(0, channel.secondsToSendAll(), 1e-6);
+        assertEquals(2000, channel.transmittedSuccessfully());
+        assertEquals(2000, channel.transmittedTotal());
 
         channel.receive();
 
@@ -101,6 +115,8 @@ public class ChannelTest {
         assertEquals(0, channel.receiveQueueItemsCount());
         assertEquals(0, channel.receiveQueueLength());
         assertEquals(0, channel.secondsToSendAll(), 1e-6);
+        assertEquals(2000, channel.transmittedSuccessfully());
+        assertEquals(2000, channel.transmittedTotal());
     }
 
     @Test
@@ -166,6 +182,8 @@ public class ChannelTest {
         assertEquals(0, channel.receiveQueueItemsCount());
         assertEquals(0, channel.receiveQueueLength());
         assertEquals(sts.remaining(), channel.secondsToSendAll(), 0.003);
+        assertEquals(0, channel.transmittedSuccessfully());
+        assertEquals(0, channel.transmittedTotal());
 
         TestUtils.sleep(50);
 
@@ -176,6 +194,8 @@ public class ChannelTest {
         assertEquals(0, channel.receiveQueueItemsCount());
         assertEquals(0, channel.receiveQueueLength());
         assertEquals(sts.remaining(), channel.secondsToSendAll(), 0.003);
+        assertEquals(0, channel.transmittedSuccessfully());
+        assertEquals(0, channel.transmittedTotal());
 
         TestUtils.sleep(50);
 
@@ -186,6 +206,8 @@ public class ChannelTest {
         assertEquals(1, channel.receiveQueueItemsCount());
         assertEquals(8, channel.receiveQueueLength());
         assertEquals(sts.remaining(), channel.secondsToSendAll(), 0.003);
+        assertEquals(8, channel.transmittedSuccessfully());
+        assertEquals(8, channel.transmittedTotal());
 
         TestUtils.sleep(50);
 
@@ -196,6 +218,8 @@ public class ChannelTest {
         assertEquals(2, channel.receiveQueueItemsCount());
         assertEquals(14, channel.receiveQueueLength());
         assertEquals(sts.remaining(), channel.secondsToSendAll(), 0.003);
+        assertEquals(14, channel.transmittedSuccessfully());
+        assertEquals(14, channel.transmittedTotal());
 
         TestUtils.sleep(100);
 
@@ -206,6 +230,8 @@ public class ChannelTest {
         assertEquals(3, channel.receiveQueueItemsCount());
         assertEquals(20, channel.receiveQueueLength());
         assertEquals(0, channel.secondsToSendAll(), 1e-6);
+        assertEquals(20, channel.transmittedSuccessfully());
+        assertEquals(20, channel.transmittedTotal());
 
         channel.receive();
 
@@ -216,6 +242,8 @@ public class ChannelTest {
         assertEquals(2, channel.receiveQueueItemsCount());
         assertEquals(12, channel.receiveQueueLength());
         assertEquals(0, channel.secondsToSendAll(), 1e-6);
+        assertEquals(20, channel.transmittedSuccessfully());
+        assertEquals(20, channel.transmittedTotal());
 
         channel.receive();
 
@@ -226,6 +254,8 @@ public class ChannelTest {
         assertEquals(1, channel.receiveQueueItemsCount());
         assertEquals(6, channel.receiveQueueLength());
         assertEquals(0, channel.secondsToSendAll(), 1e-6);
+        assertEquals(20, channel.transmittedSuccessfully());
+        assertEquals(20, channel.transmittedTotal());
 
         channel.receive();
 
@@ -236,6 +266,8 @@ public class ChannelTest {
         assertEquals(0, channel.receiveQueueItemsCount());
         assertEquals(0, channel.receiveQueueLength());
         assertEquals(0, channel.secondsToSendAll(), 1e-6);
+        assertEquals(20, channel.transmittedSuccessfully());
+        assertEquals(20, channel.transmittedTotal());
     }
 
     @Test
@@ -263,6 +295,8 @@ public class ChannelTest {
         assertEquals(1, channel.receiveQueueItemsCount());
         assertEquals(10, channel.receiveQueueLength());
         assertEquals(sts.remaining(), channel.secondsToSendAll(), 0.003);
+        assertEquals(10, channel.transmittedSuccessfully());
+        assertEquals(10, channel.transmittedTotal());
 
         assertEquals(messages[0], channel.receive());
 
@@ -279,6 +313,8 @@ public class ChannelTest {
         assertEquals(1, channel.receiveQueueItemsCount());
         assertEquals(10, channel.receiveQueueLength());
         assertEquals(sts.remaining(), channel.secondsToSendAll(), 0.003);
+        assertEquals(20, channel.transmittedSuccessfully());
+        assertEquals(20, channel.transmittedTotal());
 
         channel.sendFirst(Priority.HIGH, messages[4]);
         sts.addBytes(10);
@@ -292,6 +328,8 @@ public class ChannelTest {
         assertEquals(4, channel.receiveQueueItemsCount());
         assertEquals(50, channel.receiveQueueLength());
         assertEquals(sts.remaining(), channel.secondsToSendAll(), 0.003);
+        assertEquals(60, channel.transmittedSuccessfully());
+        assertEquals(60, channel.transmittedTotal());
 
         assertEquals(messages[1], channel.receive());
         assertEquals(messages[3], channel.receive());
@@ -299,6 +337,8 @@ public class ChannelTest {
         assertEquals(messages[2], channel.receive());
 
         assertEquals(true, channel.receiveQueueEmpty());
+        assertEquals(60, channel.transmittedSuccessfully());
+        assertEquals(60, channel.transmittedTotal());
     }
 
     @Test

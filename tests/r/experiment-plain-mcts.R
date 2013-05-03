@@ -15,8 +15,8 @@ plot(scores$ghost_time, scores$score, type="o",
 	ylim=c(700,2200)
 	)
 
-data <- read.delim("results/20130414-1555-dummy-ghosts.txt", row.names=NULL)
+data <- read.delim("results/20130421-2145-dummy-ghosts.txt", row.names=NULL)
 data <- data[c("score", "ghost_time", "ghost_sims_per_sec")]
 melted_data <- melt(data, id=c("ghost_time"))
 scores <- cast(melted_data, ghost_time~variable, mean)
-lines(scores$ghost_time, scores$score, type="o")
+lines(scores$ghost_time, scores$score, type="p")

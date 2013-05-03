@@ -24,7 +24,7 @@ public class JointActionExchangingAgent extends FullMCTSGhostAgent {
         EnumMap<GHOST,MOVE> currentBestMove = mctree.bestDecisionMove();
         if (!Utils.ghostMovesEqual(currentBestMove,Utils.NEUTRAL_GHOSTS_MOVES)&&!Utils.ghostMovesEqual(lastBestMove, currentBestMove)) {
             lastBestMove = currentBestMove;
-            broadcastMoveMessage(Priority.HIGH);
+            broadcastMoveMessage(Priority.HIGH, currentBestMove);
         }
     }
 
@@ -39,7 +39,7 @@ public class JointActionExchangingAgent extends FullMCTSGhostAgent {
 
     @Override
     public MOVE getMove() {
-        return getMoveFromMessages(receivedMoves);
+        return getMoveFromMessages(receivedMoves/*, lastBestMove*/);
     }
 
     @Override

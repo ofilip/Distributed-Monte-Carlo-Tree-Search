@@ -1,0 +1,1 @@
+trial	pacman_class	pacman_time	ghost_class	ghost_time	ghost_sim_depth	ghost_ucb_coef	ghost_death_weight	ghost_avg_decision_sims	ghost_sims_per_sec	score

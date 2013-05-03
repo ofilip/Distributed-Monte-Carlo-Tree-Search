@@ -30,7 +30,7 @@ public class DistributedMCTSController
     protected int currentGhost = 0;
     protected EnumMap<GHOST,MOVE> moves = new EnumMap<GHOST,MOVE>(GHOST.class);
     protected VerboseLevel verboseLevel = VerboseLevel.QUIET;
-    private long channelBufferSize = Constants.DEFAULT_CHANNEL_BUFFER_SIZE;
+    private long channelBufferSize = 100000; /* 100 kB */
     private boolean multithreaded = false;
 
     private static GHOST ghosts[] = {GHOST.BLINKY, GHOST.PINKY, GHOST.INKY, GHOST.SUE};
@@ -235,7 +235,8 @@ public class DistributedMCTSController
         for (Channel channel: network.getChannels().values()) {
             transmittedSuccessfully += channel.transmittedSuccessfully();
         }
-        return 1000*transmittedSuccessfully/(4.0*totalTimeMillis());
+
+        return 1000*transmittedSuccessfully/(network.getChannels().size()*currentVirtualMillis());
     }
 
     public double transmittedTotalPerSecond() {
@@ -243,6 +244,6 @@ public class DistributedMCTSController
         for (Channel channel: network.getChannels().values()) {
             transmittedTotal += channel.transmittedTotal();
         }
-        return 1000*transmittedTotal/(double)(network.getChannels().size()*(totalTimeMillis()/4.0));
+        return 1000*transmittedTotal/(network.getChannels().size()*currentVirtualMillis());
     }
 }

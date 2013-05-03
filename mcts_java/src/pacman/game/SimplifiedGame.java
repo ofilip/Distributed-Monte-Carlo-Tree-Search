@@ -27,7 +27,8 @@ public final class SimplifiedGame implements Game
 	protected PacMan pacman;
 	protected EnumMap<GHOST, Ghost> ghosts;
 
-        public boolean random_reversal = false;
+        protected boolean random_reversal = false;
+        private int gameLength = mcts.Constants.DEFAULT_GAME_LENGTH;
 
 	//mazes are only loaded once since they don't change over time
 	protected static Maze[] mazes=new Maze[NUM_MAZES];;
@@ -711,11 +712,15 @@ public final class SimplifiedGame implements Game
 	protected void _checkLevelState()
 	{
 		//put a cap on the total time a game can be played for
-		if(totalTime+1>MAX_TIME)
-		{
-			gameOver=true;
-			score+=pacman.numberOfLivesRemaining*AWARD_LIFE_LEFT;
-		}
+                if (totalTime+1>gameLength) {
+                    gameOver = true;
+                    score = 2200;
+                }
+//		if(totalTime+1>MAX_TIME)
+//		{
+//			gameOver=true;
+//			score+=pacman.numberOfLivesRemaining*AWARD_LIFE_LEFT;
+//		}
 		//if all pills have been eaten or the time is up...
 		else if((pills.isEmpty() && powerPills.isEmpty()) || currentLevelTime>=LEVEL_LIMIT)
 			_newLevelReset();
@@ -1734,4 +1739,20 @@ public final class SimplifiedGame implements Game
 
 		return caches[mazeIndex].getPathDistanceFromA2B(fromNodeIndex,toNodeIndex,lastMoveMade);
 	}
+
+    /**
+     * @return the gameLength
+     */
+    public int getGameLength() {
+        return gameLength;
+    }
+
+    /**
+     * @param gameLength the gameLength to set
+     */
+    public void setGameLength(int gameLength) {
+        this.gameLength = gameLength;
+    }
+
+
 }

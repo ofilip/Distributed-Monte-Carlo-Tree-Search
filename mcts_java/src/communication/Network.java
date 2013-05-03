@@ -45,6 +45,9 @@ public class Network {
 
     public void setChannelTransmissionSpeed(long channelTransmissionSpeed) {
         this.channelTransmissionSpeed = channelTransmissionSpeed;
+        for (Channel channel: channels.values()) {
+            channel.setTransmissionSpeed(channelTransmissionSpeed);
+        }
     }
 
     public VirtualTimer timer() {

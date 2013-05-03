@@ -7,7 +7,7 @@ import java.util.LinkedList;
 
 public class PrioritySendingQueue {
     private EnumMap<Priority, LinkedList<Message>> queues = new EnumMap<Priority, LinkedList<Message>>(Priority.class);
-    private long buffer_size;
+    private long bufferSize;
     public long count = 0;
     public long length = 0;
 
@@ -18,10 +18,10 @@ public class PrioritySendingQueue {
     }
 
     public PrioritySendingQueue(long buffer_size) {
-        this.buffer_size = buffer_size;
+        this.bufferSize = buffer_size;
     }
 
-    public long bufferSize() { return buffer_size; }
+    public long bufferSize() { return bufferSize; }
     public long itemsCount() { return count; }
     public boolean isEmpty() { return count==0; }
     public long length() { return length; }
@@ -58,8 +58,9 @@ public class PrioritySendingQueue {
     }
 
     private void checkFullness() {
-        if (length>buffer_size) {
-            removeLast();
+        while (length>bufferSize) {
+            Message dropped = removeLast();
+            dropped.onMessageDropped();
         }
     }
 
@@ -79,6 +80,9 @@ public class PrioritySendingQueue {
 
     public void flush() {
         for (LinkedList<Message> queue: queues.values()) {
+            for (Message message: queue) {
+                message.onMessageDropped();
+            }
             queue.clear();
             length = 0;
             count = 0;
@@ -93,6 +97,7 @@ public class PrioritySendingQueue {
                     count--;
                     length -= message.length();
                     it.remove();
+                    message.onMessageDropped();
                 }
             }
         }

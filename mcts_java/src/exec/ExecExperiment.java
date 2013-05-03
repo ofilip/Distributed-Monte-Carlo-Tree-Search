@@ -9,12 +9,15 @@ import java.util.EnumMap;
 import mcts.Constants;
 import mcts.MCTSController;
 import mcts.distributed.DistributedMCTSController;
+import mcts.distributed.entries.RootExchangingGhosts;
+import mcts.distributed.entries.SimulationResultsPassingGhosts;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.examples.StarterPacMan;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
+import pacman.game.SimplifiedGame;
 import utils.VerboseLevel;
 
 
@@ -32,6 +35,7 @@ enum Option {
     GHOST_RANDOM_PROB("ghost-random-prob"),
     GHOST_DEATH_WEIGHT("ghost-death-weight"),
     CHANNEL_SPEED("channel-speed"),
+    GAME_LENGTH("game-length"),
     MULTITHREADED("multithreaded", LongOpt.NO_ARGUMENT),
     TRIAL_NO("trial-no"),
     VISUAL("visual", LongOpt.NO_ARGUMENT),
@@ -139,7 +143,13 @@ public class ExecExperiment {
                               prefix, prefix, prefix, prefix, prefix);
         }
         if (controller instanceof DistributedMCTSController) {
-            System.out.append("channel_speed\ttransmitted_per_second_total\ttransmitted_per_second_successfully\tsynchronization_ratio\t");
+            System.out.printf("channel_speed\ttransmitted_per_second_total\ttransmitted_per_second_successfully\tsynchronization_ratio\t");
+        }
+        if (controller instanceof SimulationResultsPassingGhosts) {
+            System.out.printf("average_simulation_message_length\ttransmitted_simulations_ratio\t");
+        }
+        if (controller instanceof RootExchangingGhosts) {
+            System.out.printf("root_size_ratio\t");
         }
     }
 
@@ -164,6 +174,14 @@ public class ExecExperiment {
             System.out.printf("%s\t%s\t%s\t%s\t", dmctsController.getNetwork().getChannelTransmissionSpeed(),
                     dmctsController.transmittedTotalPerSecond(), dmctsController.transmittedSuccessfullyPerSecond(),
                     dmctsController.coordinatedDecisionsRatio());
+        }
+        if (controller instanceof SimulationResultsPassingGhosts) {
+            SimulationResultsPassingGhosts ghostsController = (SimulationResultsPassingGhosts)controller;
+            System.out.printf("%s\t%s\t", ghostsController.averageSimulatonResultsMessageLength(), ghostsController.transmittedSimulationsRatio());
+        }
+        if (controller instanceof RootExchangingGhosts) {
+            RootExchangingGhosts rootController = (RootExchangingGhosts)controller;
+            System.out.printf("%s\t", rootController.rootSizeRatio());
         }
     }
 
@@ -192,6 +210,7 @@ public class ExecExperiment {
         double ghostUcbCoef = Constants.DEFAULT_UCB_COEF;
         double ghostRandomProb = Constants.DEFAULT_RANDOM_PROB;
         Experiment experiment = new Experiment();
+        SimplifiedGame game = new SimplifiedGame(System.currentTimeMillis());
         double ghostDeathWeight = Constants.DEFAULT_DEATH_WEIGHT;
         long channelSpeed = Constants.DEFAULT_CHANNEL_TRANSMISSION_SPEED;
         VerboseLevel verboseLevel = VerboseLevel.QUIET;
@@ -248,6 +267,9 @@ public class ExecExperiment {
                 case CHANNEL_SPEED:
                     channelSpeed = Long.parseLong(getopt.getOptarg());
                     break;
+                case GAME_LENGTH:
+                    game.setGameLength(Integer.parseInt(getopt.getOptarg()));
+                    break;
                 case MULTITHREADED:
                     experiment.setMultithreaded(true);
                     multithreaded = true;
@@ -288,6 +310,7 @@ public class ExecExperiment {
         if (!dontRun) {
             experiment.setPacmanController(pacmanController);
             experiment.setGhostController(ghostController);
+            experiment.setGame(game);
 
             Game result = experiment.execute();
             printResults(trialNo, experiment, pacmanController, ghostController, result);

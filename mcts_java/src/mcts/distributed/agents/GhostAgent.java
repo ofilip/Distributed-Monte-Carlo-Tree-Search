@@ -1,6 +1,7 @@
 package mcts.distributed.agents;
 
 import communication.Channel;
+import communication.MessageCallback;
 import communication.MessageReceiver;
 import communication.MessageSender;
 import communication.Priority;
@@ -119,12 +120,12 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
     protected void receiveMessages() {
         for (GhostAgent ally: messageReceivers.keySet()) {
             MessageReceiver receiver = messageReceivers.get(ally);
-            if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
-                Channel ch = receiver.channel();
-                System.out.printf("%s from %s: %s messages (size: %s), transmitting %s (size %s)\n",
-                        ghost, ally.ghost, receiver.receiveQueueLength(), receiver.receiveQueueItemsCount(),
-                        ch.sendQueueLength(), ch.sendQueueItemsCount());
-            }
+//            if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
+//                Channel ch = receiver.channel();
+//                System.out.printf("%s from %s: %s messages (size: %s), transmitting %s (size %s)\n",
+//                        ghost, ally.ghost, receiver.receiveQueueLength(), receiver.receiveQueueItemsCount(),
+//                        ch.sendQueueLength(), ch.sendQueueItemsCount());
+//            }
             while (!receiver.receiveQueueEmpty()) {
                 Message message = receiver.receive();
                 MessageHandler handler = messageHandlers.get(message.getClass());
@@ -144,6 +145,11 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
     }
 
     protected void broadcastMessage(Priority priority, Message message, boolean sendFirst) {
+        message.onMessageDropped(new MessageCallback() {
+            public void call(Message message) {
+//                System.err.printf("[%s:%s] Message dropped: %s\n", ghost, controller.currentVirtualMillis(), message.toString());
+            }
+        });
         for (MessageSender sender: messageSenders.values()) {
             if (sendFirst) {
                 sender.sendFirst(priority, message);
@@ -153,13 +159,13 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
         }
     }
 
-    protected void broadcastMessageIfLowBuffer(Priority priority, Message message, long sendingInterval) {
-        for (MessageSender sender: messageSenders.values()) {
-            if (sender.secondsToSendAll()<sendingInterval) {
-                sender.send(priority, message);
-            }
-        }
-    }
+//    protected void broadcastMessageIfLowBuffer(Priority priority, Message message, long sendingInterval) {
+//        for (MessageSender sender: messageSenders.values()) {
+//            if (sender.secondsToSendAll()<sendingInterval) {
+//                sender.send(priority, message);
+//            }
+//        }
+//    }
 
     @Override public VerboseLevel getVerboseLevel() { return verboseLevel; }
     @Override public void setVerboseLevel(VerboseLevel verboseLevel) { this.verboseLevel = verboseLevel; }

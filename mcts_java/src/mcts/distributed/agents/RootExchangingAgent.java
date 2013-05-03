@@ -1,5 +1,6 @@
 package mcts.distributed.agents;
 
+import communication.MessageSender;
 import communication.Priority;
 import communication.messages.Message;
 import communication.messages.RootMessage;
@@ -9,20 +10,24 @@ import java.util.Map;
 import mcts.GhostsNode;
 import mcts.MCNode;
 import mcts.PacmanNode;
+import mcts.Utils;
 import mcts.distributed.DistributedMCTSController;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 
 public class RootExchangingAgent extends FullMCTSGhostAgent {
     private Map<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>> received_roots = new EnumMap<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>>(GHOST.class);
-    private long total_simulations;
+    private long total_simulations = 0;
+    private long root_simulations = 0; /* simulations performed in period when ROOT message sending is enabled */
+    private long totalReceivedRootsSize = 0;
 
-    public RootExchangingAgent(DistributedMCTSController controller, final GHOST ghost) {
+    public RootExchangingAgent(final DistributedMCTSController controller, final GHOST ghost) {
         super(controller, ghost);
         hookMessageHandler(RootMessage.class, new MessageHandler() {
             @Override
             public void handleMessage(GhostAgent agent, Message message) {
                 RootMessage roots_message = (RootMessage)message;
+                System.err.printf("[%s=>%s:%s] receiving %s\n", agent.ghost, ghost, controller.currentVirtualMillis(), message);
                 received_roots.put(agent.ghost(), roots_message.getRoots());
             }
         });
@@ -65,6 +70,10 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         if (roots==null) return;
 
         RootMessage message = new RootMessage(roots);
+        System.err.printf("[%s:%s] sending %s\n", ghost, controller.currentVirtualMillis(), message);
+        for (MessageSender sender: messageSenders.values()) {
+            sender.sendQueueFlushUnsent(RootMessage.class);
+        }
         broadcastMessage(Priority.MEDIUM, message, true);
     }
 
@@ -73,12 +82,17 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         receiveMessages();
         if (!Double.isNaN(mctree.iterate())) {
             total_simulations++;
+            if (mctree.root().ghostsOnTurn()||mctree.root().halfstep()) {
+                root_simulations++;
+            }
         }
         sendMessages();
     }
 
     @Override
     public MOVE getMove() {
+        totalReceivedRootsSize += currentReceivedRootsSize();
+
         /* Return move with best summed visit count */
         EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> summed_visit_count = new EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>(MOVE.class);
         EnumMap<MOVE, Long> pacman_move_visit_count = new EnumMap<MOVE, Long>(MOVE.class);
@@ -135,7 +149,26 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
             }
         }
 
+        lastFullMove = best_ghost_move!=null? best_ghost_move: Utils.NEUTRAL_GHOSTS_MOVES;
         return best_ghost_move==null? MOVE.NEUTRAL: best_ghost_move.get(this.ghost);
+    }
+
+    public long currentReceivedRootsSize() {
+        long sum = 0;
+        for (GHOST ally: received_roots.keySet()) {
+            if (ally==ghost) continue;
+            EnumMap<MOVE,Map<EnumMap<GHOST, MOVE>, Long>> root = received_roots.get(ally);
+            for (Map<EnumMap<GHOST, MOVE>, Long> ghostRoot: root.values()) {
+                for (Long visitCount: ghostRoot.values()) {
+                    sum += visitCount;
+                }
+            }
+        }
+        return sum;
+    }
+
+    public long totalReceivedRootsSize() {
+        return totalReceivedRootsSize;
     }
 
     @Override
@@ -143,4 +176,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         return total_simulations;
     }
 
+    public long rootSimulations() {
+        return root_simulations;
+    }
 }
