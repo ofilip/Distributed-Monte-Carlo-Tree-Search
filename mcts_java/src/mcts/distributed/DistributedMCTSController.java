@@ -63,7 +63,7 @@ public class DistributedMCTSController
         return this;
     }
 
-    public long currentMillis() { return totalTimeMillis+(startTime>endTime? (System.currentTimeMillis()-startTime): 0); }
+    public long currentMillis() { return totalTimeMillis+(startTime>=endTime? (System.currentTimeMillis()-startTime): 0); }
     @Override public long currentVirtualMillis() { return currentMillis()/(multithreaded? 1: 4); }
 
     @Override
@@ -127,7 +127,7 @@ public class DistributedMCTSController
         }
 
         endTime = System.currentTimeMillis();
-        totalTimeMillis += System.currentTimeMillis() - startTime;
+        totalTimeMillis += endTime - startTime;
         if (Utils.ghostsNeedAction(game)) {
             totalDecisions++;
             if (Utils.ghostMovesEqual(agents.get(GHOST.BLINKY).getFullMove(), agents.get(GHOST.PINKY).getFullMove())

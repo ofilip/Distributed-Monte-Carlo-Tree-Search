@@ -20,13 +20,14 @@ import utils.VerboseLevel;
 public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
     private int MOVE_MESSAGE_INTERVAL = 50;
     private final Map<GHOST, MoveMessage> receivedMoves = new EnumMap<GHOST, MoveMessage>(GHOST.class);
-    private long totalSimulations = 0;
+    private long receivedSimulations = 0;
+    private long calculatedSimulations = 0;
     private long totalSimulatonResultsMessageLength = 0;
     private long simulationResultsMessagesCount = 0;
     private EnumMap<GHOST, MOVE> lastBestMove = Utils.NEUTRAL_GHOSTS_MOVES; /* best move during last message sending */
-    private long lastBestMoveSendTime = -MOVE_MESSAGE_INTERVAL;
+    private long stepsSinceLastMoveSent = 0;
 
-    public SimulationResultsPassingAgent(DistributedMCTSController controller, final GHOST ghost) {
+    public SimulationResultsPassingAgent(final DistributedMCTSController controller, final GHOST ghost) {
         super(controller, ghost);
 
         hookMoveMessageHandler(receivedMoves);
@@ -35,7 +36,8 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
             @Override public void handleMessage(GhostAgent agent, Message message) {
                 SimulationResultMessage result_message = (SimulationResultMessage)message;
                 try {
-                    totalSimulations++;
+//                    System.out.printf("[%s=>%s,%s] Receiving simulation: %s\n", agent.ghost, ghost, controller.currentVirtualMillis(), message);
+                    receivedSimulations++;
                     mctree.applySimulationResult(result_message.treeMoves(), result_message.simulationResult());
                 } catch (InvalidActionListException e) { assert(false); }
             }
@@ -50,25 +52,28 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
 
         /* Broadcast simulation results and enqueue messages before prevously enqueued simulation messages */
         SimulationResultMessage message = new SimulationResultMessage(actionList, simulationResults);
-        message.onSendingStarted(new MessageCallback() {
-            public void call(Message message) {
-                totalSimulatonResultsMessageLength += message.length();
-                simulationResultsMessagesCount++;
-            }
-        });
+        totalSimulatonResultsMessageLength += message.length();
+        simulationResultsMessagesCount++;
+//        message.onSendingStarted(new MessageCallback() {
+//            public void call(Message message) {
+//                totalSimulatonResultsMessageLength += message.length();
+//                simulationResultsMessagesCount++;
+//            }
+//        });
 
 //        System.err.printf("[%s:%s] broadcasting %s\n", ghost, controller.currentVirtualMillis(), message);
 
+//        System.out.printf("[%s:%s] Broadcasting simulation: %s\n", ghost, controller.currentVirtualMillis(), message);
         broadcastMessage(Priority.MEDIUM, message, true);
 
         /* Send MOVE message if current best move changes (but keep minimal interval between
          * two sent messages).
          */
         EnumMap<GHOST,MOVE> currentBestMove = mctree.bestDecisionMove();
-        if (lastBestMoveSendTime+MOVE_MESSAGE_INTERVAL>controller.currentVirtualMillis()
+        if (stepsSinceLastMoveSent>=MOVE_MESSAGE_INTERVAL
                 &&!Utils.ghostMovesEqual(currentBestMove,Utils.NEUTRAL_GHOSTS_MOVES)
                 &&!Utils.ghostMovesEqual(lastBestMove, currentBestMove)) {
-            lastBestMoveSendTime = controller.currentVirtualMillis();
+            stepsSinceLastMoveSent = 0;
             lastBestMove = currentBestMove;
             broadcastMoveMessage(Priority.HIGH, currentBestMove);
         }
@@ -76,24 +81,30 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
 
     @Override
     public void step() {
-        List<Action> action_list = new ArrayList<Action>();
-
+        stepsSinceLastMoveSent++;
         receiveMessages();
+        List<Action> action_list = new ArrayList<Action>();
         double simulation_result = mctree.iterate(action_list);
         if (!Double.isNaN(simulation_result)) {
-            totalSimulations++;
+            calculatedSimulations++;
             sendMessages(action_list, simulation_result);
         }
     }
 
     @Override
     public MOVE getMove() {
-        return getMoveFromMessages(receivedMoves/*, mctree.bestDecisionMove()*/);
+        MOVE result = getMoveFromMessages(receivedMoves/*, mctree.bestDecisionMove()*/);
+        lastBestMove = Utils.NEUTRAL_GHOSTS_MOVES;
+        receivedMoves.clear();
+        return result;
     }
+
+    public long calculatedSimulations() { return calculatedSimulations; }
+    public long receivedSimulations() { return receivedSimulations; }
 
     @Override
     public long totalSimulations() {
-        return totalSimulations;
+        return calculatedSimulations+receivedSimulations;
     }
 
     public long getSimulationResultsMessageCount() {

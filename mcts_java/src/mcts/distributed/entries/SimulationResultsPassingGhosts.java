@@ -27,16 +27,25 @@ public class SimulationResultsPassingGhosts extends DistributedMCTSController {
         return averageLength/4;
     }
 
-    public long totalTransmittedSimulations() {
-        long transmittedSimulations = 0;
+    public long totalReceivedSimulations() {
+        long receivedSimulations = 0;
         for (GhostAgent agent: agents.values()) {
             SimulationResultsPassingAgent simulationPassingAgent = (SimulationResultsPassingAgent)agent;
-            transmittedSimulations += simulationPassingAgent.getSimulationResultsMessageCount();
+            receivedSimulations += simulationPassingAgent.receivedSimulations();
         }
-        return transmittedSimulations;
+        return receivedSimulations;
+    }
+
+    public long totalCalculatedSimulations() {
+        long calculatedSimulations = 0;
+        for (GhostAgent agent: agents.values()) {
+            SimulationResultsPassingAgent simulationPassingAgent = (SimulationResultsPassingAgent)agent;
+            calculatedSimulations += simulationPassingAgent.calculatedSimulations();
+        }
+        return calculatedSimulations;
     }
 
     public double transmittedSimulationsRatio() {
-        return totalTransmittedSimulations()/(double)(3*totalSimulations());
+        return totalReceivedSimulations()/(double)(3*totalCalculatedSimulations());
     }
 }

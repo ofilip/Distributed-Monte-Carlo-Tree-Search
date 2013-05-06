@@ -107,6 +107,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
             @Override
             public void handleMessage(GhostAgent agent, Message message) {
                 MoveMessage moveMessage = (MoveMessage)message;
+                //if(true){
                 if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
                     System.out.printf("[%d] %s from %s: Receiving %s\n", controller.currentVirtualMillis(), ghost, agent.ghost(), moveMessage);
                 }
@@ -117,6 +118,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
 
     protected void broadcastMoveMessage(Priority priority, EnumMap<GHOST, MOVE> bestMove) {
         MoveMessage message = new MoveMessage(bestMove);
+        //if (true) {
         if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
             System.out.printf("[%s] %s: Broadcasting %s (size %s)\n", controller.currentVirtualMillis(), ghost, message, message.length());
         }

@@ -27,7 +27,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
             @Override
             public void handleMessage(GhostAgent agent, Message message) {
                 RootMessage roots_message = (RootMessage)message;
-                System.err.printf("[%s=>%s:%s] receiving %s\n", agent.ghost, ghost, controller.currentVirtualMillis(), message);
+                //System.err.printf("[%s=>%s:%s] receiving %s\n", agent.ghost, ghost, controller.currentVirtualMillis(), message);
                 received_roots.put(agent.ghost(), roots_message.getRoots());
             }
         });
@@ -70,7 +70,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
         if (roots==null) return;
 
         RootMessage message = new RootMessage(roots);
-        System.err.printf("[%s:%s] sending %s\n", ghost, controller.currentVirtualMillis(), message);
+        //System.err.printf("[%s:%s] sending %s\n", ghost, controller.currentVirtualMillis(), message);
         for (MessageSender sender: messageSenders.values()) {
             sender.sendQueueFlushUnsent(RootMessage.class);
         }
