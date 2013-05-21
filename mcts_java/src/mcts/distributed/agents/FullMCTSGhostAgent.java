@@ -46,7 +46,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
                 ||game.wasPacManEaten() /* pacman eaten */
                 ||Utils.globalReversalHappened(game) /* accidental reversal */
                 ||lastFullMove==null /* last getMove() didn't finish in limit */
-                ||!Utils.ghostMovesEqual(lastFullMove, Utils.lastGhostsMoves(game))
+  //              ||!Utils.ghostMovesEqual(lastFullMove, Utils.lastGhostsMoves(game))
                 ||mctree.root().getTotalTicks()>mySimulator.getMaxDepth()/2 /* simulation is too much shortened */
                 ) {
             /* (re)initialize MC-tree and its components */
@@ -176,6 +176,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
         return lastFullMove;
     }
 
+    public long currentTreeSize() { return mctree.root().visitCount(); }
 
     public double averageDecisionSimulations() {
         return totalSimulations()/(double)decisions;

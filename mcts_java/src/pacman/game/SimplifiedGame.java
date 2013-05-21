@@ -163,6 +163,18 @@ public final class SimplifiedGame implements Game
 		powerPills.set(0,currentMaze.powerPillIndices.length, false);
 	}
 
+        public void setShortLairTimes() {
+            if (totalTime!=0) {
+                System.err.printf("Cannot change lair times because game is already running");
+                return;
+            }
+            int i = 1;
+            for (Ghost ghost: ghosts.values()) {
+                ghost.lairTime = 5*i;
+                i++;
+            }
+        }
+
 	/**
 	 * _init ghosts.
 	 */

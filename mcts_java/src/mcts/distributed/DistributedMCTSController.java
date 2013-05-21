@@ -136,8 +136,11 @@ public class DistributedMCTSController
                 coordinatedDecisions++;
             }
         }
+        calculateControllerSpecificStatistics();
         return moves;
     }
+
+    public void calculateControllerSpecificStatistics() {/* calculate nothing as default */}
 
     public double coordinatedDecisionsRatio() { return coordinatedDecisions/(double)Math.max(totalDecisions, 1); }
 
@@ -146,8 +149,7 @@ public class DistributedMCTSController
         return totalTimeMillis;
     }
 
-    @Override
-    public long totalSimulations() {
+    public long calculatedSimulations() {
        long simulations = 0;
         for (GhostAgent agent: agents.values()) {
             simulations += agent.totalSimulations();
@@ -156,7 +158,16 @@ public class DistributedMCTSController
     }
 
     @Override
+    public long totalSimulations() {
+        return calculatedSimulations();
+    }
+
+    @Override
     public double simulationsPerSecond() {
+        return calculatedSimulations()/(0.001*totalTimeMillis());
+    }
+
+    public double totalSimulationsPerSecond() {
         return totalSimulations()/(0.001*totalTimeMillis());
     }
 

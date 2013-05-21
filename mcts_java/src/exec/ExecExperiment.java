@@ -42,7 +42,9 @@ enum Option {
     VERBOSE("verbose", LongOpt.NO_ARGUMENT),
     DEBUG("debug", LongOpt.NO_ARGUMENT),
     HEADER("header", LongOpt.NO_ARGUMENT),
+    SHORT_LAIR_TIME("short-lair-time", LongOpt.NO_ARGUMENT),
     WITH_HEADER("with-header", LongOpt.NO_ARGUMENT);
+
 
     private LongOpt longopt;
     public final static LongOpt LONG_OPTIONS[];
@@ -143,7 +145,7 @@ public class ExecExperiment {
                               prefix, prefix, prefix, prefix, prefix);
         }
         if (controller instanceof DistributedMCTSController) {
-            System.out.printf("channel_speed\ttransmitted_per_second_total\ttransmitted_per_second_successfully\tsynchronization_ratio\t");
+            System.out.printf("sims_per_sec_total\tchannel_speed\ttransmitted_per_second_total\ttransmitted_per_second_successfully\tsynchronization_ratio\t");
         }
         if (controller instanceof SimulationResultsPassingGhosts) {
             System.out.printf("average_simulation_message_length\ttransmitted_simulations_ratio\t");
@@ -171,7 +173,7 @@ public class ExecExperiment {
         }
         if (controller instanceof DistributedMCTSController) {
             DistributedMCTSController dmctsController = (DistributedMCTSController)controller;
-            System.out.printf("%s\t%s\t%s\t%s\t", dmctsController.getNetwork().getChannelTransmissionSpeed(),
+            System.out.printf("%s\t%s\t%s\t%s\t%s\t", dmctsController.totalSimulationsPerSecond(), dmctsController.getNetwork().getChannelTransmissionSpeed(),
                     dmctsController.transmittedTotalPerSecond(), dmctsController.transmittedSuccessfullyPerSecond(),
                     dmctsController.coordinatedDecisionsRatio());
         }
@@ -292,6 +294,9 @@ public class ExecExperiment {
                     break;
                 case TRIAL_NO:
                     trialNo = Integer.parseInt(getopt.getOptarg());
+                    break;
+                case SHORT_LAIR_TIME:
+                    game.setShortLairTimes();
                     break;
                 default:
                     System.err.printf("Unhandled switch: %s\n", option.getLongopt().getFlag());

@@ -88,6 +88,7 @@ public class PacmanNode extends MCNode {
     }
 
     private void ghostsPacmanExpand(Decision decision) {
+//        jointNode = true;
         EnumMap<GHOST, MOVE[]> possible_ghosts_moves = decision.ghosts_possible_moves;
         MOVE[] possible_pacman_moves = decision.pacman_possible_moves;
         assert !expanded();

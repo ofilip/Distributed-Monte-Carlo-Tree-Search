@@ -5,8 +5,12 @@ import mcts.distributed.agents.DummyGhostAgent;
 import mcts.distributed.agents.GhostAgent;
 import mcts.distributed.agents.RootExchangingAgent;
 import pacman.game.Constants.GHOST;
+import utils.VerboseLevel;
 
 public class RootExchangingGhosts extends DistributedMCTSController {
+    private long calculatedSimulations = 0;
+    private long receivedRootsSize = 0;
+
     public RootExchangingGhosts() {
         long seed = System.currentTimeMillis();
 
@@ -18,13 +22,23 @@ public class RootExchangingGhosts extends DistributedMCTSController {
     }
 
     public double rootSizeRatio() {
-        long rootsTransmitted = 0;
-        long simulationCount = 0;
-        for (GhostAgent agent: agents.values()) {
-            RootExchangingAgent rootAgent = (RootExchangingAgent)agent;
-            rootsTransmitted += rootAgent.currentReceivedRootsSize();
-            simulationCount += rootAgent.rootSimulations();
+        return receivedRootsSize/(double)(3*calculatedSimulations);
+    }
+
+
+
+    @Override
+    public void calculateControllerSpecificStatistics() {
+        if (!((RootExchangingAgent)agents.get(GHOST.BLINKY)).rootSendingActive()) return;
+
+        for (GhostAgent ghostAgent: agents.values()) {
+            RootExchangingAgent rootAgent = (RootExchangingAgent)ghostAgent;
+            if (verboseLevel.check(VerboseLevel.VERBOSE)&&
+                ghostAgent.ghost()==GHOST.BLINKY) {
+                System.out.printf("[%s] sims: %s, roots: %s\n", rootAgent.ghost(), rootAgent.currentTreeSize(), rootAgent.currentReceivedRootsSize());
+            }
+            calculatedSimulations += rootAgent.currentTreeSize();
+            receivedRootsSize += rootAgent.currentReceivedRootsSize();
         }
-        return rootsTransmitted/(double)(3*simulationCount);
     }
 }

@@ -35,4 +35,9 @@ public class DummyGhostAgent extends FullMCTSGhostAgent {
     public long totalSimulations() {
         return totalSimulations;
     }
+
+    @Override
+    public long calculatedSimulations() {
+        return totalSimulations;
+    }
 }

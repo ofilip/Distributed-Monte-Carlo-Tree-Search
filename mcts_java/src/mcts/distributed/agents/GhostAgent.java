@@ -167,6 +167,7 @@ public abstract class GhostAgent implements SimulationsCounter, MCTSEntity, Tree
 //        }
 //    }
 
+    public abstract long calculatedSimulations();
     @Override public VerboseLevel getVerboseLevel() { return verboseLevel; }
     @Override public void setVerboseLevel(VerboseLevel verboseLevel) { this.verboseLevel = verboseLevel; }
     @Override public double getUcbCoef() { return ucbCoef; }

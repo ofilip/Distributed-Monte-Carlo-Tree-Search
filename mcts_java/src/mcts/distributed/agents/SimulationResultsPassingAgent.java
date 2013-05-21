@@ -99,7 +99,7 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
         return result;
     }
 
-    public long calculatedSimulations() { return calculatedSimulations; }
+    @Override public long calculatedSimulations() { return calculatedSimulations; }
     public long receivedSimulations() { return receivedSimulations; }
 
     @Override

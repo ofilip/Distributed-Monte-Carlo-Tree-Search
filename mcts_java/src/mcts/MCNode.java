@@ -2,6 +2,7 @@ package mcts;
 
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,6 +27,7 @@ public abstract class MCNode implements UCBNode {
     long totalTicks; /* ticks from original root (before any updateTree() call */
 
     protected boolean halfstep = false;
+//    protected boolean jointNode = false;
 
     /* Tree links and values */
     MCTree tree;
@@ -176,6 +178,20 @@ public abstract class MCNode implements UCBNode {
         return halfstep;
     }
 
+    public boolean halfstepFollows() {
+        Iterator<? extends MCNode> it = children().iterator();
+        return it.hasNext()&&it.next().halfstep;
+    }
+
+//    public boolean jointNode() {
+//        return jointNode;
+//    }
+//
+//    public boolean jointNodeFollows() {
+//        Iterator<? extends MCNode> it = children().iterator();
+//        return it.hasNext()&&it.next().jointNode;
+//    }
+
     public int pacmanDecisionGap() {
         return pacman_decision_gap;
     }
@@ -189,7 +205,7 @@ public abstract class MCNode implements UCBNode {
         if (children()==null) {
             return null;
         }
-        
+
         for (MCNode child: children()) {
             if (best==null||child.visitCount()>best.visitCount()) {
                 best = child;
@@ -335,6 +351,9 @@ public abstract class MCNode implements UCBNode {
         if (this.halfstep) {
             result.append("/halfstep");
         }
+//        if (this.jointNode) {
+//            result.append("/joint_node");
+//        }
         result.append(" c=").append(this.visit_count)
                 .append(" t=").append(this.ticksToGo)
                 .append(" v=").append(this.value());

@@ -16,13 +16,13 @@ import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import utils.VerboseLevel;
 
-public class RootExchangingAgent extends FullMCTSGhostAgent {
+public class DummyRootExchangingAgent extends FullMCTSGhostAgent {
     private Map<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>> receivedRoots = new EnumMap<GHOST, EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>>(GHOST.class);
     private long totalSimulations = 0;
     private long totalReceivedRootsSize = 0;
-    private final static GHOST VERBOSE_GHOST = GHOST.SUE;
+    private final static GHOST VERBOSE_GHOST = GHOST.BLINKY;
 
-    public RootExchangingAgent(final DistributedMCTSController controller, final GHOST ghost) {
+    public DummyRootExchangingAgent(final DistributedMCTSController controller, final GHOST ghost) {
         super(controller, ghost);
         hookMessageHandler(RootMessage.class, new MessageHandler() {
             @Override
@@ -35,7 +35,10 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
     }
 
     private Map<EnumMap<GHOST, MOVE>, Long> extractRoot(MCNode subtree) {
-        assert(subtree.ghostsOnTurn());
+        //assert(subtree.ghostsOnTurn());
+        if (!subtree.ghostsOnTurn()) {
+            System.err.println(subtree.toString(3));
+        }
 
         Map<EnumMap<GHOST, MOVE>, Long> root = new HashMap<EnumMap<GHOST, MOVE>, Long>();
         for (MCNode child: subtree.children()) {
@@ -57,7 +60,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
             roots.put(MOVE.NEUTRAL, extractRoot(mctree.root()));
         } else if (mctree.root().halfstepFollows()){
             for (MCNode subtree: mctree.root().children()) {
-                if (subtree.expanded()&&!subtree.game().gameOver()) {
+                if (subtree.expanded()&&!subtree.game().gameOver()&&subtree.ghostsOnTurn()) {
                     PacmanNode pacman_node = (PacmanNode)subtree;
                     roots.put(pacman_node.pacmanMove(), extractRoot(subtree));
                 }
@@ -75,7 +78,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
 
         if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==VERBOSE_GHOST) {
             System.out.printf("[%s:%s] Sending root: %s\n", ghost, controller.currentVirtualMillis(), roots);
-            System.out.printf("%s", mctree.toString(mctree.root().halfstep()? 2: 1));
+            System.out.printf("%s", mctree.toString(mctree.root().halfstepFollows()? 2: 1));
         }
 
         RootMessage message = new RootMessage(roots);
@@ -99,11 +102,11 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
     public MOVE getMove() {
         totalReceivedRootsSize += currentReceivedRootsSize();
 
-        if (!Utils.ghostsNeedAction(currentGame)) {
-            lastFullMove = Utils.ghostsFollowRoads(currentGame);
-            return lastFullMove.get(ghost);
-        }
-
+//        if (!Utils.ghostsNeedAction(currentGame)) {
+//            lastFullMove = Utils.ghostsFollowRoads(currentGame);
+//            return lastFullMove.get(ghost);
+//        }
+//
         /* Return move with best summed visit count */
         EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> summed_visit_count = new EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>>(MOVE.class);
         EnumMap<MOVE, Long> pacman_move_visit_count = new EnumMap<MOVE, Long>(MOVE.class);
@@ -113,12 +116,12 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
             receivedRoots.put(ghost, my_roots);
         }
 
-        if (verboseLevel.check(VerboseLevel.VERBOSE)&&ghost==VERBOSE_GHOST) System.out.printf("[%s:%s] calculating move... my tree:\n%s\n", ghost, controller.currentVirtualMillis(), mctree.toString(2));
+        if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==VERBOSE_GHOST) System.out.printf("[%s:%s] calculating move... my tree:\n%s\n", ghost, controller.currentVirtualMillis(), mctree.toString(2));
         for (EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> roots: receivedRoots.values()) {
             for (MOVE pacman_move: roots.keySet()) {
                 Map<EnumMap<GHOST, MOVE>, Long> root = roots.get(pacman_move);
                 Map<EnumMap<GHOST, MOVE>, Long> visit_count_map = summed_visit_count.get(pacman_move);
-                if (verboseLevel.check(VerboseLevel.VERBOSE)&&ghost==VERBOSE_GHOST) {
+                if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==VERBOSE_GHOST) {
                     System.out.printf("  Received: %s\n", root);
                 }
                 if (visit_count_map==null) {
@@ -134,12 +137,15 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
 
                     if (pacman_sum==null) pacman_sum = new Long(0);
                     if (sum==null) sum = new Long(0);
+                    if (ghost_move==null||sum==null||count==null||visit_count_map==null) {
+                        System.err.printf("Chyba jako cyp!\n");
+                    }
                     visit_count_map.put(ghost_move, sum+count);
                     pacman_move_visit_count.put(pacman_move, pacman_sum+count);
                 }
             }
         }
-        if (verboseLevel.check(VerboseLevel.VERBOSE)&&ghost==VERBOSE_GHOST) {
+        if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==VERBOSE_GHOST) {
             System.out.printf("  Calculated map: %s\n", summed_visit_count);
         }
 
@@ -155,7 +161,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
             }
         }
 
-        if (verboseLevel.check(VerboseLevel.VERBOSE)&&ghost==VERBOSE_GHOST) {
+        if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==VERBOSE_GHOST) {
             System.out.printf("  Best pacman move: %s\n", best_pacman_move);
         }
 
@@ -170,13 +176,24 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
             }
         }
 
-        if (verboseLevel.check(VerboseLevel.VERBOSE)&&ghost==VERBOSE_GHOST) {
+        lastFullMove = Utils.ghostsNeedAction(currentGame)? best_ghost_move: Utils.ghostsFollowRoads(currentGame);
+        Utils.decisionMoves(lastFullMove, currentGame);
+
+        if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==VERBOSE_GHOST) {
+            EnumMap<GHOST, MOVE> localBest = mctree.bestMove(currentGame);
+            Utils.decisionMoves(localBest, currentGame);
+
             System.out.printf("  Best ghost move: %s\n", best_ghost_move);
+            System.out.printf("  Local best move: %s\n", localBest);
+            if (!Utils.ghostMovesEquals(lastFullMove, localBest)) {
+                System.out.printf("Root and local best moves differ...\n");
+            }
         }
 
-        lastFullMove = best_ghost_move!=null? best_ghost_move: Utils.NEUTRAL_GHOSTS_MOVES;
-        return best_ghost_move==null? MOVE.NEUTRAL: best_ghost_move.get(this.ghost);
+//        lastFullMove = best_ghost_move!=null? best_ghost_move: Utils.ghostsFollowRoads(currentGame);
 
+//        lastFullMove = mctree.bestMove(currentGame);
+        return lastFullMove.get(ghost);
     }
 
     public long currentReceivedRootsSize() {
