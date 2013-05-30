@@ -36,6 +36,7 @@ public class MCTSPacman extends PlainMCTSController<PacmanTree, MOVE> {
                 ) {
             /* (re)initialize MC-tree and its components */
             mctree = new PacmanTree(game, ucbSelector, guidedSimulator, backpropagator, getUcbCoef());
+            mctree.setOptimisticTurns(optimisticTurns);
 
             /* remember current level */
             currentLevel = game.getCurrentLevel();

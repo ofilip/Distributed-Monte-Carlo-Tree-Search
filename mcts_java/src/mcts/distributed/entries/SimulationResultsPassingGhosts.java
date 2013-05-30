@@ -36,16 +36,7 @@ public class SimulationResultsPassingGhosts extends DistributedMCTSController {
         return receivedSimulations;
     }
 
-    public long totalCalculatedSimulations() {
-        long calculatedSimulations = 0;
-        for (GhostAgent agent: agents.values()) {
-            SimulationResultsPassingAgent simulationPassingAgent = (SimulationResultsPassingAgent)agent;
-            calculatedSimulations += simulationPassingAgent.calculatedSimulations();
-        }
-        return calculatedSimulations;
-    }
-
     public double transmittedSimulationsRatio() {
-        return totalReceivedSimulations()/(double)(3*totalCalculatedSimulations());
+        return totalReceivedSimulations()/(double)(3*calculatedSimulations());
     }
 }

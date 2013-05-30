@@ -14,6 +14,7 @@ public abstract class MCTree<M> {
     Backpropagator backpropagator;
     double ucb1_coef;
     MCNode root;
+    boolean optimisticTurns = true;
 
     public MCNode root() {
         return root;
@@ -53,6 +54,9 @@ public abstract class MCTree<M> {
         MCNode node = getNode(action_list);
         node.backpropagate(simulation_result);
     }
+
+    public boolean getOptimisticTurns() { return optimisticTurns; }
+    public void setOptimisticTurns(boolean optimisticTurns) { this.optimisticTurns = optimisticTurns; }
 
 //    protected MCTree(MCTree tree, long depth) {
 //        this.selector = tree.selector;
@@ -98,7 +102,8 @@ public abstract class MCTree<M> {
     }
 
     public boolean isPacmanTree() {
-        return root.isGhostsNode();
+        //return root.isGhostsNode();
+        return this instanceof PacmanTree;
     }
 
     public boolean isGhostsTree() {

@@ -28,6 +28,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
     protected EnumMap<GHOST, MOVE> lastFullMove;
     protected EnumMap<GHOST, MOVE> lastTransmittedMove = Utils.NEUTRAL_GHOSTS_MOVES; //XXX
     protected long decisions = 0;
+    protected boolean optimisticTurns = true;
 
     public FullMCTSGhostAgent(DistributedMCTSController controller, GHOST ghost) {
         super(controller, ghost);
@@ -35,6 +36,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
 
     private void initializeTree(Game game) {
         mctree = new GhostsTree(game, ucbSelector, mySimulator, backpropagator, ucbCoef);
+        mctree.setOptimisticTurns(optimisticTurns);
     }
 
     @Override public MCTree getTree() { return mctree; }
@@ -107,7 +109,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
             @Override
             public void handleMessage(GhostAgent agent, Message message) {
                 MoveMessage moveMessage = (MoveMessage)message;
-                //if(true){
+
                 if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
                     System.out.printf("[%d] %s from %s: Receiving %s\n", controller.currentVirtualMillis(), ghost, agent.ghost(), moveMessage);
                 }
@@ -181,4 +183,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
     public double averageDecisionSimulations() {
         return totalSimulations()/(double)decisions;
     }
+
+    @Override public boolean getOptimisticTurns() { return optimisticTurns; }
+    @Override public void setOptimisticTurns(boolean optimisticTurns) { this.optimisticTurns = optimisticTurns; }
 }

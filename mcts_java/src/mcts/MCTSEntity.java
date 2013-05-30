@@ -9,10 +9,12 @@ public interface MCTSEntity {
     public abstract double getDeathWeight();
     public abstract int getSimulationDepth();
     public abstract double getRandomSimulationMoveProbability();
+    public abstract boolean getOptimisticTurns();
 
     public abstract void setVerboseLevel(VerboseLevel verboseLevel);
     public abstract void setUcbCoef(double ucbCoef);
     public abstract void setDeathWeight(double deathWeight);
     public abstract void setSimulationDepth(int simulationDepth);
     public abstract void setRandomSimulationMoveProbability(double randomSimulationMoveProbability);
+    public abstract void setOptimisticTurns(boolean optimisticTurns);
 }

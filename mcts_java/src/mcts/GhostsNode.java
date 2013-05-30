@@ -76,24 +76,6 @@ public class GhostsNode extends MCNode {
         return root;
     }
 
-    private void pacmanGhostsExpand(Decision decision) {
-//        jointNode = true;
-        MOVE[] possible_pacman_moves = decision.pacman_possible_moves;
-        EnumMap<GHOST, MOVE[]> possible_ghosts_moves = decision.ghosts_possible_moves;
-        assert !expanded();
-        pacman_children = new EnumMap<MOVE, PacmanNode>(MOVE.class);
-        decision_cause = decision.pacman_decision_cause;
-        for (MOVE pacman_move: possible_pacman_moves) {
-            pacman_children.put(pacman_move, PacmanNode.createJointNode(tree, this, pacman_move, possible_ghosts_moves,
-                                decision.game, decision.pacman_decision_gap, totalTicks+decision.ticks));
-        }
-    }
-
-    @Override
-    protected void jointExpand(Decision decision) {
-        pacmanGhostsExpand(decision);
-    }
-
     @Override
     protected StringBuilder movesToString(StringBuilder result) {
         if (ghosts_moves!=null) {

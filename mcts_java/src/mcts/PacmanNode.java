@@ -87,42 +87,6 @@ public class PacmanNode extends MCNode {
         return node;
     }
 
-    private void ghostsPacmanExpand(Decision decision) {
-//        jointNode = true;
-        EnumMap<GHOST, MOVE[]> possible_ghosts_moves = decision.ghosts_possible_moves;
-        MOVE[] possible_pacman_moves = decision.pacman_possible_moves;
-        assert !expanded();
-        ghosts_children = new HashMap<EnumMap<GHOST, MOVE>, GhostsNode>();
-        decision_cause = DecisionCause.CROSSROAD_REACHED;
-        MOVE[] blinky_moves = possible_ghosts_moves.get(GHOST.BLINKY);
-        MOVE[] inky_moves = possible_ghosts_moves.get(GHOST.INKY);
-        MOVE[] pinky_moves = possible_ghosts_moves.get(GHOST.PINKY);
-        MOVE[] sue_moves = possible_ghosts_moves.get(GHOST.SUE);
-        EnumMap<GHOST, MOVE> ghosts_moves = new EnumMap<GHOST, MOVE>(GHOST.class);
-        for (MOVE blinky_move: blinky_moves) {
-            ghosts_moves.put(GHOST.BLINKY, blinky_move);
-            for (MOVE inky_move: inky_moves) {
-                ghosts_moves.put(GHOST.INKY, inky_move);
-                for (MOVE pinky_move: pinky_moves) {
-                    ghosts_moves.put(GHOST.PINKY, pinky_move);
-                    for (MOVE sue_move: sue_moves) {
-                        ghosts_moves.put(GHOST.SUE, sue_move);
-                        EnumMap<GHOST, MOVE> ground_ghosts_moves = ghosts_moves.clone();
-                        Utils.decisionMoves(ground_ghosts_moves, game);
-                        ghosts_children.put(ground_ghosts_moves,
-                                GhostsNode.createJointNode(tree, this, ground_ghosts_moves, possible_pacman_moves,
-                                                           decision.pacman_decision_gap, decision.pacman_decision_cause, totalTicks+decision.ticks));
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void jointExpand(Decision decision) {
-        ghostsPacmanExpand(decision);
-    }
-
     @Override
     protected StringBuilder movesToString(StringBuilder result) {
         result.append(" PACMAN=").append(this.pacman_move);

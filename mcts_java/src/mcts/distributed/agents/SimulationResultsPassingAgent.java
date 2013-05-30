@@ -18,19 +18,14 @@ import pacman.game.Constants.MOVE;
 import utils.VerboseLevel;
 
 public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
-    private int MOVE_MESSAGE_INTERVAL = 50;
-    private final Map<GHOST, MoveMessage> receivedMoves = new EnumMap<GHOST, MoveMessage>(GHOST.class);
     private long receivedSimulations = 0;
     private long calculatedSimulations = 0;
     private long totalSimulatonResultsMessageLength = 0;
     private long simulationResultsMessagesCount = 0;
-    private EnumMap<GHOST, MOVE> lastBestMove = Utils.NEUTRAL_GHOSTS_MOVES; /* best move during last message sending */
     private long stepsSinceLastMoveSent = 0;
 
     public SimulationResultsPassingAgent(final DistributedMCTSController controller, final GHOST ghost) {
         super(controller, ghost);
-
-        hookMoveMessageHandler(receivedMoves);
 
         hookMessageHandler(SimulationResultMessage.class, new MessageHandler() {
             @Override public void handleMessage(GhostAgent agent, Message message) {
@@ -54,29 +49,7 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
         SimulationResultMessage message = new SimulationResultMessage(actionList, simulationResults);
         totalSimulatonResultsMessageLength += message.length();
         simulationResultsMessagesCount++;
-//        message.onSendingStarted(new MessageCallback() {
-//            public void call(Message message) {
-//                totalSimulatonResultsMessageLength += message.length();
-//                simulationResultsMessagesCount++;
-//            }
-//        });
-
-//        System.err.printf("[%s:%s] broadcasting %s\n", ghost, controller.currentVirtualMillis(), message);
-
-//        System.out.printf("[%s:%s] Broadcasting simulation: %s\n", ghost, controller.currentVirtualMillis(), message);
         broadcastMessage(Priority.MEDIUM, message, true);
-
-        /* Send MOVE message if current best move changes (but keep minimal interval between
-         * two sent messages).
-         */
-        EnumMap<GHOST,MOVE> currentBestMove = mctree.bestDecisionMove();
-        if (stepsSinceLastMoveSent>=MOVE_MESSAGE_INTERVAL
-                &&!Utils.ghostMovesEqual(currentBestMove,Utils.NEUTRAL_GHOSTS_MOVES)
-                &&!Utils.ghostMovesEqual(lastBestMove, currentBestMove)) {
-            stepsSinceLastMoveSent = 0;
-            lastBestMove = currentBestMove;
-            broadcastMoveMessage(Priority.HIGH, currentBestMove);
-        }
     }
 
     @Override
@@ -93,10 +66,10 @@ public class SimulationResultsPassingAgent extends FullMCTSGhostAgent {
 
     @Override
     public MOVE getMove() {
-        MOVE result = getMoveFromMessages(receivedMoves/*, mctree.bestDecisionMove()*/);
-        lastBestMove = Utils.NEUTRAL_GHOSTS_MOVES;
-        receivedMoves.clear();
-        return result;
+        //MOVE result = getMoveFromMessages(receivedMoves/*, mctree.bestDecisionMove()*/);
+        lastFullMove = mctree.bestMove(currentGame);
+        //return result;
+        return lastFullMove.get(ghost);
     }
 
     @Override public long calculatedSimulations() { return calculatedSimulations; }

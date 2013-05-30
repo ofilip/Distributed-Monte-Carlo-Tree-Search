@@ -27,7 +27,7 @@ public class DummyGhostAgent extends FullMCTSGhostAgent {
             System.out.print(mctree.toString(2));
             System.out.printf("%s's full move: %s\n", ghost, mctree.bestMove(currentGame));
         }
-        lastFullMove = mctree.bestMove(currentGame); /* in this context previous_game is current game */
+        lastFullMove = mctree.bestMove(currentGame);
         return lastFullMove.get(ghost);
     }
 

@@ -8,6 +8,7 @@ import pacman.game.Constants.*;
 public class SimulationResultMessage extends Message {
     private List<Action> treeMoves; /* Moves defining node where the simulation began */
     private double simulationResult;
+    private long length = -1;
 
     public SimulationResultMessage(List<Action> treeMoves, double simulationResult) {
         super("simulation_result");
@@ -20,13 +21,16 @@ public class SimulationResultMessage extends Message {
 
     @Override
     public long length() {
-        long bitsLength = 8; /* size of double */
+        if (length==-1) {
+            long bitsLength = 8; /* size of double */
 
-        for (Action action: treeMoves) {
-            bitsLength += action.type().bitLength();
+            for (Action action: treeMoves) {
+                bitsLength += action.type().bitLength();
+            }
+
+            length = Utils.bitsToBytes(bitsLength);
         }
-
-        return Utils.bitsToBytes(bitsLength);
+        return length;
     }
 
     @Override

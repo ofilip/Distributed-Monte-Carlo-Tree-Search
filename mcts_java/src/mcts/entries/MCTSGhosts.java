@@ -36,6 +36,7 @@ public class MCTSGhosts extends PlainMCTSController<GhostsTree, EnumMap<GHOST, M
     private void initializeTree(Game game) {
         /* (re)initialize MC-tree and its components */
         mctree = new GhostsTree(game, ucbSelector, guidedSimulator, backpropagator, getUcbCoef());
+        mctree.setOptimisticTurns(optimisticTurns);
     }
 
     @Override

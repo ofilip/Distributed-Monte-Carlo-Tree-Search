@@ -8,6 +8,7 @@ import communication.Network;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mcts.Constants;
@@ -15,6 +16,7 @@ import mcts.MCTSController;
 import mcts.SimulationsStat;
 import mcts.TreeSimulationsStat;
 import mcts.Utils;
+import mcts.distributed.agents.FullMCTSGhostAgent;
 import pacman.controllers.Controller;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
@@ -149,17 +151,31 @@ public class DistributedMCTSController
         return totalTimeMillis;
     }
 
+    @Override
+    public double millisPerMove() {
+        return totalTimeMillis()/(double)moveNumber;
+
+    }
+
     public long calculatedSimulations() {
+       long simulations = 0;
+        for (GhostAgent agent: agents.values()) {
+            simulations += agent.calculatedSimulations();
+        }
+        return simulations;
+    }
+
+    public double calculatedSimulationsPerSecond() {
+        return calculatedSimulations()/(0.001*totalTimeMillis());
+    }
+
+    @Override
+    public long totalSimulations() {
        long simulations = 0;
         for (GhostAgent agent: agents.values()) {
             simulations += agent.totalSimulations();
         }
         return simulations;
-    }
-
-    @Override
-    public long totalSimulations() {
-        return calculatedSimulations();
     }
 
     @Override
@@ -256,5 +272,18 @@ public class DistributedMCTSController
             transmittedTotal += channel.transmittedTotal();
         }
         return 1000*transmittedTotal/(network.getChannels().size()*currentVirtualMillis());
+    }
+
+    public boolean getOptimisticTurns() {
+        GhostAgent agent = (FullMCTSGhostAgent)agents.get(GHOST.BLINKY);
+        return agent.getOptimisticTurns();
+    }
+
+    public void setOptimisticTurns(boolean optimisticTurns) {
+        assert(agents.size()==4);
+        
+        for (GhostAgent agent: agents.values()) {
+            agent.setOptimisticTurns(optimisticTurns);
+        }
     }
 }

@@ -23,10 +23,13 @@ public abstract class PlainMCTSController<T extends MCTree<M>, M>
     protected long totalSimulations = 0;
     protected long totalTimeMillis = 0;
     protected long decisions = 0;
+    protected boolean optimisticTurns = true;
 
     private VerboseLevel verboseLevel = VerboseLevel.QUIET;
     private double ucbCoef = 0.3;
 
+    @Override public boolean getOptimisticTurns() { return optimisticTurns; }
+    @Override public void setOptimisticTurns(boolean optimisticTurns) { this.optimisticTurns = optimisticTurns; }
 
     public PlainMCTSController() {
 
@@ -131,7 +134,10 @@ public abstract class PlainMCTSController<T extends MCTree<M>, M>
         }
 
         /* check state validity */
-        assert Utils.testRoot(game, mcTree())==null;
+        //assert Utils.testRoot(game, mcTree())==null;
+//        if (Utils.testRoot(game, mcTree())!=null) {
+//            int i=0;
+//        }
 
         /* print information about move */
         if (verboseLevel.check(VerboseLevel.VERBOSE)) {
@@ -161,6 +167,7 @@ public abstract class PlainMCTSController<T extends MCTree<M>, M>
     }
 
     @Override public long totalTimeMillis() { return totalTimeMillis; }
+    @Override public double millisPerMove() { return totalTimeMillis()/(double)mctree.root.game.getTotalTime(); }
     @Override public long totalSimulations() { return totalSimulations; }
     @Override public double simulationsPerSecond() { return totalSimulations/(0.001*totalTimeMillis); }
 
