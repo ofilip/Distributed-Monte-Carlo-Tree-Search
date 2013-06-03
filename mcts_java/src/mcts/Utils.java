@@ -225,8 +225,9 @@ public class Utils {
         return true;
     }
 
-    public static double addToAvg(double curr_avg, int curr_count, double new_value) {
-        return (curr_avg*curr_count + new_value)/(1+curr_count);
+    public static double addToAvg(double curr_avg, int curr_count, double new_value, int count) {
+        assert(curr_count+count>0);
+        return (curr_avg*curr_count + count*new_value)/(count+curr_count);
     }
 
     public static EnumMap<GHOST, MOVE> lastGhostsMoves(Game game) {

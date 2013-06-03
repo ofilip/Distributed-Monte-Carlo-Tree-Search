@@ -34,9 +34,12 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
         super(controller, ghost);
     }
 
+    protected void postTreeInit() {}
+
     private void initializeTree(Game game) {
         mctree = new GhostsTree(game, ucbSelector, mySimulator, backpropagator, ucbCoef);
         mctree.setOptimisticTurns(optimisticTurns);
+        postTreeInit();
     }
 
     @Override public MCTree getTree() { return mctree; }

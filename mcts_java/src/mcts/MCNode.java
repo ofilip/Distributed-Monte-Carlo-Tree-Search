@@ -23,6 +23,9 @@ public abstract class MCNode implements UCBNode {
     int visit_count;
     double value;
 
+    int received_visit_count = 0;
+    double received_value = 0;
+
     int ticksToGo;
     long totalTicks; /* ticks from original root (before any updateTree() call */
 
@@ -104,8 +107,16 @@ public abstract class MCNode implements UCBNode {
         return tree.simulator.simulate(game, totalTicks);
     }
 
-    public void backpropagate(double reward) {
-        tree.backpropagator.backpropagate(this, reward);
+    public void backpropagate(double reward) { backpropagate(reward, 1); }
+
+    public void backpropagate(double reward, int count) {
+        tree.backpropagator.backpropagate(this, reward, count);
+    }
+
+    public void backpropagateReceived(double reward, int count) {
+        tree.backpropagator.backpropagateReceived(this, reward, count);
+        this.received_value = reward;
+        this.received_visit_count = count;
     }
 
     public PacmanNode child(MOVE next_pacman_move) {
@@ -230,6 +241,14 @@ public abstract class MCNode implements UCBNode {
         } else {
             return null;
         }
+    }
+
+    public Map<MOVE, PacmanNode> pacmanChildren() {
+        return pacman_children;
+    }
+
+    public Map<EnumMap<GHOST,MOVE>, GhostsNode> ghostsChildren() {
+        return ghosts_children;
     }
 
     public Game game() {

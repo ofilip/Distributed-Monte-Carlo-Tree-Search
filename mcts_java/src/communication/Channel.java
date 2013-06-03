@@ -213,6 +213,4 @@ public class Channel implements MessageSender, MessageReceiver {
     public void setTransmissionSpeed(long transmissionSpeed) {
         this.transmissionSpeed = transmissionSpeed;
     }
-
-    
 }
