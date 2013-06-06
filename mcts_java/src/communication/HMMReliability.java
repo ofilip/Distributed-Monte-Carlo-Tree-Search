@@ -6,7 +6,6 @@ import utils.SystemTimer;
 import utils.VirtualTimer;
 
 public class HMMReliability implements Reliability {
-    private boolean reliable = true;
     private double r_reliability;
     private double u_reliability;
     private double ru_prob;
@@ -14,7 +13,11 @@ public class HMMReliability implements Reliability {
     private long millis_transition;
     private VirtualTimer timer;
     private long last_transition;
-    private Random random = new Random(System.currentTimeMillis());
+
+    //XXX: public for testing purposes only...
+    public boolean reliable = true;
+
+    public Random random = new Random(System.currentTimeMillis());
 
     public HMMReliability(double r_reliability, double u_reliability, double ru_prob, double ur_prob, long millis_transition) {
         this(r_reliability, u_reliability, ru_prob, ur_prob, millis_transition, SystemTimer.instance);
@@ -35,29 +38,70 @@ public class HMMReliability implements Reliability {
         long now = timer.currentVirtualMillis();
 
         /* process transitions */
-        while (last_transition+millis_transition<now) {
+        while (last_transition+getMillisTransition()<=now) {
+            double nextDouble = random.nextDouble();
             if (reliable) {
-                if (random.nextDouble()<ru_prob) {
+                if (nextDouble<getRuProb()) {
                     reliable = false;
                 }
             } else {
-                if (random.nextDouble()<ur_prob) {
+                if (nextDouble<getUrProb()) {
                     reliable = true;
                 }
             }
-            last_transition += millis_transition;
+            last_transition += getMillisTransition();
         }
 
         /* transmit */
+        double nextDouble = random.nextDouble();
         if (reliable) {
-            return random.nextDouble()<r_reliability;
+            return nextDouble<getRReliability();
         } else {
-            return random.nextDouble()<u_reliability;
+            return nextDouble<getUReliability();
         }
     }
 
+
+
     @Override
     public HMMReliability clone() {
-        return new HMMReliability(r_reliability, u_reliability, ru_prob, ur_prob, millis_transition, timer);
+        HMMReliability clone =  new HMMReliability(getRReliability(), getUReliability(), getRuProb(), getUrProb(), getMillisTransition(), timer);
+        clone.random = random;
+        return clone;
+    }
+
+    /**
+     * @return the r_reliability
+     */
+    public double getRReliability() {
+        return r_reliability;
+    }
+
+    /**
+     * @return the u_reliability
+     */
+    public double getUReliability() {
+        return u_reliability;
+    }
+
+    /**
+     * @return the ru_prob
+     */
+    public double getRuProb() {
+        return ru_prob;
+    }
+
+    /**
+     * @return the ur_prob
+     */
+    public double getUrProb() {
+        return ur_prob;
+    }
+
+    /**
+     * @return the millis_transition
+     */
+    public long getMillisTransition() {
+        return millis_transition;
     }
 }

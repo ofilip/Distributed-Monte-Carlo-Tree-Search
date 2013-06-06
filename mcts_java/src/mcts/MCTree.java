@@ -55,9 +55,13 @@ public abstract class MCTree<M> {
         node.backpropagate(simulation_result);
     }
 
-    public void applyTreeNode(List<Action> action_list, double simulation_result, int visit_count) throws InvalidActionListException {
+    /** @return Number of previously received simulations masked by this node */
+    public long applyTreeNode(GHOST from, List<Action> action_list, double simulation_result, int visit_count) throws InvalidActionListException {
         MCNode node = getNode(action_list);
-        node.backpropagateReceived(simulation_result, visit_count);
+        long res = node.backpropagateReceived(from, simulation_result, visit_count);
+        node.received_value.put(from, simulation_result);
+        node.received_visit_count.put(from, visit_count);
+        return res;
     }
 
     public boolean getOptimisticTurns() { return optimisticTurns; }

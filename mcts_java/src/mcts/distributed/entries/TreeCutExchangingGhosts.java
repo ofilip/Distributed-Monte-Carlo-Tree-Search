@@ -1,5 +1,6 @@
 package mcts.distributed.entries;
 
+import mcts.Constants;
 import mcts.distributed.DistributedMCTSController;
 import mcts.distributed.agents.GhostAgent;
 import mcts.distributed.agents.TreeCutExchangingAgent;
@@ -25,5 +26,10 @@ public class TreeCutExchangingGhosts extends DistributedMCTSController {
             TreeCutExchangingAgent treeCutAgent = (TreeCutExchangingAgent)agent;
             treeCutAgent.setCutByteSize(bytes);
         }
+    }
+
+    public long cutByteSize() {
+        assert(agents.containsKey(GHOST.BLINKY));
+        return ((TreeCutExchangingAgent)agents.get(GHOST.BLINKY)).getCutByteSize();
     }
 }

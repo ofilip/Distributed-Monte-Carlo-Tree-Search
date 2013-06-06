@@ -15,6 +15,7 @@ import mcts.PacmanNode;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import utils.Pair;
+import utils.Triplet;
 
 public class TreeCutNode {
     private final MCNode node;
@@ -39,8 +40,9 @@ public class TreeCutNode {
         return node;
     }
 
-    public Pair<Long,TreeCutNode> expand() {
-        long sizeDiff = -toMessage().length();
+    public Triplet<Long,Long,TreeCutNode> expand() {
+        long byteSizeDiff = -toMessage().length();
+        long sizeDiff = -1;
         if (!node.expanded()) return null;
         TreeCutNode curr = this;
         if (node.pacmanChildren()!=null) {
@@ -50,7 +52,8 @@ public class TreeCutNode {
                 ArrayList<Action> child_path = new ArrayList<Action>(path);
                 child_path.add(action);
                 curr = curr.append(new TreeCutNode(node.pacmanChildren().get(move), child_path));
-                sizeDiff += curr.toMessage().length();
+                byteSizeDiff += curr.toMessage().length();
+                sizeDiff++;
             }
         } else if (node.ghostsChildren()!=null) {
             for (EnumMap<GHOST,MOVE> move: node.ghostsChildren().keySet()) {
@@ -58,7 +61,8 @@ public class TreeCutNode {
                 ArrayList<Action> child_path = new ArrayList<Action>(path);
                 child_path.add(action);
                 curr = curr.append(new TreeCutNode(node.ghostsChildren().get(move), child_path));
-                sizeDiff += curr.toMessage().length();
+                byteSizeDiff += curr.toMessage().length();
+                sizeDiff++;
             }
         } else assert(false);
 
@@ -69,7 +73,7 @@ public class TreeCutNode {
         this.next.previous = this.previous;
         this.previous.next = this.next;
 
-        return new Pair<Long, TreeCutNode>(sizeDiff, firstChild);
+        return new Triplet<Long, Long, TreeCutNode>(sizeDiff, byteSizeDiff, firstChild);
     }
 
     public MCNode treeNode() { return node; }
@@ -77,6 +81,8 @@ public class TreeCutNode {
     public TreeCutNode previous() { return previous; }
 
     public TreeNodeMessage toMessage() {
-        return new TreeNodeMessage(path, node.value(), node.visitCount());
+        //Pair<Double,Integer> nodeValue = node.calculated();
+        //return new TreeNodeMessage(path, nodeValue.first, nodeValue.second);
+        return new TreeNodeMessage(path, node.calculatedValue(), node.calculatedVisitCount());
     }
 }

@@ -6,9 +6,11 @@ import communication.messages.Message;
 import communication.messages.TreeNodeMessage;
 import java.util.HashMap;
 import java.util.Map;
+import mcts.MCNode;
 import mcts.distributed.DistributedMCTSController;
 import mcts.distributed.TreeCut;
 import mcts.distributed.TreeCutIterator;
+import mcts.distributed.TreeCutNode;
 import mcts.distributed.VisitCountTreeCut;
 import mcts.exceptions.InvalidActionListException;
 import pacman.game.Constants.GHOST;
@@ -22,6 +24,7 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     private Map<GHOST, TreeCutIterator> cutIterators = new HashMap<GHOST, TreeCutIterator>();
     private int visitCountThreshold = 10;
     private long maxBytesSize = 1024;
+    private long receivedSimulations = 0;
 
     @Override
     protected void postTreeInit() {
@@ -38,7 +41,10 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
             @Override public void handleMessage(GhostAgent agent, Message message) {
                 TreeNodeMessage result_message = (TreeNodeMessage)message;
                 try {
-                    mctree.applyTreeNode(result_message.treeMoves(), result_message.simulationResult(), result_message.count());
+                    long maskedSimulations = mctree.applyTreeNode(agent.ghost(), result_message.treeMoves(), result_message.simulationResult(), result_message.count());
+                    receivedSimulations += result_message.count() - maskedSimulations;
+                    if (ghost==GHOST.BLINKY)
+                        System.err.printf("%s [from %s] .. +%s -%s\n", receivedSimulations, agent.ghost, result_message.count(), maskedSimulations);
                 } catch (InvalidActionListException e) { assert(false); }
             }
         });
@@ -48,9 +54,14 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
         for (GhostAgent ally: messageSenders.keySet()) {
             TreeCutIterator it = cutIterators.get(ally.ghost);
             MessageSender sender = messageSenders.get(ally);
-
+            TreeCutNode previous = it.current();
             while (sender.sendQueueItemsCount()<2) {
-                sender.send(Priority.MEDIUM, it.next().toMessage());
+                TreeNodeMessage msg = it.next().toMessage();
+                if (msg.count()==0) {
+                    continue;
+                }
+                sender.send(Priority.MEDIUM, msg);
+                if (previous==it.current()) break; /* don't send same message */
             }
         }
     }
@@ -72,7 +83,10 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     }
 
     @Override public long calculatedSimulations() { return calculatedSimulations; }
-    public long receivedSimulations() { return 0; } //TODO: go through the tree and sum received_visit_count values
+    public long receivedSimulations() {
+        return receivedSimulations;
+    }
+
 
     @Override
     public long totalSimulations() {
@@ -86,6 +100,10 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     }
 
     public void setCutByteSize(long bytes) {
-        treeCut.setMaxBytesSize(bytes);
+        maxBytesSize = bytes;
+    }
+
+    public long getCutByteSize() {
+        return maxBytesSize;
     }
 }

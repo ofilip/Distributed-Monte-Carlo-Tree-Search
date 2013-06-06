@@ -11,4 +11,5 @@ public class Constants {
     public static final int DEFAULT_UCB_SELECTION_TRIAL_THRESHOLD = 30;
     public static final long DEFAULT_MESSAGE_INTERVAL = 10;
     public static final int DEFAULT_GAME_LENGTH = 2000;
+    public static final double DEFAULT_CUTS_PER_TICK = 2;
 }

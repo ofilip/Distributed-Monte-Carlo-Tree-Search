@@ -11,6 +11,7 @@ import mcts.MCTSController;
 import mcts.distributed.DistributedMCTSController;
 import mcts.distributed.entries.RootExchangingGhosts;
 import mcts.distributed.entries.SimulationResultsPassingGhosts;
+import mcts.distributed.entries.TreeCutExchangingGhosts;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.examples.StarterPacMan;
@@ -35,6 +36,7 @@ enum Option {
     GHOST_RANDOM_PROB("ghost-random-prob"),
     GHOST_DEATH_WEIGHT("ghost-death-weight"),
     CHANNEL_SPEED("channel-speed"),
+    CUTS_PER_TICK("cuts-per-tick"),
     GAME_LENGTH("game-length"),
     MULTITHREADED("multithreaded", LongOpt.NO_ARGUMENT),
     TRIAL_NO("trial-no"),
@@ -111,11 +113,11 @@ public class ExecExperiment {
     private static <T> Controller<T> buildController(Class c, int simulationDepth, double ucbCoef, double randomProb, double deathWeight)
             throws NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
-        return buildController(c, simulationDepth, ucbCoef, randomProb, deathWeight, 0, false, true, VerboseLevel.QUIET);
+        return buildController(c, simulationDepth, ucbCoef, randomProb, deathWeight, 0, 0, 0, false, true, VerboseLevel.QUIET);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Controller<T> buildController(Class c, int simulationDepth, double ucbCoef, double randomProb, double deathWeight, long channelSpeed, boolean multithreaded, boolean optimisticTurns, VerboseLevel verboseLevel)
+    private static <T> Controller<T> buildController(Class c, int simulationDepth, double ucbCoef, double randomProb, double deathWeight, long tickLength, long channelSpeed, double cutsPerSecond, boolean multithreaded, boolean optimisticTurns, VerboseLevel verboseLevel)
             throws NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Constructor constructor = c.getConstructor();
         Controller<T> controller = (Controller<T>)constructor.newInstance();
@@ -137,6 +139,11 @@ public class ExecExperiment {
             dmctsController.setMultithreaded(multithreaded);
         }
 
+        if (controller instanceof TreeCutExchangingGhosts) {
+            TreeCutExchangingGhosts cutGhosts = (TreeCutExchangingGhosts)controller;
+            cutGhosts.setCutsSentByTick(cutsPerSecond, tickLength, channelSpeed);
+        }
+
         return controller;
     }
 
@@ -155,6 +162,9 @@ public class ExecExperiment {
         if (controller instanceof RootExchangingGhosts) {
             System.out.printf("root_size_ratio\t");
         }
+        if (controller instanceof TreeCutExchangingGhosts) {
+            System.out.printf("cuts_per_second\t");
+        }
     }
 
     private static void printHeader(Controller<MOVE> pacmanController, Controller<EnumMap<GHOST,MOVE>> ghostController) {
@@ -164,11 +174,11 @@ public class ExecExperiment {
         System.out.printf("score\n");
     }
 
-    private static void printControllerInfo(Controller controller, int time) {
+    private static void printControllerInfo(Controller controller, int time, double cutsPerTick) {
         System.out.printf("%s\t%s\t", controller.getClass().getSimpleName(), time);
         if (controller instanceof MCTSController) {
             MCTSController mctsController = (MCTSController)controller;
-            System.out.printf("%.1f\t%s\t%s\t%s\t%s\t%s\t%s\t",
+            System.out.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t",
                              mctsController.millisPerMove(), mctsController.getSimulationDepth(), mctsController.getUcbCoef(),
                              mctsController.getDeathWeight(), mctsController.averageDecisionSimulations(),
                              mctsController.simulationsPerSecond(), (mctsController.getOptimisticTurns()? "true": "false"));
@@ -188,13 +198,16 @@ public class ExecExperiment {
             RootExchangingGhosts rootController = (RootExchangingGhosts)controller;
             System.out.printf("%s\t", rootController.rootSizeRatio());
         }
+        if (controller instanceof TreeCutExchangingGhosts) {
+            System.out.printf("%s\t", cutsPerTick);
+        }
     }
 
     private static void printResults(int trialNo, Experiment experiment, Controller<MOVE> pacmanController,
-                                     Controller<EnumMap<GHOST,MOVE>> ghostController, Game result) {
+                                     Controller<EnumMap<GHOST,MOVE>> ghostController, Game result, double cutsPerTick) {
         System.out.printf("%s\t", trialNo);
-        printControllerInfo(pacmanController, experiment.getPacmanDelay());
-        printControllerInfo(ghostController, experiment.getGhostDelay());
+        printControllerInfo(pacmanController, experiment.getPacmanDelay(), cutsPerTick);
+        printControllerInfo(ghostController, experiment.getGhostDelay(), cutsPerTick);
         System.out.printf("%s\n", result.getScore());
     }
 
@@ -218,6 +231,7 @@ public class ExecExperiment {
         SimplifiedGame game = new SimplifiedGame(System.currentTimeMillis());
         double ghostDeathWeight = Constants.DEFAULT_DEATH_WEIGHT;
         long channelSpeed = Constants.DEFAULT_CHANNEL_TRANSMISSION_SPEED;
+        double cutsPerTick = Constants.DEFAULT_CUTS_PER_TICK;
         boolean optimisticTurns = true;
         VerboseLevel verboseLevel = VerboseLevel.QUIET;
 
@@ -276,6 +290,9 @@ public class ExecExperiment {
                 case CHANNEL_SPEED:
                     channelSpeed = Long.parseLong(getopt.getOptarg());
                     break;
+                case CUTS_PER_TICK:
+                    cutsPerTick = Double.parseDouble(getopt.getOptarg());
+                    break;
                 case GAME_LENGTH:
                     game.setGameLength(Integer.parseInt(getopt.getOptarg()));
                     break;
@@ -313,7 +330,8 @@ public class ExecExperiment {
         }
 
         Controller<MOVE> pacmanController = buildController(pacmanClass, pacmanSimulationDepth, pacmanUcbCoef, pacmanRandomProb, pacmanDeathWeight);
-        Controller<EnumMap<GHOST,MOVE>> ghostController = buildController(ghostClass, ghostSimulationDepth, ghostUcbCoef, ghostRandomProb, ghostDeathWeight, channelSpeed, multithreaded, optimisticTurns, verboseLevel);
+        Controller<EnumMap<GHOST,MOVE>> ghostController = buildController(ghostClass, ghostSimulationDepth, ghostUcbCoef, ghostRandomProb, ghostDeathWeight, experiment.getGhostDelay(),
+                channelSpeed, cutsPerTick, multithreaded, optimisticTurns, verboseLevel);
 
         if (!dontRun) {
             experiment.setPacmanController(pacmanController);
@@ -324,7 +342,7 @@ public class ExecExperiment {
             if (header) {
                 printHeader(pacmanController, ghostController);
             }
-            printResults(trialNo, experiment, pacmanController, ghostController, result);
+            printResults(trialNo, experiment, pacmanController, ghostController, result, cutsPerTick);
         } else if (header) {
             printHeader(pacmanController, ghostController);
         }

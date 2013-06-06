@@ -21,10 +21,18 @@ import utils.Pair;
 public abstract class MCNode implements UCBNode {
     /* MCTS values */
     int visit_count;
+    int calculated_visit_count;
     double value;
+    double calculated_value;
 
-    int received_visit_count = 0;
-    double received_value = 0;
+    Map<GHOST,Integer> received_visit_count = new EnumMap<GHOST,Integer>(GHOST.class);
+    Map<GHOST,Double> received_value = new EnumMap<GHOST,Double>(GHOST.class);
+    {
+        for (GHOST ghost: GHOST.values()) {
+            received_visit_count.put(ghost, 0);
+            received_value.put(ghost, 0.0);
+        }
+    }
 
     int ticksToGo;
     long totalTicks; /* ticks from original root (before any updateTree() call */
@@ -107,16 +115,17 @@ public abstract class MCNode implements UCBNode {
         return tree.simulator.simulate(game, totalTicks);
     }
 
+
+
     public void backpropagate(double reward) { backpropagate(reward, 1); }
 
     public void backpropagate(double reward, int count) {
         tree.backpropagator.backpropagate(this, reward, count);
     }
 
-    public void backpropagateReceived(double reward, int count) {
-        tree.backpropagator.backpropagateReceived(this, reward, count);
-        this.received_value = reward;
-        this.received_visit_count = count;
+    public long backpropagateReceived(GHOST from, double reward, int count) {
+        long res = tree.backpropagator.backpropagateReceived(this, from, reward, count);
+        return res;
     }
 
     public PacmanNode child(MOVE next_pacman_move) {
@@ -182,6 +191,20 @@ public abstract class MCNode implements UCBNode {
         return value;
     }
 
+    public double calculatedValue() {
+        return calculated_value;
+    }
+
+//    public Pair<Double,Integer> calculated() {
+//        double val = value;
+//        int cnt = visit_count;
+//        for (GHOST ghost: GHOST.values()) {
+//            cnt -= received_visit_count.get(ghost);
+//            val = (val*cnt - received_value.get(ghost)*received_visit_count.get(ghost))/cnt;
+//        }
+//        return new Pair<Double,Integer>(val,cnt);
+//    }
+
     public boolean halfstep() {
         return halfstep;
     }
@@ -230,6 +253,10 @@ public abstract class MCNode implements UCBNode {
     @Override
     public int visitCount() {
         return this.visit_count;
+    }
+
+    public int calculatedVisitCount() {
+        return this.calculated_visit_count;
     }
 
     public Iterable<? extends MCNode> children() {
@@ -460,5 +487,19 @@ public abstract class MCNode implements UCBNode {
     public abstract boolean isPacmanNode();
     public boolean isGhostsNode() {
         return !isPacmanNode();
+    }
+
+    /**
+     * @return the received_visit_count
+     */
+    public int getReceivedVisitCount(GHOST from) {
+        return received_visit_count.get(from);
+    }
+
+    /**
+     * @return the received_value
+     */
+    public double getReceivedValue(GHOST from) {
+        return received_value.get(from);
     }
 }

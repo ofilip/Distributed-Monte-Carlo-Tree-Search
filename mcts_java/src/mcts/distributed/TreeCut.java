@@ -11,7 +11,9 @@ public abstract class TreeCut {
     private long maxBytesSize;
     private int visitCountThreshold; /* Minimal visit count of node to be expanded in cut */
     protected Set<TreeCutIterator> iterators = new HashSet<TreeCutIterator>();
+    protected long size;
 
+    public long size() { return size; }
     public long bytesSize() {return bytesSize;}
     public void setMaxBytesSize(long bytes) {this.maxBytesSize = bytes;}
     public long maxBytesSize() {return maxBytesSize;}
@@ -20,13 +22,13 @@ public abstract class TreeCut {
     public TreeCutNode nodes() { return nodes; }
 
     public TreeCutIterator registerIterator() {
-        TreeCutIterator it = new TreeCutIterator(nodes);
+        TreeCutIterator it = new TreeCutIterator(nodes, this);
         iterators.add(it);
         return it;
 
     }
 
-    protected TreeCut(TreeCutNode nodes, long maxBytesSize, int visitCountThreshold) {
+    protected TreeCut(TreeCutNode nodes, long maxBytesSize, int visitCountThreshold, long size) {
         this.nodes = nodes;
         this.maxBytesSize = maxBytesSize;
         this.visitCountThreshold = visitCountThreshold;
@@ -34,6 +36,7 @@ public abstract class TreeCut {
         for (TreeCutNode n = nodes.next(); n!=nodes; n = n.next()) {
             bytesSize += n.toMessage().length();
         }
+        this.size = size;
     }
 
     public abstract void reexpand();
