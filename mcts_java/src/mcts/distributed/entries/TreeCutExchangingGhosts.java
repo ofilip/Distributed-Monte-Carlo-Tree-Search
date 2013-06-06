@@ -32,4 +32,13 @@ public class TreeCutExchangingGhosts extends DistributedMCTSController {
         assert(agents.containsKey(GHOST.BLINKY));
         return ((TreeCutExchangingAgent)agents.get(GHOST.BLINKY)).getCutByteSize();
     }
+
+    public double averageCutByteSize() {
+        double size = 0;
+        for (GhostAgent agent: agents.values()) {
+            TreeCutExchangingAgent cutAgent = (TreeCutExchangingAgent)agent;
+            size += cutAgent.averageCutSize();
+        }
+        return size/agents.size();
+    }
 }

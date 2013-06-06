@@ -15,6 +15,7 @@ import mcts.distributed.VisitCountTreeCut;
 import mcts.exceptions.InvalidActionListException;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
+import utils.VerboseLevel;
 
 public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     private long calculatedSimulations = 0;
@@ -25,6 +26,7 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     private int visitCountThreshold = 10;
     private long maxBytesSize = 1024;
     private long receivedSimulations = 0;
+    private long summedCutSize = 0;
 
     @Override
     protected void postTreeInit() {
@@ -43,7 +45,7 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
                 try {
                     long maskedSimulations = mctree.applyTreeNode(agent.ghost(), result_message.treeMoves(), result_message.simulationResult(), result_message.count());
                     receivedSimulations += result_message.count() - maskedSimulations;
-                    if (ghost==GHOST.BLINKY)
+                    if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==GHOST.BLINKY)
                         System.err.printf("%s [from %s] .. +%s -%s\n", receivedSimulations, agent.ghost, result_message.count(), maskedSimulations);
                 } catch (InvalidActionListException e) { assert(false); }
             }
@@ -79,6 +81,7 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     @Override
     public MOVE getMove() {
         lastFullMove = mctree.bestMove(currentGame);
+        summedCutSize += treeCut.bytesSize();
         return lastFullMove.get(ghost);
     }
 
@@ -105,5 +108,9 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
 
     public long getCutByteSize() {
         return maxBytesSize;
+    }
+
+    public double averageCutSize() {
+        return summedCutSize/(double)currentGame.getTotalTime();
     }
 }
