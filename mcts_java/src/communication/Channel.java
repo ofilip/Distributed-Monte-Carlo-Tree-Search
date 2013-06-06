@@ -102,6 +102,10 @@ public class Channel implements MessageSender, MessageReceiver {
         return receivedQueue.pollFirst();
     }
 
+    public void setReliability(Reliability reliability) {
+        this.reliability = reliability;
+    }
+
     synchronized private long sendQueueMillisLength() {
         doTransmission();
         long size = 0;

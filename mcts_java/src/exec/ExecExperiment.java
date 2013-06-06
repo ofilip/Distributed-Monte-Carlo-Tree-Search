@@ -1,5 +1,6 @@
 package exec;
 
+import communication.HMMReliability;
 import exec.utils.Experiment;
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
@@ -38,6 +39,9 @@ enum Option {
     CHANNEL_SPEED("channel-speed"),
     CUTS_PER_TICK("cuts-per-tick"),
     GAME_LENGTH("game-length"),
+    UNRELIABLE("unreliable"), /* if not given, 100% reliability granted, otherwise HMMReliability used
+                               * with probability of falling to unreliable state equal to given parameters.
+                               * other parameters are defined in Constants.* */
     MULTITHREADED("multithreaded", LongOpt.NO_ARGUMENT),
     TRIAL_NO("trial-no"),
     PESIMISTIC_TURNS("pesimistic-turns", LongOpt.NO_ARGUMENT),
@@ -113,11 +117,11 @@ public class ExecExperiment {
     private static <T> Controller<T> buildController(Class c, int simulationDepth, double ucbCoef, double randomProb, double deathWeight)
             throws NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
-        return buildController(c, simulationDepth, ucbCoef, randomProb, deathWeight, 0, 0, 0, false, true, VerboseLevel.QUIET);
+        return buildController(c, simulationDepth, ucbCoef, randomProb, deathWeight, 0, 0, 0, null, false, true, VerboseLevel.QUIET);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Controller<T> buildController(Class c, int simulationDepth, double ucbCoef, double randomProb, double deathWeight, long tickLength, long channelSpeed, double cutsPerSecond, boolean multithreaded, boolean optimisticTurns, VerboseLevel verboseLevel)
+    private static <T> Controller<T> buildController(Class c, int simulationDepth, double ucbCoef, double randomProb, double deathWeight, long tickLength, long channelSpeed, double cutsPerSecond, HMMReliability hmmReliability, boolean multithreaded, boolean optimisticTurns, VerboseLevel verboseLevel)
             throws NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Constructor constructor = c.getConstructor();
         Controller<T> controller = (Controller<T>)constructor.newInstance();
@@ -137,6 +141,9 @@ public class ExecExperiment {
 
             dmctsController.getNetwork().setChannelTransmissionSpeed(channelSpeed);
             dmctsController.setMultithreaded(multithreaded);
+            if (hmmReliability!=null) {
+                dmctsController.setReliability(hmmReliability);
+            }
         }
 
         if (controller instanceof TreeCutExchangingGhosts) {
@@ -167,10 +174,17 @@ public class ExecExperiment {
         }
     }
 
-    private static void printHeader(Controller<MOVE> pacmanController, Controller<EnumMap<GHOST,MOVE>> ghostController) {
+    private static void printHmmReliabilityHeader(HMMReliability hmmReliability) {
+        if (hmmReliability!=null) {
+            System.out.printf("r_reliability\tu_reliability\tru_prob\tur_prob\t");
+        }
+    }
+
+    private static void printHeader(Controller<MOVE> pacmanController, Controller<EnumMap<GHOST,MOVE>> ghostController, HMMReliability hmmReliability) {
         System.out.printf("trial\t");
         printControllerHeader("pacman_", pacmanController);
         printControllerHeader("ghost_", ghostController);
+        printHmmReliabilityHeader(hmmReliability);
         System.out.printf("score\n");
     }
 
@@ -204,11 +218,19 @@ public class ExecExperiment {
         }
     }
 
+    private static void printHmmReliabilityInfo(HMMReliability hmmReliability) {
+        if (hmmReliability!=null) {
+            System.out.printf("%s\t%s\t%s\t%s\t", hmmReliability.getRReliability(), hmmReliability.getUReliability(),
+                    hmmReliability.getRuProb(), hmmReliability.getUrProb());
+        }
+    }
+
     private static void printResults(int trialNo, Experiment experiment, Controller<MOVE> pacmanController,
-                                     Controller<EnumMap<GHOST,MOVE>> ghostController, Game result, double cutsPerTick) {
+                                     Controller<EnumMap<GHOST,MOVE>> ghostController, Game result, double cutsPerTick, HMMReliability hmmReliability) {
         System.out.printf("%s\t", trialNo);
         printControllerInfo(pacmanController, experiment.getPacmanDelay(), cutsPerTick);
         printControllerInfo(ghostController, experiment.getGhostDelay(), cutsPerTick);
+        printHmmReliabilityInfo(hmmReliability);
         System.out.printf("%s\n", result.getScore());
     }
 
@@ -233,6 +255,7 @@ public class ExecExperiment {
         double ghostDeathWeight = Constants.DEFAULT_DEATH_WEIGHT;
         long channelSpeed = Constants.DEFAULT_CHANNEL_TRANSMISSION_SPEED;
         double cutsPerTick = Constants.DEFAULT_CUTS_PER_TICK;
+        HMMReliability hmmReliability = null;
         boolean optimisticTurns = true;
         VerboseLevel verboseLevel = VerboseLevel.QUIET;
 
@@ -297,6 +320,10 @@ public class ExecExperiment {
                 case GAME_LENGTH:
                     game.setGameLength(Integer.parseInt(getopt.getOptarg()));
                     break;
+                case UNRELIABLE:
+                    hmmReliability = new HMMReliability(Constants.DEFAULT_R_RELIABILITY, Constants.DEFAULT_U_RELIABILITY,
+                            Double.parseDouble(getopt.getOptarg()), Constants.DEFAULT_UR_PROB, 1);
+                    break;
                 case MULTITHREADED:
                     experiment.setMultithreaded(true);
                     multithreaded = true;
@@ -332,20 +359,21 @@ public class ExecExperiment {
 
         Controller<MOVE> pacmanController = buildController(pacmanClass, pacmanSimulationDepth, pacmanUcbCoef, pacmanRandomProb, pacmanDeathWeight);
         Controller<EnumMap<GHOST,MOVE>> ghostController = buildController(ghostClass, ghostSimulationDepth, ghostUcbCoef, ghostRandomProb, ghostDeathWeight, experiment.getGhostDelay(),
-                channelSpeed, cutsPerTick, multithreaded, optimisticTurns, verboseLevel);
+                channelSpeed, cutsPerTick, hmmReliability, multithreaded, optimisticTurns, verboseLevel);
 
         if (!dontRun) {
             experiment.setPacmanController(pacmanController);
             experiment.setGhostController(ghostController);
+
             experiment.setGame(game);
 
             Game result = experiment.execute();
             if (header) {
-                printHeader(pacmanController, ghostController);
+                printHeader(pacmanController, ghostController, hmmReliability);
             }
-            printResults(trialNo, experiment, pacmanController, ghostController, result, cutsPerTick);
+            printResults(trialNo, experiment, pacmanController, ghostController, result, cutsPerTick, hmmReliability);
         } else if (header) {
-            printHeader(pacmanController, ghostController);
+            printHeader(pacmanController, ghostController, hmmReliability);
         }
     }
 }

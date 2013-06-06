@@ -65,6 +65,9 @@ public class Network {
     public Reliability getReliability() { return reliability; }
     public synchronized void setReliability(Reliability reliability) {
         this.reliability = reliability;
+        for (Channel ch: channels.values()) {
+            ch.setReliability(reliability.clone());
+        }
     }
 
     public synchronized void clearUnsent() {

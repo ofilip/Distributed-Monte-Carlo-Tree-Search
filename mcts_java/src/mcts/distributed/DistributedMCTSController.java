@@ -4,7 +4,9 @@ import utils.VirtualTimer;
 import mcts.distributed.agents.GhostAgent;
 import communication.messages.Message;
 import communication.Channel;
+import communication.HMMReliability;
 import communication.Network;
+import communication.Reliability;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -281,9 +283,13 @@ public class DistributedMCTSController
 
     public void setOptimisticTurns(boolean optimisticTurns) {
         assert(agents.size()==4);
-        
+
         for (GhostAgent agent: agents.values()) {
             agent.setOptimisticTurns(optimisticTurns);
         }
+    }
+
+    public void setReliability(Reliability reliability) {
+        network.setReliability(reliability);
     }
 }
