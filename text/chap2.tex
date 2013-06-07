@@ -357,7 +357,8 @@ $n_{node} \leftarrow n_{node} + rlen$\;
 \emph{Discussion about simultaneous v. turn-based games and its convergence}
 
 However it has been shown that MCTS converges to... \emph{TODO: Načíst jak je to s konvergencí k
-minimax stromu a pure nash equilibrium strategii a opravit podle toho předchozí text}
+minimax stromu a pure nash equilibrium strategii a opravit podle toho předchozí text}. Odkázat se
+na \ref{sec_turn_based_game_conversion}.
 
 
 \section{Parallel Monte-Carlo Tree Search}
@@ -569,7 +570,7 @@ have been experimentally evaluated in \cite{Chaslot2008} in context of playing G
 environment. For this purpose the \emph{strength speedup} measure has been used. It is equal to
  the ratio of time needed for plain
 MCTS to reach the same strength. Brief summary of results is covered by Table
-\ref{tab_parallel_mcts_comparison} and Firugre \emph{TODO}. The winner of comparison is root parallelization performing even
+\ref{tab_parallel_mcts_comparison} and Figure \emph{TODO}. The winner of comparison is root parallelization performing even
 better than single-threaded MCTS in case of 2 and 4 parallel threads. This is interpreted as 
 parallel MCTS algorithms with different random seeds exploit different local optima so better one
 can be finally chosen. Second best performance showed tree parallelization using virtual loss. Other

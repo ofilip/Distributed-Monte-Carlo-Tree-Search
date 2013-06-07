@@ -19,7 +19,33 @@ We have already reviewed the Monte-Carlo Tree Search algorithm and its paralleli
  distributed algorithms in Section \ref{sec_measures_distributed}. \todo{Popis full MCTS stromu
  - zde nebo už v kapitole 1?}
 
+\section{Useful Notations}
 
+In our algorithms, we will describe, among others, exchange of various parts of the MCTS trees of
+the team-mates and it will be useful to give a formal definition of one of them, the so-called
+\emph{tree cut}.
+
+\newtheorem*{deftreecut}{Definition}
+\begin{deftreecut}[Tree cut]
+
+Let us have a tree $T$ with a set of nodes $N$. \emph{Tree cut} $C_T$ is a subset of $N$ such that
+there is no path between any ascendant $a$ of a node from $C_T$ and any descendant $d$ of a node from
+$C_T$. In other words, nodes from a tree cut separates a subtree composed of nodes from $C_T$ and
+their ascendants from the descendants of nodes from $C_T$. An example of a tree cut is depicted by
+Figure \ref{fig_tree_cut_example}.
+
+\begin{figure}
+\begin{center}
+\missingfigure{Tree Cut Example}
+\end{center}
+\caption{\footnotesize Tree Cut Example}{\footnotesize TODO}
+\label{fig_tree_cut_example}
+\end{figure}
+
+\end{deftreecut}
+
+
+\todo{Obrázek}
 
 \section{Comparison Measures}
 \label{sec_measures_distributed}
@@ -143,20 +169,26 @@ Since the results from trees are merged, we want to build different trees in eac
 random seeds
 are initialized to different values for each agent. The term "root" in this case means set of
 actions $Actions(r)$ playable from the root $r$ of the MCTS tree together with their visit
-counts $n_i, i \in Children(r)$. After the root merging, all agents have identical
-set of joint-action -- visit-count pairs. Joint-action with highest summed visit count is
+counts $n_i, i \in Children(r)$. After the root merging, all agents have almost identical
+set of joint-action -- visit-count pairs (some differences may occur since not the most recent roots
+may be received at time of merging). Joint-action with highest summed visit count is
 selected (ordering on joint-actions is used when multiple joint-actions have same visit count).
 
 In case of single-player game, previous description of algorithm works well but there is a little
-difficulty when any oponent is considered because set $Children(r)$ may not be a set of actions of
-our team. We could simply wait for opponents turn and exchange our messages during the period
+difficulty when any opponent is considered because set $Children(r)$ may not be a set of actions of
+our team. We can simply wait for opponents' turn and exchange our messages during the period
 when our team is on turn but this approach has two weaknesses. The first one is that this
 perios may be very short what may, along with unreliable networking channel, lead to no
 exchanging performed at all. The second weakness is that such a period for message
 exchanging may not be present at all in case of turn-based game converted from simultaneous
 game if current state was created by splitting simultaneous turn (see Section 
 \ref{sec_turn_based_game_conversion}). We resolve this situation by extending definition of the
-root for turn-based games with multiple teams. \todo{Popsat Next-action Tree Cut}
+root for turn-based games with multiple teams. 
+
+
+
+
+\todo{Popsat Next-action Tree Cut}
 
 
 
