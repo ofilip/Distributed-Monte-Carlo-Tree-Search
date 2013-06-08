@@ -28,7 +28,9 @@ $curr\_node \leftarrow Root(tree)$\;
 \begin{algorithm}
 \DontPrintSemicolon
 \caption{$Backpropagate(tree, node, rewards[\,])$\label{alg_backpropagate}}
-\KwData{$tree$ \ldots MCTS tree}
+\KwData{$tree$ \ldots MCTS tree\\
+$node$ \ldots node to which the rewards are being backpropagated\\
+$rewards[\,]$ \ldots array of rewards }
 \KwResult{$tree$ with playout rewards added to all $node$'s ascendants}
 $AddRewards(node, rewards[\,])$\;
 $parent \leftarrow Parent(node)$\;

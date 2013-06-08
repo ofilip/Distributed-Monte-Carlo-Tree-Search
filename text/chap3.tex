@@ -28,7 +28,7 @@ the team-mates and it will be useful to give a formal definition of one of them,
 \newtheorem*{deftreecut}{Definition}
 \begin{deftreecut}[Tree cut]
 
-Let us have a tree $T$ with a set of nodes $N$. \emph{Tree cut} $C_T$ is a subset of $N$ such that
+Let us have a tree $T$ with a set of nodes $N$. \textbf{Tree cut} $C_T$ is a subset of $N$ such that
 there is no path between any ascendant $a$ of a node from $C_T$ and any descendant $d$ of a node from
 $C_T$. In other words, nodes from a tree cut separates a subtree composed of nodes from $C_T$ and
 their ascendants from the descendants of nodes from $C_T$. An example of a tree cut is depicted by
@@ -185,12 +185,55 @@ game if current state was created by splitting simultaneous turn (see Section
 \ref{sec_turn_based_game_conversion}). We resolve this situation by extending definition of the
 root for turn-based games with multiple teams. 
 
+For multi-player games, the algorithm will exchange \emph{Next-Action Tree Cut} of a player $P$
+being on turn. The Next-Action Tree Cut is defined as follows:
 
+\newtheorem*{defnextactiontreecut}{Definition}
+\begin{defnextactiontreecut}[Next-Action Tree cut]
+Let us have a tree cut $C_1$ composed of nodes in which player $P$ is on turn and which are the first
+nodes occuring on the path from tree root to its leaves. For all ascendants $C_1$, any player
+different from $P$ is on turn. Then, we will call a set of children of nodes from $C_1$, which
+also composes a tree cut, a \textbf{Next-Action Tree Cut} for a player $P$.
 
+Algorithm \ref{alg_next_action_tree_cut_construction} describes construction of Next-Action
+Tree Cut.
 
-\todo{Popsat Next-action Tree Cut}
+\end{defnextactiontreecut}
 
+\begin{algorithm}
+\DontPrintSemicolon
+\caption{$BuildNextActionTreeCut(tree, player)$\label{alg_next_action_tree_cut_construction}}
+\KwData{$tree$ \ldots MCTS tree \\
+$player$ \ldots player constructing }
+\KwResult{Algorithm returns the Next-Action Tree Cut of $tree$ for a player $P$}
+$cut \leftarrow \{Root(tree)\}$ \tcp*[h]{cut growing from root}\;
+$next\_action\_cut \leftarrow \{\}$ \tcp*[h]{final next action cut}\;
+\While{$cut \not= \{\}$}{
+    \ForEach{$node \in cut$}{
+        $cut \leftarrow cut \setminus \{node\}$\;
+        \eIf{$OnTurn(node)=P$}{
+            $next\_action\_cut \leftarrow next\_action\_cut \cup \{Children(node)\}$\;
+        }{
+            $cut \leftarrow cut \cup \{Children(node)\}$\;
+        }
+    }
+}
+\Return{$next\_action\_cut$}
+\end{algorithm}
 
+Next-Action Tree Cut is being sent as array containing pairs of visit counts of nodes and
+corresponding paths to the nodes represented as list of actions leading to the nodes. For
+single-player game case, this approach leads to exchange of set of joint-action -- visit-count
+pairs of root's children, how described earlier.
+
+There is another difficulty with exchanging of Next-Action Tree Cut which is that the size of
+the cut may grow excessively with growing number of players playing simultaneously so this 
+algorithm is not suitable for such games. This fact should be kept in mind
+when appropriate algorithm for a particular game is being chosen. When reliable communication
+between agents is guaranteed, it is possible to safely exchange the cuts only in turns when the
+player is on turn (considering simultaneous nature of the game). In case of unreliable
+communication, on the other hand, information contained in cuts from turns when the player is
+not on turn can be used with benefit if no communication can be done during the player's turn.
 
 
 \subsection{Simulation Results Exchanging Agents}
