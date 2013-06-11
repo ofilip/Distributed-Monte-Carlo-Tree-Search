@@ -544,6 +544,7 @@ node's value is good enough even after adding the virtual loss and so weak nodes
 evaluated.
 
 \subsection{Simulation Results Passing}
+\label{sec_simulation_passing}
 
 \todo{pseudocode}
 
@@ -552,7 +553,7 @@ parallelization} to cluster environment. These two algorithms share the property
 communication which is naturally bigger problem in distributed environment.
 
 Unlike tree parallelization, the simulation results passing is building search tree separately in
-each thread and synchronize these trees by broadcasting messages containing identification of
+each thread and synchronizes these trees by broadcasting messages containing identification of
 expanded node and resulting value of performed simulation. This value is then backpropagated in
 trees of receiving threads. Master thread finally returns best move accordingly to its tree.
 Simulation results passing is depicted by algorithm \ref{alg_simulation_results_passing}.

@@ -1,7 +1,7 @@
 all: thesis.pdf
 
 # Vyroba PDF primo z DVI by byla prijemnejsi, ale vetsina verzi dvipdfm nici obrazky
-# thesis.pdf: thesis.dvi
+#thesis.pdf: thesis.dvi
 #	dvipdfm -o $@ -p a4 -r 600 $<
 
 thesis.pdf: thesis.ps

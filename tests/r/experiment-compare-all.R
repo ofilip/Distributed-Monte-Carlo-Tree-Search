@@ -88,5 +88,16 @@ lines(cuts.scores$ghost_time, cuts.scores$score, type="o",
 	col = colors[i],
 	pch = plotchar[i])
 
+i <- i+1
+legend = c(legend, "Tree-cut exchanging ghosts 2")
+cuts2.data <- read.delim("results/20130608-1047-cut-exchange-2.txt", row.names=NULL)
+cuts2.data2 <- cuts.data[c(wanted_cols, "transmitted_per_second_total", "sims_per_sec_calculated", "sims_per_sec_total")]
+cuts2.melted_data <- melt(cuts2.data2, id=c("ghost_time"))
+cuts2.scores <- cast(cuts2.melted_data, ghost_time~variable, mean)
+lines(cuts2.scores$ghost_time, cuts2.scores$score, type="o",
+	lty = linetype[i],
+	col = colors[i],
+	pch = plotchar[i])
+
 legend("topright", lty = linetype, pch = plotchar, col = colors, legend = legend)
 

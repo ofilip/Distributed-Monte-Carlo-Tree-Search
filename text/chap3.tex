@@ -15,11 +15,13 @@ We have already reviewed the Monte-Carlo Tree Search algorithm and its paralleli
  players, the branching factor grows and keeping full MCTS tree turns to be ineffective. The
  tree used in distributed algorithms along with general description of common parts of the
  algorithms are described in section \ref{sec_dmcts_common}. Before we will propose the
- algorithms description, it is necessary to briefly discuss measures used for comparison of
+ algorithms description, it is necessary to introduce additional notations for this chapter in
+ Section \ref{sec_notations_dmcts} and briefly discuss measures used for comparison of
  distributed algorithms in Section \ref{sec_measures_distributed}. \todo{Popis full MCTS stromu
  - zde nebo už v kapitole 1?}
 
 \section{Useful Notations}
+\label{sec_notations_dmcts}
 
 In our algorithms, we will describe, among others, exchange of various parts of the MCTS trees of
 the team-mates and it will be useful to give a formal definition of one of them, the so-called
@@ -85,7 +87,7 @@ MCTS calculate action. Strength measures say how strong is team guided by an alg
 \begin{algorithm}
 \DontPrintSemicolon
 \caption{$DistributedMCTSLoop(tree)$\label{alg_dmcts_common}}
-\KwData{$tree$\dots MCTS tree}
+\KwData{$tree$\ldots MCTS tree}
 \KwResult{$tree$ is enlarged by newly expanded nodes and results of playouts performed are
 added. Additional actions are performed during message receiving.
 Node representing the best evaluated position reachable by one action is returned}
@@ -115,6 +117,8 @@ seed intialization. Following subsections describe particular distributed algori
 
 
 \subsection{Independent Agents}
+
+\todo{Okomentovat, proč se algoritmy jmenují Agents}
 
 We will first describe the algorithm which is supposed to be the weakest one since no
 communication between agents is performed. It serves as lower bound on performance of the
@@ -196,7 +200,7 @@ different from $P$ is on turn. Then, we will call a set of children of nodes fro
 also composes a tree cut, a \textbf{Next-Action Tree Cut} for a player $P$.
 
 Algorithm \ref{alg_next_action_tree_cut_construction} describes construction of Next-Action
-Tree Cut.
+Tree Cut.i \emph{Popsat slovně algoritmus}
 
 \end{defnextactiontreecut}
 
@@ -212,9 +216,9 @@ $next\_action\_cut \leftarrow \{\}$ \tcp*[h]{final next action cut}\;
     \ForEach{$node \in cut$}{
         $cut \leftarrow cut \setminus \{node\}$\;
         \eIf{$OnTurn(node)=P$}{
-            $next\_action\_cut \leftarrow next\_action\_cut \cup \{Children(node)\}$\;
+            $next\_action\_cut \leftarrow next\_action\_cut \cup Children(node)$\;
         }{
-            $cut \leftarrow cut \cup \{Children(node)\}$\;
+            $cut \leftarrow cut \cup Children(node)$\;
         }
     }
 }
@@ -237,4 +241,118 @@ not on turn can be used with benefit if no communication can be done during the 
 
 
 \subsection{Simulation Results Exchanging Agents}
+
+\emph{Simulation Results Exchanging Agents} directly follow the idea of Simulation Results
+Passing algorithm described in \ref{simulation_passing}. Since Simulation Results Passing
+algorithm is designed for cluster environment, we have to deal with two main differences in
+distributed coordination environment which are agents' independent reasoning and limited
+and potentially unreliable communication. 
+
+The former difference is simply managed by abandoning
+the idea of master thread and letting all agents to play a calculated action. The latter one,
+limited communication, is more serious issue. We cannot transmit all simulation calculated is
+the channel is too narrow and so we have to choose which of simulation results will be
+transmitted. We will prioritize simulation results which are more recent because such results
+carry information about the interesting path in the MCTS tree (in comparison with less recent
+ones which also carry the interesting path but not so long).
+
+Mechanism of prioritizing of more recent simulation results is realized by message buffer
+where, in opposite of common message sending, new messages with simulation results are inserted
+at the beginning of the buffer. Once the buffer is full, the least recent messages are thrown
+away.
+
+
 \subsection{Tree-Cut Exchanging Agents}
+
+Root exchanging agents share the information from their MCTS trees by sending messages
+containing as little information as possible what spares the capacity of communication
+channels but trees contain only calculations done by a particular agent. In opposite,
+simulation results exchanging agents share full information about all simulations and so
+each particular MCTS tree contains simulations from all agents and if the channel is reliable
+and wide enough, it contains full information calculated together by all agents and all
+trees are same. This approach, in comparison with root exchanging agents, brings some
+advantages and also some disadvantages. 
+
+Main advantage is higher robustness against
+communication failures longer than time available for computation of one game step. Since
+simulation results are applied into team-mates' trees, they don't vanish after a game step and
+not even after several steps. Thanks to UCT mechanism, most of simulations are performed in
+subtree which is finally chosen and all these simulations can be used during calculations of
+the next action. This is beneficial also if no communication failure occur.
+
+Most serious disadvantage of simulation results passing agents is that it requires wide
+communication channel and if it is not available, only a proportional amount of simulations are
+exchanged. Second disadvantage is that each received simulation has to be backpropagated
+through the tree which requires additional time for computation.
+
+\emph{Tree-cut exchanging agents} algorithm tries to find a compromise between root exchanging 
+and simulation results passing. It keeps the advantage of received simulation results stored
+directly in MCTS trees but aggregates them adequately to fit the width of the communication
+channel. As a side effect of this approach, less calculation with received simulation results
+is required.
+
+\todo{Nepsat v textu názvy zbytečně s velkými písmeny}
+
+Root exchanging agents algorithm constructs and sends the next-action tree cut. Similarly the
+tree-cut exchanging agents algorithm sends a \emph{visit count tree cut} having following
+properties: entire tree cut can be transmitted during time of one game step and visit counts of
+nodes of the tree cut are similar. To add robustness to the algorithm, size of the tree cut is
+chosen to a value such that the tree cut can be transmitted multiple times during the
+one step calculation. We will denote the ratio between the byte size of the tree cut and bytes
+transmitted during a turn as $C_{red}$ (\emph{red} for redundancy).
+
+Tree-cut exchanging ghosts use different way of transmission of the tree cut. Root exchanging
+ghosts send entire tree cut in one message while tree-cut exchanging ghosts send the tree cut
+node by node what again increases the robustness because if one message is lost, only a small
+part of information is lost which can be received next time the tree cut is transmitted or it
+is calculated afterwards by receiving agent because the visit count node to which the lost node 
+would be
+applied is lesser and so UCT mechanism will lead the selection to subtree below this node. Each
+node of the tree cut is transmitted as the triplet of path leading to the node, its value and
+the visit count.
+
+We define the visit count tree cut by introducing pseudocode for its construction, Algorithm
+\ref{alg_visit_count_tree_cut_construction}. Algorithm starts with a tree cut containing only
+the root of the MCTS tree and iteratively selects the node with highest visit count and
+replaces the node with its children. The algorithm ends when desired byte size of the tree cut
+is reached.
+
+\begin{algorithm}
+\DontPrintSemicolon
+\caption{$BuildVisitCountTreeCut(tree,byte\_size)$\label{alg_visit_count_tree_cut_construction}}
+\KwData{$tree\ldots MCTS tree$\\
+$byte\_size\ldots desired size of the tree cut in bytes$}
+\KwResult{Visit count tree cut of a given tree possible to transmit using less than
+$byte\_size$ bytes}
+$cut \leftarrow \{Root(tree)\}$ \tcp*[h]{cut growing from root}\;
+$curr\_byte\_size \leftarrow ByteSize(Root(tree))$\;
+\While{$true$}{
+    $most\_visited \leftarrow \argmax_{i \in cut} n_i$\;
+    $children \leftarrow Children(most\_visited)$\;
+    $curr\_byte\_size \leftarrow curr\_byte\_size + ByteSize(children)$\;
+    \If{$curr\_byte\_size>byte\_size$}{
+        \textbf{break}\;
+    }
+    $cut \leftarrow cut \setminus \{most\_visited\} \cup children$\;
+}
+\Return{$cut$}
+\end{algorithm}
+
+Algorithm \ref{alg_visit_count_tree_cut_construction} builds a visit count tree cut for a
+particular tree. Since the tree is changing after each iteration of MCTS, the tree cut is also
+changing. For the sake of simplicity, the tree cut is fixed once it is built except of visit
+counts of the nodes of the cut. This can lead to situation when transmitted tree cut is not the
+visit count tree cut anymore because later simulation can focus on new undiscovered paths in
+the tree. This property is a payment for a simplicity of the construction.
+
+Other difficulty of the construction of visit count tree cut during the MCTS tree construction
+is that the tree may not have enough size. To face this, the tree cut is built progressively.
+Tree cut is kept even if its maximum byte size is not yet reached and after each MCTS
+iteration, the tree cut is enlarged if maximum size has not yet been reached and appropriate
+node in the cut for the expansion exist. To increase the representativeness of expanded node,
+the expansion is not expanded immediately when it has children in the tree but when it reaches
+sufficient visit count, denoted as $C_cut$. Progressive visit count tree cut building is
+depicted by algorithm \ref{alg_progressive_visit_count_tree_cut_construction}. Tree-cut
+exchange algorithm itself depicts Algorithm \ref{alg_tree_cut_exchange}.
+
+\todo{pseudocode}
