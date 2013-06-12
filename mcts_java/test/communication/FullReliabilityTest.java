@@ -7,7 +7,7 @@ package communication;
 import communication.messages.Message;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import utils.DummyMessage;
+import test_utils.DummyMessage;
 
 public class FullReliabilityTest {
     @Test

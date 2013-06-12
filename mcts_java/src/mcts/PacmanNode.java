@@ -72,6 +72,7 @@ public class PacmanNode extends MCNode {
         Decision decision = Decision.nextDecision(game, 0);
         PacmanNode root = new PacmanNode(tree, null, decision.game, null, decision.ticks, decision.pacman_decision_gap, 0);
         root.visit_count = 1;
+        root.calculated_visit_count = 1;
         root.expand();
         return root;
     }

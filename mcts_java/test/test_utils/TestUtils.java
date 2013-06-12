@@ -1,8 +1,8 @@
-package utils;
+package test_utils;
 
 import static org.junit.Assert.*;
 
-public class TestUtils {    
+public class TestUtils {
     static public long sleep(int millis) {
         long now = System.currentTimeMillis();
         try {
@@ -12,7 +12,7 @@ public class TestUtils {
         }
         return System.currentTimeMillis()-now;
     }
-    
+
     static public void todo() {
         fail("TODO");
     }

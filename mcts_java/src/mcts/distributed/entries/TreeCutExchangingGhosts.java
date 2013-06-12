@@ -33,6 +33,15 @@ public class TreeCutExchangingGhosts extends DistributedMCTSController {
         return ((TreeCutExchangingAgent)agents.get(GHOST.BLINKY)).getCutByteSize();
     }
 
+    public double cutsTransmittedPerSecond() {
+        double transmitted = 0;
+        for (GhostAgent agent: agents.values()) {
+            TreeCutExchangingAgent cutAgent = (TreeCutExchangingAgent)agent;
+            transmitted += cutAgent.cutsTransmitted();
+        }
+        return 1000*transmitted/(agents.size()*currentVirtualMillis());
+    }
+
     public double averageCutByteSize() {
         double size = 0;
         for (GhostAgent agent: agents.values()) {

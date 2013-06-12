@@ -9,7 +9,7 @@ import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 import pacman.game.SimplifiedGame;
 import static org.junit.Assert.*;
-import utils.TestUtils;
+import test_utils.TestUtils;
 
 public class DistributedMCTSVirtualTimerTest {
     @Test

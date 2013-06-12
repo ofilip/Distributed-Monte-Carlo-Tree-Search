@@ -92,9 +92,10 @@ public abstract class MCTree<M> {
         root = node;
     }
 
-    public void advanceTree(MOVE last_pacman_move, EnumMap<GHOST, MOVE> last_ghosts_moves) {
+    public int advanceTree(MOVE last_pacman_move, EnumMap<GHOST, MOVE> last_ghosts_moves) {
         root.ticksToGo--;
         assert root.ticksToGo>=-2;
+        int steps = 0;
 
         while (root.ticksToGo==-1) {
             MCNode next_node;
@@ -107,7 +108,9 @@ public abstract class MCTree<M> {
             root = next_node;
             root.ticksToGo += -1; /* propagate -1 delay */
             root.parent = null; /* drop unreachable paths */
+            steps++;
         }
+        return steps;
     }
 
     public boolean isPacmanTree() {

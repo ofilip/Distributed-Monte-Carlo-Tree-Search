@@ -19,12 +19,12 @@ import utils.Triplet;
 
 public class TreeCutNode {
     private final MCNode node;
-    private final ArrayList<Action> path;
+    final LinkedList<Action> path;
     private TreeCutNode previous, next;
 
-    protected TreeCutNode(final MCNode node, final ArrayList<Action> path) {
+    protected TreeCutNode(final MCNode node, final LinkedList<Action> path) {
         this.node = node;
-        this.path = path!=null? path: new ArrayList<Action>();
+        this.path = path!=null? path: new LinkedList<Action>();
         this.next = this.previous = this;
     }
 
@@ -49,7 +49,7 @@ public class TreeCutNode {
             assert(node.ghostsChildren()==null);
             for (MOVE move: node.pacmanChildren().keySet()) {
                 Action action = new PacmanAction(move);
-                ArrayList<Action> child_path = new ArrayList<Action>(path);
+                LinkedList<Action> child_path = new LinkedList<Action>(path);
                 child_path.add(action);
                 curr = curr.append(new TreeCutNode(node.pacmanChildren().get(move), child_path));
                 byteSizeDiff += curr.toMessage().length();
@@ -58,7 +58,7 @@ public class TreeCutNode {
         } else if (node.ghostsChildren()!=null) {
             for (EnumMap<GHOST,MOVE> move: node.ghostsChildren().keySet()) {
                 Action action = new GhostAction(move);
-                ArrayList<Action> child_path = new ArrayList<Action>(path);
+                LinkedList<Action> child_path = new LinkedList<Action>(path);
                 child_path.add(action);
                 curr = curr.append(new TreeCutNode(node.ghostsChildren().get(move), child_path));
                 byteSizeDiff += curr.toMessage().length();

@@ -170,7 +170,7 @@ public class ExecExperiment {
             System.out.printf("root_size_ratio\t");
         }
         if (controller instanceof TreeCutExchangingGhosts) {
-            System.out.printf("cuts_per_second\taverage_cut_size\t");
+            System.out.printf("cuts_per_tick\tcuts_per_tick_real\taverage_cut_size\t");
         }
     }
 
@@ -214,7 +214,7 @@ public class ExecExperiment {
         }
         if (controller instanceof TreeCutExchangingGhosts) {
             TreeCutExchangingGhosts cutGhosts = (TreeCutExchangingGhosts)controller;
-            System.out.printf("%s\t%s\t", cutsPerTick, cutGhosts.averageCutByteSize());
+            System.out.printf("%s\t%s\t%s\t", cutsPerTick, cutGhosts.cutsTransmittedPerSecond(), cutGhosts.averageCutByteSize());
         }
     }
 

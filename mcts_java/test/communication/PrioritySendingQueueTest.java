@@ -1,7 +1,7 @@
 package communication;
 
 import communication.messages.Message;
-import utils.DummyMessage;
+import test_utils.DummyMessage;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

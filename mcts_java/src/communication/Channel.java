@@ -48,7 +48,7 @@ public class Channel implements MessageSender, MessageReceiver {
         while (transmittedMessage!=null&&1000*transmittedMessage.length()<=queueMillibytesTransmitted) {
             queueMillibytesTransmitted -= 1000*transmittedMessage.length();
             transmittedTotal += transmittedMessage.length();
-            if (reliability.isTransmitted(transmittedMessage)) { //TODO cover with tests
+            if (reliability.isTransmitted(transmittedMessage)) {
                 receivedQueue.add(transmittedMessage);
                 transmittedSuccessfully += transmittedMessage.length();
             }

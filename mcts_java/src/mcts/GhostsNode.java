@@ -71,7 +71,8 @@ public class GhostsNode extends MCNode {
     static GhostsNode createRoot(MCTree tree, Game game) {
         Decision decision = Decision.nextDecision(game, 0);
         GhostsNode root = new GhostsNode(tree, null, decision.game.copy(), null, decision.ticks, decision.pacman_decision_gap, 0);
-        root.visit_count = 0;
+        root.visit_count = 1;
+        root.calculated_visit_count = 1;
         root.expand();
         return root;
     }

@@ -454,8 +454,10 @@ public abstract class MCNode implements UCBNode {
 //            result.append("/joint_node");
 //        }
         result.append(" c=").append(this.visit_count)
+                .append("(").append(this.calculated_visit_count).append(")")
                 .append(" t=").append(this.ticksToGo)
-                .append(" v=").append(this.value());
+                .append(" v=").append(this.value())
+                .append("(").append(this.calculated_value).append(")");
 
 
         movesToString(result);

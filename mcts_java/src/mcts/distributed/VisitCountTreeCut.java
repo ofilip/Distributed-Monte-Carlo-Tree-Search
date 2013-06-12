@@ -1,11 +1,8 @@
 package mcts.distributed;
 
-import java.util.ArrayList;
-import java.util.TreeMap;
+import java.util.LinkedList;
 import mcts.Action;
-import mcts.MCNode;
 import mcts.MCTree;
-import utils.Pair;
 import utils.Triplet;
 
 public class VisitCountTreeCut extends TreeCut {
@@ -15,7 +12,7 @@ public class VisitCountTreeCut extends TreeCut {
     }
 
     public static VisitCountTreeCut createRootCut(MCTree tree, long maxBytesSize, int visitCountThreshold) {
-        return new VisitCountTreeCut(new TreeCutNode(tree.root(), new ArrayList<Action>()), maxBytesSize, visitCountThreshold, 1);
+        return new VisitCountTreeCut(new TreeCutNode(tree.root(), new LinkedList<Action>()), maxBytesSize, visitCountThreshold, 1);
     }
 
     private TreeCutNode bestNode() {
@@ -36,7 +33,8 @@ public class VisitCountTreeCut extends TreeCut {
     public void reexpand() {
         while (maxBytesSize()>bytesSize) {
             TreeCutNode maxNode = bestNode();
-            if (maxNode.treeNode().visitCount()<visitCountThreshold()) break;
+            if (maxNode.next()!=maxNode /* maxNode is not root (root is expanded immediately) */
+                    && maxNode.treeNode().visitCount()<visitCountThreshold()) break;
             Triplet<Long, Long, TreeCutNode> expanded = maxNode.expand();
             if (expanded==null) break; /* tree is yet too small */
             size += expanded.first;

@@ -1,4 +1,4 @@
-package utils;
+package test_utils;
 
 public class SecondsToSend {
     long start_time;

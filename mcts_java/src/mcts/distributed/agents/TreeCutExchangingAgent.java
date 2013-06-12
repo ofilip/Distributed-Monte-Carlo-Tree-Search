@@ -4,6 +4,7 @@ import communication.MessageSender;
 import communication.Priority;
 import communication.messages.Message;
 import communication.messages.TreeNodeMessage;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import mcts.MCNode;
@@ -22,17 +23,34 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     private long totalSimulatonResultsMessageLength = 0;
     private long simulationResultsMessagesCount = 0;
     private TreeCut treeCut;
-    private Map<GHOST, TreeCutIterator> cutIterators = new HashMap<GHOST, TreeCutIterator>();
-    private int visitCountThreshold = 10;
+    private Map<GHOST, TreeCutIterator> cutIterators = new EnumMap<GHOST, TreeCutIterator>(GHOST.class);
+    private int visitCountThreshold = 30;
     private long maxBytesSize = 1024;
     private long receivedSimulations = 0;
     private long summedCutSize = 0;
+    private double cutsTransmitted = 0;
+
+    private void initTreeCut() {
+        treeCut = VisitCountTreeCut.createRootCut(mctree, maxBytesSize, visitCountThreshold);
+        for (GHOST ally: GHOST.values()) {
+            if (ally==ghost) continue;
+            TreeCutIterator it = cutIterators.get(ally);
+            if (it!=null) {
+                cutsTransmitted += it.iterationCount();
+            }
+            cutIterators.put(ally, treeCut.registerIterator());
+        }
+    }
 
     @Override
     protected void postTreeInit() {
-        treeCut = VisitCountTreeCut.createRootCut(mctree, maxBytesSize, visitCountThreshold);
-        for (GHOST ally: GHOST.values()) {
-            cutIterators.put(ally, treeCut.registerIterator());
+        initTreeCut();
+    }
+
+    @Override
+    protected void postTreeAdvancing(int steps) {
+        if (steps>0) {
+            initTreeCut();
         }
     }
 
@@ -43,10 +61,18 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
             @Override public void handleMessage(GhostAgent agent, Message message) {
                 TreeNodeMessage result_message = (TreeNodeMessage)message;
                 try {
+                    String tree_str_before = null;
+                    int root_visit_count_before = mctree.root().visitCount();
+                    if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==GHOST.BLINKY) {
+                        tree_str_before = mctree.toString();
+                    }
                     long maskedSimulations = mctree.applyTreeNode(agent.ghost(), result_message.treeMoves(), result_message.simulationResult(), result_message.count());
                     receivedSimulations += result_message.count() - maskedSimulations;
-                    if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==GHOST.BLINKY)
-                        System.err.printf("%s [from %s] .. +%s -%s\n", receivedSimulations, agent.ghost, result_message.count(), maskedSimulations);
+                    assert(mctree.root().visitCount()==root_visit_count_before+result_message.count()-maskedSimulations);
+                    if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==GHOST.BLINKY) {
+                        String tree_str_after = mctree.toString();
+                        System.err.printf("[RECEIVING] %s%s [from %s] .. +%s -%s moves=%s\n%s", tree_str_before, receivedSimulations, agent.ghost, result_message.count(), maskedSimulations, result_message.treeMoves(), tree_str_after);
+                    }
                 } catch (InvalidActionListException e) { assert(false); }
             }
         });
@@ -72,6 +98,9 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     public void step() {
         receiveMessages();
         if (!Double.isNaN(mctree.iterate())) {
+            if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==GHOST.BLINKY) {
+                System.err.printf("[ITERATION] %s", mctree.toString());
+            }
             calculatedSimulations++;
             treeCut.reexpand();
             sendMessages();
@@ -80,15 +109,16 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
 
     @Override
     public MOVE getMove() {
+        if (verboseLevel.check(VerboseLevel.DEBUGGING)) {
+            System.err.printf("[%s] %s\n", ghost, mctree);
+        }
         lastFullMove = mctree.bestMove(currentGame);
         summedCutSize += treeCut.bytesSize();
         return lastFullMove.get(ghost);
     }
 
     @Override public long calculatedSimulations() { return calculatedSimulations; }
-    public long receivedSimulations() {
-        return receivedSimulations;
-    }
+    public long receivedSimulations() { return receivedSimulations; }
 
 
     @Override
@@ -113,4 +143,6 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     public double averageCutSize() {
         return summedCutSize/(double)currentGame.getTotalTime();
     }
+
+    public double cutsTransmitted() { return cutsTransmitted; }
 }

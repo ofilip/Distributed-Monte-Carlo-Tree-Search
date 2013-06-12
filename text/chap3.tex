@@ -1,6 +1,8 @@
 \chapter{Distributed MCTS Algorithms for Cooperating Teams}
 \label{chap_dmcts_design}
 
+
+
 \section{Motivation and Problem Definition}
 
 \todo{Upravit podle toho, co bude skutečně v kapitole \ref{chap_mas}}
@@ -19,6 +21,8 @@ We have already reviewed the Monte-Carlo Tree Search algorithm and its paralleli
  Section \ref{sec_notations_dmcts} and briefly discuss measures used for comparison of
  distributed algorithms in Section \ref{sec_measures_distributed}. \todo{Popis full MCTS stromu
  - zde nebo už v kapitole 1?}
+
+
 
 \section{Useful Notations}
 \label{sec_notations_dmcts}
@@ -49,6 +53,8 @@ Figure \ref{fig_tree_cut_example}.
 
 \todo{Obrázek}
 
+
+
 \section{Comparison Measures}
 \label{sec_measures_distributed}
 
@@ -77,9 +83,12 @@ independently but from outer point of view the joint action is the same as if pl
 MCTS calculate action. Strength measures say how strong is team guided by an algorithm.
 \todo{Jak budou simulovány communicatin failures?}
 
+
+
 \section{Proposed Algorithms}
 
 \todo{Algoritmy s plným stromem x algoritmy inspirované DCOPy...}
+
 
 \subsection{Backbone of the Distributed Algorithms}
 \label{sec_dmcts_common}
@@ -355,4 +364,5 @@ sufficient visit count, denoted as $C_cut$. Progressive visit count tree cut bui
 depicted by algorithm \ref{alg_progressive_visit_count_tree_cut_construction}. Tree-cut
 exchange algorithm itself depicts Algorithm \ref{alg_tree_cut_exchange}.
 
+\todo{Popsat mechanismus "přepisování" řezů}
 \todo{pseudocode}

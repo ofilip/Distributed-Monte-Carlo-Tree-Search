@@ -3,10 +3,11 @@ package communication;
 import communication.messages.Message;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import utils.AnotherDummyMessage;
-import utils.DummyMessage;
-import utils.SecondsToSend;
-import utils.TestUtils;
+import test_utils.AnotherDummyMessage;
+import test_utils.DummyMessage;
+import test_utils.MockTimer;
+import test_utils.SecondsToSend;
+import test_utils.TestUtils;
 
 public class ChannelTest {
 
@@ -61,6 +62,22 @@ public class ChannelTest {
         assertEquals(0, channel.secondsToSendAll(), 1e-6);
         assertEquals(1, channel.transmittedSuccessfully());
         assertEquals(1, channel.transmittedTotal());
+    }
+
+    @Test
+    public void testZeroBPS() {
+        MockTimer timer = new MockTimer();
+        Network network = new Network(0);
+        network.setTimer(timer);
+        Channel channel = network.openChannel("channel", 100);
+
+        for (int i=0; i<100; i++) {
+            channel.send(Priority.HIGHEST, new DummyMessage(1));
+        }
+        for (int i=0; i<1000; i++) {
+            timer.step();
+            assertEquals(0, channel.transmittedTotal());
+        }
     }
 
     @Test

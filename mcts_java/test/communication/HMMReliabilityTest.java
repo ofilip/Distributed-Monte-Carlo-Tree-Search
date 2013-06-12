@@ -11,8 +11,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import utils.DummyMessage;
+import test_utils.DummyMessage;
 import utils.VirtualTimer;
+import test_utils.MockTimer;
 
 class MockRandom extends Random {
     private int i = 0;
@@ -30,13 +31,7 @@ class MockRandom extends Random {
     }
 }
 
-class MockTimer implements VirtualTimer {
-    private long millis = 0;
-    public void step() { millis++; }
-    public long currentVirtualMillis() {
-        return millis;
-    }
-};
+
 
 public class HMMReliabilityTest {
     void assignRandom(HMMReliability reliability, Random random) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {

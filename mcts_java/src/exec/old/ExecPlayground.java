@@ -1,4 +1,4 @@
-package exec;
+package exec.old;
 
 import pacman.controllers.ICEP_IDDFS;
 import exec.utils.PacmanControllerGenerator;

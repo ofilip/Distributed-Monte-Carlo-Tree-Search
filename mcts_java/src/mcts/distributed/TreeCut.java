@@ -28,6 +28,17 @@ public abstract class TreeCut {
 
     }
 
+//    public void advance(int steps) {
+//        TreeCutNode node = nodes;
+//
+//        do {
+//            for (int i=0; i<steps; i++) {
+//                node.path.removeFirst();
+//            }
+//            node = node.next();
+//        } while (node!=nodes);
+//    }
+
     protected TreeCut(TreeCutNode nodes, long maxBytesSize, int visitCountThreshold, long size) {
         this.nodes = nodes;
         this.maxBytesSize = maxBytesSize;
