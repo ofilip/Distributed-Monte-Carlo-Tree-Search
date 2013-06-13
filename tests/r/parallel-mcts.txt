@@ -1,0 +1,16 @@
+algorithm	thread_count	strength_speedup
+Leaf parallelization	2	1.2
+Leaf parallelization	4	1.7
+Leaf parallelization	16	2.4
+Root parallelization	2	3.0
+Root parallelization	4	6.5
+Root parallelization	16	14.9
+Tree parallelization (global mutex)	2	1.6
+Tree parallelization (global mutex)	4	3.0
+Tree parallelization (global mutex)	16	2.6
+Tree parallelization (local mutex)	2	1.9
+Tree parallelization (local mutex)	4	3.0
+Tree parallelization (local mutex)	16	3.3
+Tree parallelization (virtual loss)	2	2.0
+Tree parallelization (virtual loss)	4	3.6
+Tree parallelization (virtual loss)	16	8.5

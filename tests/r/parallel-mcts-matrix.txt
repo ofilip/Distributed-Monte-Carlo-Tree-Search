@@ -1,0 +1,4 @@
+thread_count	leaf_parallelization	root_parallelization	tree_parallelization_global	tree_parallelization_local	tree_parallelization_loss
+2	1.2	3.0	1.6	1.9	2.0
+4	1.7	6.5	3.0	3.0	3.6
+16	2.4	14.9	2.6	3.3	8.5

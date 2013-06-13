@@ -574,43 +574,65 @@ have been experimentally evaluated in \cite{Chaslot2008} in context of playing G
 environment. For this purpose the \emph{strength speedup} measure has been used. It is equal to
  the ratio of time needed for plain
 MCTS to reach the same strength. Brief summary of results is covered by Table
-\ref{tab_parallel_mcts_comparison} and Figure \emph{TODO}. The winner of comparison is root parallelization performing even
+\ref{tab_parallel_mcts_comparison} and Figure \ref{fig_parallel_mcts_comparison}. The winner of comparison is root parallelization performing even
 better than single-threaded MCTS in case of 2 and 4 parallel threads. This is interpreted as 
 parallel MCTS algorithms with different random seeds exploit different local optima so better one
 can be finally chosen. Second best performance showed tree parallelization using virtual loss. Other
 algorithms performed very poorly especially in case of higher number of threads.
 
-\todo{Vytvořit tabulku a graf z pmcts\_comparison.ods}
+\begin{figure}
+\begin{center}
+\includegraphics{img/parallel-mcts.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_parallel_mcts_comparison}
+\end{figure}
+
+\todo{Vyhodit jednu z následujících tabulek}
 
 \begin{table}[h]
 \begin{center}
-\begin{tabular}{lrr}
-\hline
-Algorithm & Thread count & strength speedup\\
-\hline
-Leaf parallelization & 2  & 1.2\\
-Leaf parallelization & 4  & 1.7\\
-Leaf parallelization & 16 & 2.4\\
-\hline
-Root parallelization & 2  & 3.0\\
-Root parallelization & 4  & 6.5\\
-Root parallelization & 16 & 14.9\\
-\hline
-Tree parallelization (global mutex) & 2  & 1.6\\
-Tree parallelization (global mutex) & 4  & 3.0\\
-Tree parallelization (global mutex) & 16 & 2.6\\
-\hline
-Tree parallelization (local mutex) & 2  & 1.9\\
-Tree parallelization (local mutex) & 4  & 3.0\\
-Tree parallelization (local mutex) & 16 & 3.3\\
-\hline
-Tree parallelization (virtual loss) & 2  & 2.0\\
-Tree parallelization (virtual loss) & 2  & 3.6\\
-Tree parallelization (virtual loss) & 2  & 8.5\\
+\begin{tabular}{|l|rrr|}
+\hline Algorithm & 2 threads & 4 threads & 16 threads\\
+\hline Leaf parallelization & 1.2 & 1.7 & 2.4\\
+\hline Root parallelization & 3.0 & 6.5 & 14.9\\
+\hline Tree parallelization (global mutex) & 1.6 & 3.0 & 2.6\\
+\hline Tree parallelization (local mutex) & 1.9 & 3.0 & 3.3\\
+\hline Tree parallelization (virtual loss) & 2.0 & 3.6 & 8.5\\
 \hline
 \end{tabular}
 \end{center}
 \end{table}
+
+%\begin{table}[h]
+%\begin{center}
+%\begin{tabular}{lrr}
+%\hline
+%Algorithm & Thread count & Strength speedup\\
+%\hline
+%Leaf parallelization & 2  & 1.2\\
+%Leaf parallelization & 4  & 1.7\\
+%Leaf parallelization & 16 & 2.4\\
+%\hline
+%Root parallelization & 2  & 3.0\\
+%Root parallelization & 4  & 6.5\\
+%Root parallelization & 16 & 14.9\\
+%\hline
+%Tree parallelization (global mutex) & 2  & 1.6\\
+%Tree parallelization (global mutex) & 4  & 3.0\\
+%Tree parallelization (global mutex) & 16 & 2.6\\
+%\hline
+%Tree parallelization (local mutex) & 2  & 1.9\\
+%Tree parallelization (local mutex) & 4  & 3.0\\
+%Tree parallelization (local mutex) & 16 & 3.3\\
+%\hline
+%Tree parallelization (virtual loss) & 2  & 2.0\\
+%Tree parallelization (virtual loss) & 4  & 3.6\\
+%Tree parallelization (virtual loss) & 16  & 8.5\\
+%\hline
+%\end{tabular}
+%\end{center}
+%\end{table}
 
 
 

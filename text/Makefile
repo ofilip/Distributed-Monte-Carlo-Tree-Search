@@ -11,7 +11,7 @@ thesis.ps: thesis.dvi
 	dvips -o $@ -D600 -t a4 $<
 
 # LaTeX je potreba spustit dvakrat, aby spravne spocital odkazy
-thesis.dvi: thesis.tex $(wildcard *.tex) 
+thesis.dvi: thesis.tex $(wildcard *.tex) img/*
 	cslatex $<
 	bibtex thesis
 	cslatex $<

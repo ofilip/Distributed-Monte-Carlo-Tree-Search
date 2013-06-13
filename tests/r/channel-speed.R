@@ -9,7 +9,7 @@ legend = c()
 colors <- rainbow(n)
 linetype <- c(1:n)
 plotchar <- seq(18,18+n,1)
-wanted_cols = c("score", "ghost_time", "ghost_sims_per_sec", "ghost_avg_decision_sims", "channel_speed")
+wanted_cols = c("score", "ghost_time", "ghost_sims_per_sec", "ghost_avg_decision_sims", "channel_speed", "transmitted_per_second_successfully")
 
 root.data <- read.delim("results/20130531-2251-simulation-passing-channel-speed.txt", row.names=NULL)
 root.data2 <- root.data[c(wanted_cols)]
@@ -24,7 +24,7 @@ plot(root.scores40$channel_speed, root.scores40$score, type="o",
 	main="Strength of distributed MCTS algorithms",
 	xlab="Channel speed [bps]",
 	ylab="Average score",
-	xlim=c(0,65000),
+	xlim=c(0,100000),
 	ylim=c(500,2200),
 	lty = linetype[i],
 	col = colors[i],
@@ -36,7 +36,7 @@ lines(root.scores200$channel_speed, root.scores200$score, type="o", lty=linetype
 
 i <- i+1
 legend = c(legend, "Simulation passing ghosts (20 ms)")
-simpas.data <- read.delim("results/20130609-1543-simulation-passing-channel-speed-2.txt", row.names=NULL)
+simpas.data <- read.delim("results/20130611-1601-simulation-passing-channel-speed-2.txt", row.names=NULL)
 simpas.data2 <- simpas.data[c(wanted_cols)]
 simpas.melted_data <- melt(simpas.data2, id=c("ghost_time","channel_speed"))
 simpas.scores <- cast(simpas.melted_data, ghost_time+channel_speed~variable, mean)

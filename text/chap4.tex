@@ -148,6 +148,24 @@ will contain nodes having only one child which are also removed what adds a nece
 lengths of edges between nodes.
 
 
+\subsection{Pac-Man Playout}
+
+In our work, we decided to keep the simulation strategy simple, not leveraging much of
+domain-specific information. This decision is driven by experiments from early phases of
+development. During this experiments, both Pac-Man and ghosts players were, with a certain
+probability, led by some heuristic algorithm inspired by original legacy behaviour in case of
+ghost player and the StarterPacman example controller which is provided as a part of framework.
+With supplementary probability, players performed random actions. Because we haven't discovered
+any significant strength gain by tuning of the probability of heuristic steps, we omitted
+heuristics at all.
+
+The only additional knowledge put into the simulation strategy is that Pac-Man is not allowed
+to change its direction in the middle of a path during simulation. The point of this 
+restriction is that once Pac-Man enters a path, it usually wants to continue to a next
+crossroad. In addition, such a restriction heightens expected size of area visited by Pac-Man
+because situations of Pac-Man idling in the middle of path are suppressed.
+
+
 \subsection{Communication}
 
 Main method of a player controller (\texttt{getMove}) returns the joint-action
@@ -170,11 +188,108 @@ to the receiver or if a failure occured and the message has to be discarded. Exa
 reasoning of the reliability object is described in Section \ref{sec_methodics}.
 
 
+
 \section{Methodics}
 \label{sec_methodics}
 
+All experiments were performed in virtualized environment of CentOS release 6.3 (Final) having
+assigned 12 CPUs and 16 GiB of memory. Underlying host server disposes of 2 Intel(R) Xeon(R) 
+CPU E5-2630 0 @ 2.30GHz processors (6 cores/12 threads each) and total of 128 GiB of memory.
+Beside of our testing server, a few other virtual servers were running on the host server with
+a light consumption of resources but taking into account that we were leveraging at most 4
+cores at a time, remaining cores could easily handle the traffic. 
+
+\todo{Turbo boost??}
+
+Java runtime used for experiments is \texttt{1.7.0\_09-icedtea}.
+
+Simple bash scripts were used for purpuses of launching of individual games. Our Java
+application contains uniform entry point allowing setting of necessary parameters for running
+of an experiment. Each experiment were performed 100 times and average values were then used.
+Data gathered during experiments were then processed in R environment. Graphs contained in this
+work are also generated with R.
+
 \section{MCTS Tuning}
 
+\begin{figure}
+\begin{center}
+\includegraphics{img/mcts-tuning.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_mcts_tuning}
+\end{figure}
+
+
 \section{Comparison of the Algorithms}
+
+\subsection{Centralized Monte-Carlo Tree Search}
+
+\begin{figure}
+\begin{center}
+\includegraphics{img/plain-mcts-strength.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_plain_mcts_strength}
+\end{figure}
+
+\subsection{Independent Agents}
+
+\begin{figure}
+\begin{center}
+\includegraphics{img/dummy-ghosts-strength.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_independen_agents_strength}
+\end{figure}
+
+\subsection{Join-Action Exchanging Agents}
+
+\begin{figure}
+\begin{center}
+\includegraphics{img/move-exchange-strength.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_action_exchanging_strength}
+\end{figure}
+
+\subsection{Root Exchanging Agents}
+
+\begin{figure}
+\begin{center}
+\includegraphics{img/root-exchange-strength.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_root_exchanging_strength}
+\end{figure}
+
+\subsection{Simulation Results Passing Agents}
+
+\begin{figure}
+\begin{center}
+\includegraphics{img/simulation-passing-strength.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_simulation_passing_strength}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics{img/simulation-passing-sims-per-sec.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_simulation_passing_sims_per_sec}
+\end{figure}
+
+\subsection{Tree-Cut Exchanging Agents}
+
+\begin{figure}
+\begin{center}
+\includegraphics{img/tree-cut-tuning.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_tree_cut_tuning}
+\end{figure}
+
+\subsection{Comparison}
 
 \section{Conclusion}

@@ -20,7 +20,7 @@ public class VisitCountTreeCut extends TreeCut {
         TreeCutNode best = nodes;
         TreeCutNode curr = nodes.next();
         while (curr!=nodes) {
-            if (curr.treeNode().visitCount()>best.treeNode().visitCount()) {
+            if (curr.treeNode().calculatedVisitCount()>best.treeNode().calculatedVisitCount()) {
                 best = curr;
             }
             curr = curr.next();
@@ -34,7 +34,7 @@ public class VisitCountTreeCut extends TreeCut {
         while (maxBytesSize()>bytesSize) {
             TreeCutNode maxNode = bestNode();
             if (maxNode.next()!=maxNode /* maxNode is not root (root is expanded immediately) */
-                    && maxNode.treeNode().visitCount()<visitCountThreshold()) break;
+                    && maxNode.treeNode().calculatedVisitCount()<visitCountThreshold()) break;
             Triplet<Long, Long, TreeCutNode> expanded = maxNode.expand();
             if (expanded==null) break; /* tree is yet too small */
             size += expanded.first;

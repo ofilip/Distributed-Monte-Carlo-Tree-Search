@@ -28,6 +28,9 @@ plot(plain_p.scores$ghost_time, plain_p.scores$score, type="o",
 	col = colors[i],
 	pch = plotchar[i])
 
+abline(v=20,col="gray60")
+abline(v=40,col="gray60")
+
 
 i <- i+1
 legend = c(legend, "Plain MCTS (optimistic)")
@@ -68,7 +71,8 @@ lines(root.scores$ghost_time, root.scores$score, type="o",
 
 i <- i+1
 legend = c(legend, "Simulation results passing ghosts")
-simpas.data <- read.delim("results/20130527-0352-simulation-passing-optimistic.txt", row.names=NULL)
+#simpas.data <- read.delim("results/20130527-0352-simulation-passing-optimistic.txt", row.names=NULL)
+simpas.data <- read.delim("results/20130603-0725-simulation-passing.txt", row.names=NULL)
 simpas.data2 <- simpas.data[c(wanted_cols, "transmitted_per_second_total")]
 simpas.melted_data <- melt(simpas.data2, id=c("ghost_time"))
 simpas.scores <- cast(simpas.melted_data, ghost_time~variable, mean)
@@ -91,7 +95,7 @@ lines(cuts.scores$ghost_time, cuts.scores$score, type="o",
 i <- i+1
 legend = c(legend, "Tree-cut exchanging ghosts 2")
 cuts2.data <- read.delim("results/20130608-1047-cut-exchange-2.txt", row.names=NULL)
-cuts2.data2 <- cuts.data[c(wanted_cols, "transmitted_per_second_total", "sims_per_sec_calculated", "sims_per_sec_total")]
+cuts2.data2 <- cuts2.data[c(wanted_cols, "transmitted_per_second_total", "sims_per_sec_calculated", "sims_per_sec_total")]
 cuts2.melted_data <- melt(cuts2.data2, id=c("ghost_time"))
 cuts2.scores <- cast(cuts2.melted_data, ghost_time~variable, mean)
 lines(cuts2.scores$ghost_time, cuts2.scores$score, type="o",

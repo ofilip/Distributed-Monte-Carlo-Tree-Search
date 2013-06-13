@@ -20,7 +20,6 @@ import utils.VerboseLevel;
 
 public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     private long calculatedSimulations = 0;
-    private long totalSimulatonResultsMessageLength = 0;
     private long simulationResultsMessagesCount = 0;
     private TreeCut treeCut;
     private Map<GHOST, TreeCutIterator> cutIterators = new EnumMap<GHOST, TreeCutIterator>(GHOST.class);
@@ -128,9 +127,6 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
 
     //TODO: messages transmitted, average length of message, received simulations...
 
-    public double averageSimulatonResultsMessageLength() {
-        return totalSimulatonResultsMessageLength/(double)Math.max(1, simulationResultsMessagesCount);
-    }
 
     public void setCutByteSize(long bytes) {
         maxBytesSize = bytes;
