@@ -402,8 +402,6 @@ following section.
 \subsection{Comparison Measures for Parallel MCTS Algorithms}
 \label{sec_measures_parallel}
 
-\todo{Použít nebo vyhodit strength-efficiency}
-
 We will briefly describe measures used in comparisons of parallel MCTS algorithms described in
 following sections. Measures are derived from \cite{Chaslot2008}.
 
@@ -499,7 +497,47 @@ Leaf parallelization is suitable for using in both multi-core and cluster enviro
 \subsection{Root Parallelization}
 \label{sec_root_parallelization}
 
-\todo{pseudocode}
+\begin{algorithm}
+\DontPrintSemicolon
+\caption{$RootParallelizationMaster(random\_seed)$}
+\label{alg_root_parallelization_master}
+\KwData{$random\_seed$\ldots a random seed distincts from seeds of other threads}
+\KwResult{Best move calculated by root parallelization alrogithm}
+
+$tree \leftarrow new\,McTree$ \tcp*[h]{Initialize empty tree}\;
+$MCTSLoop(tree)$ \tcp*[h]{Perform MCTS iterations}\;
+$roots \leftarrow new\,RootSet$ \tcp*[h]{Empty set}\;
+$roots \leftarrow roots \cup BuildNextActionTreeCut(tree)$ \tcp*[h]{Add own root}\;
+
+\ForEach(\tcp*[h]{Receive roots}){Team-mate $P$}{
+    $received\_root \leftarrow Receive(P)$\tcp*[h]{Wait for a root from $P$} \;
+    $roots \leftarrow roots \cup received\_root$\;
+}
+
+\tcp*[h]{Merge roots} \;
+$merged \leftarrow new\,McTree$ \;
+\ForEach{$root \in roots$}{
+    \ForEach{$leaf \in Leaves(root)$}{
+        $node \leftarrow LookupNode(merged,Path(leaf))$ \tcp*[h]{new node is created if not found}\;
+        $Backpropagate(merged,node,RewardsOf(leaf)$ \tcp*[h]{$leaf$ is merged into the tree} \;
+    }
+}
+
+\Return{$\argmax\limits_{n \in Children(Root(merged))}c_n$} \tcp*[h]{Return most visited child}\;
+\end{algorithm}
+
+\begin{algorithm}
+\DontPrintSemicolon
+\caption{$RootParallelizationSlave(random\_seed,master\_thread)$}
+\label{alg_root_parallelization_slave}
+\KwData{$random\_seed$\ldots a random seed distincts from seeds of other threads\\
+$master\_thread$\ldots master thread}
+\KwResult{Nothing. Best move is returned by master thread.}
+$tree \leftarrow new\,McTree$ \tcp*[h]{Initialize empty tree}\;
+$MCTSLoop(tree)$ \tcp*[h]{Perform MCTS iterations}\;
+$root \leftarrow BuildNextActionTreeCut(tree)$ \tcp*[h]{Extract root}\;
+$Send(master\_thread, Message(root))$\;
+\end{algorithm}
 
 Another approach first proposed in \cite{Cazenave2007} is \emph{root parallelization} being
 originally named as \emph{single-run parallelization}. In root parallelization, independent
@@ -507,16 +545,24 @@ MCTS instance is executed for each core with different random-seeds so the trees
 instances differ. Finally, roots with their children from all instances are collected in master
 thread and merged. The result is set of nodes containing information from all MCTS instances which
 are used for selecting the best action to perform. Main advantages are simple implementation and a
-minimal amount of communication so root parallelization can be successfully used in cluster
-or in multi-core environment.
+minimal amount of communication so root parallelization can be successfully used both in cluster
+and multi-core environment.
 
-\todo{Ve skutečnosti root parallelization běží (v některých případech) lépe než plain MCTS}
-There is also a significant disadvantage resulting from missing communication during running of MCTS
+The algorithm is ilustrated by Algorithms \ref{alg_root_parallelization_master} and 
+\ref{alg_root_parallelization_slave} (1 master together with several slaves are run). 
+In the algorithm, we use 
+procedure $BuildNextActionTreeCut$ for extraction of tree root. Description of the procedure
+and related pseudocode can be found in Section \ref{sec_root_exchanging_agents}.
+
+There is a disadvantage resulting from missing communication during running of MCTS
 instances. Because each MCTS tree is built separately each instance have to perform similar
 exploration or in other words same set of positions have to be evaluated before interesting
 positions can be inspected. Due to this disadvantage plain MCTS having proportionally more time for
 running would still probably perform better because no duplicit exploration have to be done and such
-a saved time can be used for deeper exploitation.
+a saved time can be used for deeper exploitation. However, accordingly to comparisons resumed
+in Section \ref{sec_parallel_mcts_comparison}, the root parallelization performs, at least for the 
+game of Go, approximately equally to plain MCTS having adequately more time for computations
+(time used by root parallelization algorithm times number of processors used).
 
 \subsection{Tree Parallelization}
 
@@ -546,12 +592,39 @@ If the virtual loss is chosen properly, further evaluations are performed only i
 node's value is good enough even after adding the virtual loss and so weak nodes are not paralelly
 evaluated.
 
+
+
 \subsection{Simulation Results Passing}
 \label{sec_simulation_passing}
 
-\todo{pseudocode}
+\begin{algorithm}
+\DontPrintSemicolon
+\caption{$SimulationResultsPassingLoop(tree)$}
+\label{alg_simulation_results_passing}
+\KwData{$tree$ \ldots MCTS tree}
+\KwResult{$tree$ is enlarged by calculated and received simulations}
 
-\emph{Simulation results passing} can be viewed as trial of adaptation of \emph{tree
+\While(\tcp*[h]{Main MCTS loop}){$EnoughTime()$}{
+    \While(\tcp*[h]{Receive messages}){Receiving queue $Q$ not empty}{
+        $(path,rewards[\,]) \leftarrow Pop(Q)$ \;
+        $node \leftarrow LookupNode(tree,path)$ \tcp*[h]{new node is created if not found}\;
+        $Backpropagate(tree,node,rewards)$ \;
+    }
+    $node \leftarrow Select(tree)$\;
+    $node \leftarrow Expand(node)$\;
+    $rewards[\,] \leftarrow Playouts(node)$\;
+    $Backpropagate(tree,node,rewards[\,])$ \;
+    \ForEach(\tcp*[h]{Send messages}){Team-mate $P$}{
+        $SendSimulationResult(P, Message(Path(node),rewards[\,]))$ \;
+    }
+}
+
+\Return{$\argmax\limits_{n \in Children(root)}c_n$} \tcp*[h]{Return most visited child}\;
+\end{algorithm}
+
+
+
+\emph{Simulation results passing} can be viewed as a trial of adaptation of \emph{tree
 parallelization} to cluster environment. These two algorithms share the property of high amount of
 communication which is naturally bigger problem in distributed environment.
 
@@ -559,7 +632,7 @@ Unlike tree parallelization, the simulation results passing is building search t
 each thread and synchronizes these trees by broadcasting messages containing identification of
 expanded node and resulting value of performed simulation. This value is then backpropagated in
 trees of receiving threads. Master thread finally returns best move accordingly to its tree.
-Simulation results passing is depicted by algorithm \ref{alg_simulation_results_passing}.
+Simulation results passing is depicted by Algorithm \ref{alg_simulation_results_passing}.
 
 This algorithm relies on high throughput of the cluster environment. Requirements on the throughput
 grows with number of parallel threads so algorithm is not suitable for massive parallelism. The
@@ -568,6 +641,7 @@ environment.
 
 
 \subsection{Comparison and Conclusion}
+\label{sec_parallel_mcts_comparison}
 
 We have sumarized known algorithms for parallelization of MCTS in both multi-core and cluster
 environment. Three of them (leaf parallelization, root parallelization and tree
@@ -589,8 +663,6 @@ algorithms performed very poorly especially in case of higher number of threads.
 \caption{\footnotesize Lorem ipsum}{\footnotesize }
 \label{fig_parallel_mcts_comparison}
 \end{figure}
-
-\todo{Vyhodit jednu z následujících tabulek}
 
 \begin{table}[h]
 \begin{center}

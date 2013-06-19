@@ -26,10 +26,10 @@ plain_strength_inv <- function(s) { (c1 / (s-c0))^2 }
 
 par(mfrow=c(1,2))
 
-# TODO: actualize data
+
 
 # Distributed algorithm data
-distr.data <- read.delim("results/20130513-1933-move-exchange.txt", row.names=NULL)
+distr.data <- read.delim("results/20130616-1536-move-exchange.txt", row.names=NULL)
 distr.data2 <- distr.data[c(wanted_cols)]
 distr.data_melted <- melt(distr.data2, id=c("ghost_time"))
 distr.scores <- cast(distr.data_melted, ghost_time~variable, mean)
