@@ -5,15 +5,20 @@ import mcts.Action;
 import mcts.MCTree;
 import utils.Triplet;
 
-public class VisitCountTreeCut extends TreeCut {
+public final class VisitCountTreeCut extends TreeCut {
+    boolean aggregated;
 
-    private VisitCountTreeCut(TreeCutNode nodes, long maxBytesSize, int visitCountThreshold, long size) {
+    private VisitCountTreeCut(TreeCutNode nodes, long maxBytesSize, int visitCountThreshold, long size, boolean aggregated) {
         super(nodes, maxBytesSize, visitCountThreshold, size);
+        reexpand();
+        this.aggregated = aggregated;
     }
 
-    public static VisitCountTreeCut createRootCut(MCTree tree, long maxBytesSize, int visitCountThreshold) {
-        return new VisitCountTreeCut(new TreeCutNode(tree.root(), new LinkedList<Action>()), maxBytesSize, visitCountThreshold, 1);
+    public static VisitCountTreeCut createRootCut(MCTree tree, long maxBytesSize, int visitCountThreshold, boolean aggregated) {
+        return new VisitCountTreeCut(new TreeCutNode(tree.root(), new LinkedList<Action>()), maxBytesSize, visitCountThreshold, 1, aggregated);
     }
+
+    public boolean isAggregated() { return aggregated; } /* indicated whether maxBytesSize refers to total size of nodes or aggregated size */
 
     private TreeCutNode bestNode() {
         assert(nodes!=null);
@@ -29,9 +34,13 @@ public class VisitCountTreeCut extends TreeCut {
         return best;
     }
 
+    private long sizeToCompare() {
+        return aggregated? aggregatedByteSize(): bytesSize;
+    }
+
     @Override
     public void reexpand() {
-        while (maxBytesSize()>bytesSize) {
+        while (maxBytesSize()>sizeToCompare()) {
             TreeCutNode maxNode = bestNode();
             if (maxNode.next()!=maxNode /* maxNode is not root (root is expanded immediately) */
                     && maxNode.treeNode().calculatedVisitCount()<visitCountThreshold()) break;

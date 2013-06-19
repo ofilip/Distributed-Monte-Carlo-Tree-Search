@@ -22,7 +22,7 @@ public class SimulationResultMessage extends Message {
     @Override
     public long length() {
         if (length==-1) {
-            long bitsLength = 8; /* size of double */
+            long bitsLength = 32; /* size of double */
 
             for (Action action: treeMoves) {
                 bitsLength += action.type().bitLength();

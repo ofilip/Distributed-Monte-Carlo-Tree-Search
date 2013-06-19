@@ -20,7 +20,6 @@ import utils.VerboseLevel;
 
 public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     private long calculatedSimulations = 0;
-    private long simulationResultsMessagesCount = 0;
     private TreeCut treeCut;
     private Map<GHOST, TreeCutIterator> cutIterators = new EnumMap<GHOST, TreeCutIterator>(GHOST.class);
     private int visitCountThreshold = 30;
@@ -30,7 +29,7 @@ public class TreeCutExchangingAgent extends FullMCTSGhostAgent {
     private double cutsTransmitted = 0;
 
     private void initTreeCut() {
-        treeCut = VisitCountTreeCut.createRootCut(mctree, maxBytesSize, visitCountThreshold);
+        treeCut = VisitCountTreeCut.createRootCut(mctree, maxBytesSize, visitCountThreshold, false);
         for (GHOST ally: GHOST.values()) {
             if (ally==ghost) continue;
             TreeCutIterator it = cutIterators.get(ally);

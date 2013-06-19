@@ -41,7 +41,7 @@ enum Option {
     GAME_LENGTH("game-length"),
     UNRELIABLE("unreliable"), /* if not given, 100% reliability granted, otherwise HMMReliability used
                                * with probability of falling to unreliable state equal to given parameters.
-                               * other parameters are defined in Constants.* */
+                               * other parameters are defined in Constants. */
     MULTITHREADED("multithreaded", LongOpt.NO_ARGUMENT),
     TRIAL_NO("trial-no"),
     PESIMISTIC_TURNS("pesimistic-turns", LongOpt.NO_ARGUMENT),
@@ -176,7 +176,7 @@ public class ExecExperiment {
 
     private static void printHmmReliabilityHeader(HMMReliability hmmReliability) {
         if (hmmReliability!=null) {
-            System.out.printf("r_reliability\tu_reliability\tru_prob\tur_prob\t");
+            System.out.printf("r_reliability\tu_reliability\tru_prob\tur_prob\treliability\t");
         }
     }
 
@@ -220,8 +220,11 @@ public class ExecExperiment {
 
     private static void printHmmReliabilityInfo(HMMReliability hmmReliability) {
         if (hmmReliability!=null) {
-            System.out.printf("%s\t%s\t%s\t%s\t", hmmReliability.getRReliability(), hmmReliability.getUReliability(),
-                    hmmReliability.getRuProb(), hmmReliability.getUrProb());
+            double er = 1/hmmReliability.getRuProb(); /* expected reliable time */
+            double eu = 1/hmmReliability.getUrProb(); /* expected unreliable time */
+            double reliability = er/(er+eu);
+            System.out.printf("%s\t%s\t%s\t%s\t%s\t", hmmReliability.getRReliability(), hmmReliability.getUReliability(),
+                    hmmReliability.getRuProb(), hmmReliability.getUrProb(), reliability);
         }
     }
 
@@ -261,6 +264,7 @@ public class ExecExperiment {
 
         Getopt getopt = new Getopt(ExecExperiment.class.getSimpleName(), args, "", Option.LONG_OPTIONS);
         int c;
+        double reliability, ru_prob, er, eu;
 
         while ((c = getopt.getopt())!=-1) {
             Option option = Option.values()[c];
@@ -321,8 +325,10 @@ public class ExecExperiment {
                     game.setGameLength(Integer.parseInt(getopt.getOptarg()));
                     break;
                 case UNRELIABLE:
+                    reliability = 1 - Double.parseDouble(getopt.getOptarg());
+                    ru_prob = Constants.DEFAULT_UR_PROB*(1-reliability)/reliability;
                     hmmReliability = new HMMReliability(Constants.DEFAULT_R_RELIABILITY, Constants.DEFAULT_U_RELIABILITY,
-                            Double.parseDouble(getopt.getOptarg()), Constants.DEFAULT_UR_PROB, 1);
+                            ru_prob, Constants.DEFAULT_UR_PROB, 1);
                     break;
                 case MULTITHREADED:
                     experiment.setMultithreaded(true);

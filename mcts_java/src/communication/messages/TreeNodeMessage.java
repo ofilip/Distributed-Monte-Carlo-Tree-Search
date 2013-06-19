@@ -25,7 +25,7 @@ public class TreeNodeMessage extends Message {
     @Override
     public long length() {
         if (length==-1) {
-            long bitsLength = 10; /* size of double + sizeof short */
+            long bitsLength = 48; /* size of single + sizeof short */
 
             for (Action action: treeMoves) {
                 bitsLength += action.type().bitLength();

@@ -450,15 +450,22 @@ public abstract class MCNode implements UCBNode {
         if (this.halfstep) {
             result.append("/halfstep");
         }
-//        if (this.jointNode) {
-//            result.append("/joint_node");
-//        }
+
+        StringBuilder rec = new StringBuilder();
+
+        for (GHOST ghost: received_visit_count.keySet()) {
+            Integer vc = received_visit_count.get(ghost);
+            if (vc>0) {
+                rec.append(" ").append(ghost.toString().charAt(0)).append("{").append(vc).append("/").append(received_value.get(ghost)).append("}");
+            }
+        }
+
         result.append(" c=").append(this.visit_count)
                 .append("(").append(this.calculated_visit_count).append(")")
                 .append(" t=").append(this.ticksToGo)
                 .append(" v=").append(this.value())
                 .append("(").append(this.calculated_value).append(")");
-
+        result.append(rec);
 
         movesToString(result);
         result.append(")");

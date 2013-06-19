@@ -4,8 +4,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
+import mcts.Utils;
 
 public abstract class TreeCut {
+    private final static int AGGREGATED_NODE_SIZE = 61; /* 5bits for children count (0-27), 8bits for move, 32 bits for value, 16 bits for visit count */
+
     TreeCutNode nodes;
     protected long bytesSize; /* bytes necessary to transmit whole cut */
     private long maxBytesSize;
@@ -14,12 +17,15 @@ public abstract class TreeCut {
     protected long size;
 
     public long size() { return size; }
+    public long aggregatedByteSize() { return Utils.bitsToBytes(size*AGGREGATED_NODE_SIZE); } /* Byte size of cut transmitted as a whole, not node by node */
     public long bytesSize() {return bytesSize;}
     public void setMaxBytesSize(long bytes) {this.maxBytesSize = bytes;}
     public long maxBytesSize() {return maxBytesSize;}
     public boolean capacityFull() { return bytesSize>=maxBytesSize; }
     public int visitCountThreshold() {return visitCountThreshold;}
     public TreeCutNode nodes() { return nodes; }
+
+
 
     public TreeCutIterator registerIterator() {
         TreeCutIterator it = new TreeCutIterator(nodes, this);

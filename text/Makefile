@@ -12,6 +12,7 @@ thesis.ps: thesis.dvi
 
 # LaTeX je potreba spustit dvakrat, aby spravne spocital odkazy
 thesis.dvi: thesis.tex $(wildcard *.tex) img/*
+	psnup.exe -l img/plain-mcts-strength.eps img/plain-mcts-strength-90.eps
 	cslatex $<
 	bibtex thesis
 	cslatex $<

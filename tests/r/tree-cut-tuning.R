@@ -2,8 +2,8 @@ setwd("d:/diplomka/git/tests")
 library(reshape)
 library(gplots)
 source(file="r/utils.R")
+export=FALSE
 
-# Prepracovat do podoby
 
 i <- 1
 n <- 1
@@ -18,8 +18,10 @@ data2 <- data[c(wanted_cols)]
 data_melted <- melt(data2, id=c("ghost_time", "cuts_per_tick"))
 scores <- cast(data_melted, cuts_per_tick~variable, mean)
 
-setEPS()
-postscript(file="../text/img/tree-cut-tuning.eps", width=6, height=5)
+if (export) {
+	setEPS()
+	postscript(file="../text/img/tree-cut-tuning.eps", width=6, height=5)
+}
 
 plot(log(scores$cuts_per_tick), scores$score, type="o", axes=FALSE,
 	main="Tree-cut exchange (communication redundancy tuning) ",
@@ -34,4 +36,4 @@ axis(1, at=log(scores$cuts_per_tick), labels=scores$cuts_per_tick)
 axis(2, at=seq(1000,1800,by=100), labels=seq(1000,1800,by=100))
 box()
 
-dev.off()
+if (export) dev.off()

@@ -29,17 +29,7 @@ axis(1, at=scores$ghost_ucb_coef)
 axis(2, at=seq(800,1600,by=200))
 box()
 
-# Death weight tuning
-data <- read.delim("results/20130408-2112-dw-test.txt", row.names=NULL)
-data <- data[c("score", "ghost_death_weight", "ghost_sims_per_sec")]
-melted_data <- melt(data, id=c("ghost_death_weight"))
-scores <- cast(melted_data, ghost_death_weight~variable, mean)
-plot(scores$ghost_death_weight, scores$score, type="o",
-	main="Tuning of death_weight coefficient",
-	xlab="death_weight",
-	ylab="Average score",
-	col="red"
-	)
+
 
 
 
@@ -52,6 +42,18 @@ scores <- cast(melted_data, ghost_sim_depth~variable, mean)
 plot(scores$ghost_sim_depth, scores$score, type="o",
 	main="Tuning of simulation depth",
 	xlab="Simulation depth (in ticks)",
+	ylab="Average score",
+	col="red"
+	)
+
+# Death weight tuning
+data <- read.delim("results/20130408-2112-dw-test.txt", row.names=NULL)
+data <- data[c("score", "ghost_death_weight", "ghost_sims_per_sec")]
+melted_data <- melt(data, id=c("ghost_death_weight"))
+scores <- cast(melted_data, ghost_death_weight~variable, mean)
+plot(scores$ghost_death_weight, scores$score, type="o",
+	main="Tuning of death_weight coefficient",
+	xlab="death_weight",
 	ylab="Average score",
 	col="red"
 	)

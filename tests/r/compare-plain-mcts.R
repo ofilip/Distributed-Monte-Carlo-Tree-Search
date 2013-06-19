@@ -6,15 +6,15 @@ source(file="r/utils.R")
 i <- 0
 n <- 2
 legend = c()
-colors <- rainbow(n)
+colors <- c("red", "green")
 linetype <- c(1:n)
-plotchar <- seq(18,18+n,1)
+plotchar <- c(18,20)#seq(18,18+n,1)
 wanted_cols = c("score", "ghost_time", "ghost_sims_per_sec", "ghost_avg_decision_sims")
-export=TRUE
+export=FALSE
 
 if (export) {
-	setEPS()
-	postscript(file="../text/img/plain-mcts-strength.eps", width=6, height=4.5)
+	setEPS(horizontal=TRUE)
+	postscript(file="../text/img/plain-mcts-strength.eps", width=6, height=9)
 }
 
 plain_p.data <- read.delim("results/20130530-1000-plain-mcts-pesimistic.txt", row.names=NULL)

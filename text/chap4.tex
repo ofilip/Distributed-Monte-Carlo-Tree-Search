@@ -149,6 +149,7 @@ lengths of edges between nodes.
 
 
 \subsection{Pac-Man Playout}
+\label{sec_impl_playout}
 
 In our work, we decided to keep the simulation strategy simple, not leveraging much of
 domain-specific information. This decision is driven by experiments from early phases of
@@ -164,6 +165,33 @@ to change its direction in the middle of a path during simulation. The point of 
 restriction is that once Pac-Man enters a path, it usually wants to continue to a next
 crossroad. In addition, such a restriction heightens expected size of area visited by Pac-Man
 because situations of Pac-Man idling in the middle of path are suppressed.
+
+We also use maximum depth of simulations. Tuning of this parameter is described in Section
+\ref{sec_mcts_tuning}.
+
+Simulations have to be evaluated after they finish. At first, we decided to use following
+simple formula:
+
+\begin{equation}
+    { score\;reached } \over { maximum\;reachable\;score }
+\end{equation}
+
+But after some experiments, we realized that the formula does not enough motivate ghosts to
+hunt pacman so we decided to add a bonus if ghosts successfully catch Pac-Man:
+
+\begin{equation}
+    (1 - \alpha) {{ score\;reached } \over { maximum\;reachable\;score }}
+        + \alpha 
+    \left\{
+        \begin{array}{c@{\quad\quad}l}
+            1 & if pacman\;was\;eaten\\
+            0 & otherwise\\
+        \end{array}
+    \right.
+\end{equation}
+
+We call an $\alpha$ coefficient \emph{death\_weight} and tune it in Section
+\ref{sec_mcts_tuning}.
 
 
 \subsection{Communication}
@@ -184,8 +212,48 @@ ending with nonempty sending queue.
 For purposes of evaluation of robustness of distributed algorithms againts communication
 failures, channels contain a reliability object which simulates a reliability of a channel.
 After a transmission of each message, the object determine if the message is really transmitted
-to the receiver or if a failure occured and the message has to be discarded. Exact way of
-reasoning of the reliability object is described in Section \ref{sec_methodics}.
+to the receiver or if a failure occured and the message has to be discarded. The aim of the
+reliability object is to filter messages to reach a percentual amount of messages successfully
+transmitted. For the simplicity, we don't consider length of messages, messages of various
+length have same probability of transmission. To model the reliability object closer to real
+world, we decided not to use simple approach of single probability of transmission. Instead of
+that, we work with two states of the object, \emph{reliable} and \emph{unreliable}, each
+having a probability of successful transmission and a probability of a state change. In
+reliable state, most of messages are transmitted and, contrariwise, most of messages are thrown
+away in unreliable state. Such an
+object is modelled as simple hidden Markov model depicted by Figure \ref{fig_hmm_reliability}.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=8cm]{img/hmm_reliability.eps}
+\end{center}
+\caption{\footnotesize Communication reliability object modelled using hidden Markov model
+used in our experiments.}{\footnotesize}
+\label{fig_hmm_reliability}
+\end{figure}
+
+We permanently set three parameters of a model - probability of transmission in reliable and
+unreliable state and probability of transition from unreliable to reliable model, denoted as
+$P_{R}$, $P_{U}$ and $P_{U\mhyphen R}$. Remaining
+parameter, a probability of transmission from reliable to unreliable state, denoted as
+$P_{R \mhyphen U}$, is calculated accordinly to desired percentage of time in reliable state
+$Rel$.
+Transittion between states is done every millisecond. Then expected length of a single period
+of the object remaining in unreliable state is $\mathrm{E}P_U = {1 \over P_{U\mhyphen R}} \times 1
+\mathrm{ms} = {1
+\over 0.01}\,\mathrm{ms} = 100\,\mathrm{ms}$. Expected length of a reliable-state period is
+$\mathrm{E}P_R = {1 \over
+P_{R\mhyphen U}}$. $Rel$ is then equal to $\mathrm{E}P_R \over \mathrm{E}P_R + \mathrm{E}P_U$ and so 
+$P_{R\mhyphen U}$ is
+calculated from $Rel$ by the following equation.
+
+\begin{equation}
+P_{R\mhyphen U} = { 1 - Rel \over Rel } P_{R\mhyphen U}
+\end{equation}
+
+In case of tests not considering a reliability, all messages are transmitted. For tests with
+altering reliability, $Rel$ is set to value between $0$ and $1$ and appropriate $P_{R\mhyphen
+U}$ is used in HMM model.
 
 
 
@@ -209,7 +277,11 @@ of an experiment. Each experiment were performed 100 times and average values we
 Data gathered during experiments were then processed in R environment. Graphs contained in this
 work are also generated with R.
 
+\todo{HMM reliability}
+
+
 \section{MCTS Tuning}
+\label{sec_mcts_tuning}
 
 \begin{figure}
 \begin{center}
@@ -219,30 +291,107 @@ work are also generated with R.
 \label{fig_mcts_tuning}
 \end{figure}
 
+Before we started any of our experiments, we wanted to be sure that our MCT alrogithm has
+appropriate setting of parameters. We did three tests for approximate tuning of three
+parameters - $C$ (UCT coefficient), simulation depth and \emph{death\_weight} (parameter used in
+evaluation function, see Section \ref{sec_impl_playout}). Graphical results of these tests are
+depicted by Figure \ref{fig_mcts_tuning}.
+
+We first tuned $C$, with initial setting of simulation depth 200 and death weight 0.25. Test
+showed us significant improvements with $C$ between 0.05 and 0.2 so we decided to use $C=0.1$.
+
+Secondly, we tuned maximum depth of simulations, with already tuned $C=0.1$ and initial
+$death\_weight=0.25$. Accordingly to the test, we set simulation depth to 120.
+
+Finally, we tuned $death\_weight$ parameter used in evaluation formula with already tuned MCTS
+parameters $C$ and simulation depth. Accordingly to the test, best values of the parameter are
+between 0.3 and 1.0. During the evaluation of the test, some experiments with
+$death\_weight=0.25$ were performing and a score with this $death\_weight$ didn't differ much,
+we decided not to repeat the experiment with better setting of the parameter and run all tests
+with $death\_weight=0.25$.
+
+
 
 \section{Comparison of the Algorithms}
 
 \subsection{Centralized Monte-Carlo Tree Search}
 
+\todo{Otočit o 90 stupňů}
+
 \begin{figure}
 \begin{center}
-\includegraphics{img/plain-mcts-strength.eps}
+\includegraphics{img/plain-mcts-strength-90.eps}
 \end{center}
 \caption{\footnotesize Lorem ipsum}{\footnotesize }
 \label{fig_plain_mcts_strength}
 \end{figure}
 
+In Section \ref{sec_measures_distributed}, we defined the strength-speedup measure which
+is used for comparison of distributed algorithms with plain (centralized) algorithm. So 
+before we perform experiments with distributed algorithm, we run experiments with plain MCTS.
+During these tests, we also compare approaches to expansion of simultaneous nodes in Ms Pac-Man
+game.
+
+Figure \ref{fig_plain_mcts_strength} depicts results of plain MCTS running on single processor.
+We tested both optimistic and pesimistic expansion of simultaneous nodes. Since results didn't 
+show a difference in performance of MCTS using these expansion, we have chosen, without
+additional reasoning, a pesimistic expansion for further experiments.
+
+A shape of the curve connecting measured points in the figure does not follow decreasing
+progression which is, of course, caused by measurement error and local minima overcame by the
+convergence of MCTS. However, for purposes of the strength-speedup measure, we need to have
+smooth and decreasing function of strength of plain MCTS. For the sake of the measure, we
+calculate such a function by polynomial regression. We fitted measured data of plain MCTS with
+pesimistic expansion on polynomial function $S(t) = c_0 + { c_1 \over \sqrt{t} }$, where $S$ stands
+for strength (or score), $c_0,c_1$ are fitted
+coefficients and $t$ is length of tick (time for computation). The fitted function is drawn is
+the figure as dashed curve. Once we know the regression of the plain MCTS strength, we can
+simply calculate strength-speedup with usage of inverse function of $S(t)$.
+
+\todo{citovat, proč polynom. závislost}
+
+\begin{align}
+    &\begin{aligned}
+        strength\mhyphen speedup(score, time) = {{ S^{-1}(score) } \over time }\;
+    \end{aligned}\\
+    &\begin{aligned}
+        \mathrm{where}\;\;S^{-1}(score) = {\left({c_1 \over {score - c_0}}\right)}^2
+    \end{aligned}
+\end{align}
+
+
+
 \subsection{Independent Agents}
+
+\todo{Upravit plotchar na c(18,20) - všude}
 
 \begin{figure}
 \begin{center}
 \includegraphics{img/dummy-ghosts-strength.eps}
 \end{center}
 \caption{\footnotesize Lorem ipsum}{\footnotesize }
-\label{fig_independen_agents_strength}
+\label{fig_independent_agents_strength}
 \end{figure}
 
-\subsection{Join-Action Exchanging Agents}
+Independent agents does not perform any communication. Each of them build an independent MCTS
+tree. The trees are synchronized by having same random seed for a construction of trees and so
+trees are, after same number of interations, equal. For this algorithm, we expected strength
+speedup approximately 1.0 or a bit lesser in case that the same-random-seed synchronization
+doesn't always synchronize agent moves.
+
+For comparison, we tested also the independent agents algorithm with distinct random seeds.
+Results are depicted by Figure \ref{fig_independent_agents_strength}. Average strength speedups
+are 0.967 for equal random seeds and 0.941 for distinct random seeds what corresponds with
+expectations.
+
+Since there is no communication in algorithms, no further tests with altering communication
+channel speed and channel reliability were done
+
+
+\todo{t-test na rozlišení významnosti rozdílu}
+
+
+\subsection{Joint-Action Exchanging Agents}
 
 \begin{figure}
 \begin{center}
@@ -251,6 +400,8 @@ work are also generated with R.
 \caption{\footnotesize Lorem ipsum}{\footnotesize }
 \label{fig_action_exchanging_strength}
 \end{figure}
+
+\todo{TODO}
 
 \subsection{Root Exchanging Agents}
 
