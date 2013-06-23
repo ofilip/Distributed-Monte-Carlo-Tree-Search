@@ -1,18 +1,38 @@
 \chapter{Monte-Carlo Tree Search}
 \label{chap_mcts}
 
-\todo{Add comment to Fig \ref{fig_mcts_loop}}
+Monte-Carlo Tree Search (MCTS) is an iterative best-first search algorithm with stochastic positional
+evaluation, anytime property and fast convergence. As \citeauthor{ChaslotPhd2010} summed up in 
+\cite{ChaslotPhd2010}, MCTS was simultaneously developed
+in three variants \cites{Chaslot2006}{Coulom2006}{Kocsis2006} in 2006. Specific variant used in
+this thesis along with all important details and explanation of the properties is discussed in this
+chapter. In addition, section \ref{sec_parallel_mcts} sumarizes current approaches to paralelization
+of MCTS.
+
 \begin{figure}
 \begin{center}
-\missingfigure{Obrázek ilustrující MCTS}
+\includegraphics[width=14cm]{img/mcts-algorithm-1a.eps}
 \end{center}
-\caption{\footnotesize}{\footnotesize}
+\caption{\footnotesize Monte-Carlo Tree Search.}{\footnotesize Monte-Carlo tree search consists
+of iterating over four phases and can be interrupted at any time. Figure originates from
+\cite{ChaslotPhd2010}.}
 \label{fig_mcts_loop}
 \end{figure}
 
+
+
+\section{Algorithm Description}
+\label{sec_mcts_description}
+
+\citeauthor{Chaslot2008} provides good description of the Monte-Carlo Tree Search algorithm in
+\cite{Chaslot2008}. Variant of MCTS as well as the terminology used in this thesis are based mainly
+on this paper.
+
+
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$Select(tree)$\label{alg_select}}
+\caption{$Select(tree)$ - algorithm selecting a node for running a playout
+    \label{alg_select}}
 \KwData{$tree$\ldots MCTS tree}
 \KwResult{Leaf node chosen by the selection is returned. The selection is determined by a particular
 $SelectionStep$.}
@@ -27,7 +47,8 @@ $curr\_node \leftarrow Root(tree)$\;
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$Backpropagate(tree, node, rewards[\,])$\label{alg_backpropagate}}
+\caption{$Backpropagate(tree, node, rewards[\,])$ - sumulation results backpropagation
+\label{alg_backpropagate}}
 \KwData{$tree$ \ldots MCTS tree\\
 $node$ \ldots node to which the rewards are being backpropagated\\
 $rewards[\,]$ \ldots array of rewards }
@@ -39,12 +60,9 @@ $parent \leftarrow Parent(node)$\;
 }
 \end{algorithm}
 
-\todo{Komentář o tom, že může být odehráno více simulací ve fázi 3}
-\todo{Komentář o možnosti využití výsledků z předchozích her}
-
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$MCTSLoop(tree)$ \texttt{/* Main MCTS loop */}\label{alg_mcts}}
+\caption{$MCTSLoop(tree)$ - main MCTS computation loop\label{alg_mcts}}
 \KwData{$tree$\ldots MCTS tree}
 \KwResult{$tree$ is enlarged by newly expanded nodes and results of playouts performed are added.
 Node representing the best evaluated position reachable by one action is returned}
@@ -57,25 +75,11 @@ Node representing the best evaluated position reachable by one action is returne
 \Return{$\argmax\limits_{n \in Children(root)}c_n$} \tcp*[h]{Return most visited child}\;
 \end{algorithm}
 
-Monte-Carlo Tree Search (MCTS) is an iterative best-first search algorithm with stochastic positional
-evaluation, anytime property and fast convergence. As \citeauthor{ChaslotPhd2010} summed up in 
-\cite{ChaslotPhd2010}, MCTS was simultaneously developed
-in three variants \cites{Chaslot2006}{Coulom2006}{Kocsis2006} in 2006. Specific variant used in
-this thesis along with all important details and explanation of the properties is discussed in this
-chapter. In addition, section \ref{sec_parallel_mcts} sumarizes current approaches to paralelization
-of MCTS.
 
-\section{Algorithm Description}
 
-\citeauthor{Chaslot2008} provides good description of the Monte-Carlo Tree Search algorithm in
-\cite{Chaslot2008}. Variant of MCTS as well as the terminology used in this thesis are based mainly
-on this paper.
-
-\todo{Je notace úplná?}
-\todo{Sladit definice Perfect-information game s notací}
-
-Monte-Carlo Tree Search is iteratively building the search tree as depicted by Figure
-\ref{fig_mcts_loop} and Algorithms \ref{alg_select}, \ref{alg_backpropagate} and \ref{alg_mcts}
+Monte-Carlo Tree Search is iteratively building a search tree as depicted by Figure
+\ref{fig_mcts_loop} (originally published in \cite{ChaslotPhd2010}) and Algorithms 
+\ref{alg_select}, \ref{alg_backpropagate} and \ref{alg_mcts}
 which follow the algorithm in its generality. Further details of chosen variant of MCTS
 are discussed in subsequent sections and their related Algorithms, namely \ref{alg_selection_step},
 \ref{alg_expand}, \ref{alg_playouts} and \ref{alg_add_rewards}.
@@ -99,14 +103,11 @@ nodes representing positions reachable by set of
 distinct actions $Actions(p)$ performable from $p = Position(i)$.
 Particular action required to reaching $i$'s child $j$ is $Action(j)$.
 
-New unexpanded node representing position $p$ reached with action $a$ is created by calling of
-$new\;Node(p,a)$ where special $noop$ action is used for root node. Newly initialized tree for
-planning from position $p$
-containing only a root node is created with $new\;Tree(p)$.
-
 The
 tree itself provides the pointer to its root $Root(t)$. Function $EnoughTime()$ returns $true$ if
-there is enough time to pass at least one more MCTS iteration and return the best evaluated node.
+there is enough time to pass at least one more MCTS iteration and return the best evaluated
+node. We use also other notations in pseudocodes of our thesis which we omit to list here. All
+such notations are at least covered by a comment in a pseudocode.
 
 Each iteration of MCTS consists of four
 phases - \emph{selection}, \emph{expansion}, \emph{simulation} and \emph{backpropagation}. During
@@ -119,18 +120,19 @@ new nodes reachable by actions from $Actions(i)$ are added to set $Children(i)$ 
 nodes is selected.
 The next phase, simulation (also called \emph{playout}), plays a random game (or several games) 
 starting
-in position defined by expanded node halting on some conditions (e.g. after certain moves are
+in position defined by expanded node halting on some conditions (e.g. after certain actions are
 played or the end of the game is reached). Results from the simulations are then backpropagated to all
 expanded node's ancestors during the fourth phase - backpropagation. The phases of the algorithm are
 further discussed in subsequent sections.
-
 
 
 \subsection{Selection}
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$SelectionStep(node)$\label{alg_selection_step}}
+\caption{$SelectionStep(node)$ - one step of selection phase, an unvisited child, or a child 
+having best UCT of given node is returned
+\label{alg_selection_step}}
 \KwData{$node$\ldots a node of MCTS tree}
 \KwResult{a children node chosen by a selection}
 \If(\tcp*[h]{$node$ is a leaf or terminal node}){$Children(node)=\varnothing$}{
@@ -178,9 +180,6 @@ expected regret $R_n^A$.
 
 \end{defmab}
 
-\todo{Citovat \cite{Berry85banditproblems}}
-\todo{doplnit zmínku o tom, že optimální policy má regret  ~$O(\log{n})$,
-ale že je výpočetně náročná}
 
 \Citeauthor{Auer2002} introduced computationaly effective optimal policy UCB1 \cite{Auer2002} 
 having regret bounded to $O(\log{n})$. Abbreviation UCB stands for \emph{Upper-Confidence Bound}
@@ -205,7 +204,7 @@ Then the policy itself chooses the machine as follows:
 
 UCB1 consists of average of previous rewards and a bias decreasing with number of the
 machine's plays. In addition significance of the bias is growing with the total number of plays
-which 
+what
 leads to increase of exploration. Each machine is tried once before further selection based on
 previous evaluation and the bias is used. This is forced by setting UCB1 value to $\infty$ for
 machines not yet tried.
@@ -253,11 +252,10 @@ are $C= 0.7$ and $T=30$.
 \subsection{Expansion}
 \label{sec_expansion}
 
-\todo{Popsat v textu notaci new Node() a new Tree()}
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$Expand(node)$\label{alg_expand}}
+\caption{$Expand(node)$ - expansion of an unexpanded node\label{alg_expand}}
 \KwData{$node$\ldots a leaf node of MCTS tree}
 \KwResult{$node$ itself is returned, or new children reachable by actions valid in position
 defined by $node$ are added to
@@ -291,7 +289,8 @@ simulations have been performed from a leaf.
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$Playouts(node)$\label{alg_playouts}}
+\caption{$Playouts(node)$ - simulation phase returning rewards from performed playouts
+\label{alg_playouts}}
 \KwData{$node$\ldots a node of MCTS tree}
 \KwResult{An array of results of performed simulations is returned.}
 \For{$i\leftarrow 1$ \KwTo $SIMULATIONS\_COUNT$}{
@@ -306,7 +305,7 @@ simulations have been performed from a leaf.
 
 The simulation, or \emph{playout}, performs random play starting in the position defined in the
 node selected by previous phases - selection and expansion. Simulation steps can be plain
-random moves or, to improve the strength of
+random random actions or, to improve the strength of
 simulation, the simulation can follow a pseudo-random \emph{simulation strategy} designed accordingly to
 domain-specific information. The stochasticity of chosen simulation strategy determines the strength
 of simulation. If the strategy is too stochastic, or on the contrary too deterministic, the
@@ -338,7 +337,8 @@ node $p$ used in Algorithm \ref{alg_add_rewards}.
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$AddRewards(node,rewards[\,])$\label{alg_add_rewards}}
+\caption{$AddRewards(node,rewards[\,])$ - adds backpropagated simulation results to node's
+value (average of all simulations) and adjust visit count appropriately \label{alg_add_rewards}}
 \KwData{$node$\ldots a node of MCTS tree\\$rewards[\,]$\ldots array of simulation rewards}
 \KwResult{Simulation results $rewards[\,]$ are added to $node$'s value.}
 $rlen \leftarrow Length(rewards[\,])$\;
@@ -349,29 +349,69 @@ $n_{node} \leftarrow n_{node} + rlen$\;
 \end{algorithm}
 
 
+\subsection{Game Steps in the Tree}
 
-\section{Convergence to Minimax algorithm}
+\begin{algorithm}
+\DontPrintSemicolon
+\caption{$MCTSGame()$ - complete game play with MCTS player, \label{alg_mcts_game_step}}
+$game \leftarrow new\;Game$\;
+$mctree \leftarrow new\;McTree(game) $\tcp*[h]{Empty tree rooted in new game position}\;
+$P \leftarrow Player(this)$\tcp*[h]{our player}\;
+\While{$game$ is not over}{
+    $actions \leftarrow new\;ActionArray$ \tcp*[h]{empty map}\;
+    \ForEach{opponent on turn $O$}{
+        $actions[O] \leftarrow GetAction(O)$ \tcp*[h]{let opponent calculate turn}\;
+    }
+    $best \leftarrow MCTSLoop(mctree)$ \tcp*[h]{perform MCTS}\;
+    $actions[P] \leftarrow Action(best)$\;
+    $GameStep(game, actions)$\;
+    \tcp*[h]{Replace $mctree$ with a subtree defined by $actions$}\;
+    \ForEach{$player \in Keys(actions)$ ordered as in $mctree$}{
+        $Root(mctree) \leftarrow Child(Root(mctree),actions[player])$\;
+    }
+}
+\end{algorithm}
+
+After the computation of the MCTS tree, the best action according to visit counts of root's
+children is returned and underlying game object is updated by our action and actions of
+opponents. After that, computation of new MCTS tree begins. Since we work with fully observable
+environment, we know the action performed by opponents. In a tree built in previous game round
+we have a node corresponding with the game object after the update so we don't need to build
+the very new tree from a scratch and instead of that, we can use a subtree corresponding with
+updated game object. 
+
+Since UCT selection leads to most promising nodes, it is highly probable
+that actions played by opponents will lead to a subtree with high visit count (our action leads
+to a subtree with highest visit count) and so we can use simulations of the subtree with a
+benefit as shown by Algorithm \ref{alg_mcts_game_step} which depicts MCTS together with game
+objects and opponents.
+
+
+\section{Convergence of MCTS Tree}
 \label{sec_minimax_convergence}
 
 
+\todo{Konvergence k řešení, ne k algoritmu!}
 
 \section{MCTS for Two-Player Games}
 \label{sec_two_players_mcts}
 \emph{Discussion about simultaneous v. turn-based games and its convergence}
+
 
 However it has been shown that MCTS converges to... \emph{TODO: Načíst jak je to s konvergencí k
 minimax stromu a pure nash equilibrium strategii a opravit podle toho předchozí text}. Odkázat se
 na \ref{sec_turn_based_game_conversion}.
 
 
+
+
 \section{Parallel Monte-Carlo Tree Search}
 \label{sec_parallel_mcts}
 
-\todo{Zvážit změnu terminologie (multi-core, cluster, thread, core)}
-
-Our objective in this thesis is designing algorithms for distributed MCTS computation among
-cooperating agents. Closest to such algorithms are works on parallelization of MCTS which are
-strong inspiration for algorithms proposed in chapter \ref{chap_dmcts_design}.
+Our objective in this thesis is design of algorithms for distributed MCTS computation among
+cooperative autonomous agents. Closest to such algorithms are works on parallelization of MCTS 
+which are
+strong inspiration for algorithms proposed in Chapter \ref{chap_dmcts_design}.
 
 Several publications dealing with parallelization of Monte-Carlo Tree Search have been published
 recently \cites{Cazenave2007}{Chaslot2008}{Teytaud2008}. Two kinds of the parallelization are
@@ -380,7 +420,7 @@ discussed in these papers - multi-core parallelization and cluster parallelizati
 Multi-core parallelization refers to computation on a symmetric multiprocessor computer (SMP). In
 this case memory is shared among all processor cores and and can be accessed with same
 (generally low) latency by any core  and access to this memory is the same and low.
-Access synchronization have to be managed using a mutex mechanism. Two techniques for
+Access synchronization has to be managed using a mutex mechanism. Two techniques for
 parallelization with no need for locking (\emph{leaf parallelization}, \emph{root parallelization},
 \emph{simulation results passing}),
 and two variants of parallelization with locking (\emph{tree parallelization}) have been proposed so
@@ -406,8 +446,7 @@ We will briefly describe measures used in comparisons of parallel MCTS algorithm
 following sections. Measures are derived from \cite{Chaslot2008}.
 
 \emph{Strength} of a player choosing actions for playing a game $G$ against
-opponents $O$ (for case of multi-player game) \todo{Tady by se dalo napsat víc o tom, jak volit
-oponenty}
+opponents $O$ (for case of multi-player game) 
 is expected value of player's score at the end of the game. For experimental evaluation of the
 strength, finite set of games is played and average
 \todo{std dev?}
@@ -416,7 +455,7 @@ purposes the player is guided by MCTS-based algorithm. Its strength is dependent
 provided to the algorithm for computation. In case of parallel MCTS algorithms, each thread has
 time $T$ for computation. Since parallel algorithms run in multiple threads, each having same
 amount of time as plain MCTS, its strength should be greater than in case of plain MCTS and should 
-grow with number of cores $n$ involved. For more ilustrative comparison of parallel algorithms,
+grow with number $n$ of cores involved. For more ilustrative comparison of parallel algorithms,
 we will use \emph{strength-speedup} measure. Let us consider parallel algorithm having time
 $T_{par}$
 for its running and its strength $S$. Plain MCTS needs time $T_{pl}$ to achieve same strength
@@ -432,12 +471,7 @@ Another measure appliable to MCTS is \emph{Simulations-per-Second}. It simply sa
 simulations per second is being performed. Analogically to strength measures,
 \emph{Simulations-per-Second speedup} and \emph{Simulations-per-Second efficiency} are defined
 as ratio of Simulations-per-Second of plain MCTS and parallel MCTS and same ratio divided by
-number of cores. These measures are very useful for comparison of effectiveness of
-parallelization and so we will refer to Simulations-per-Second speedup simply as
-\emph{speedup}. \todo{Doplnit tabulku s mírami}
-
-
-
+number of cores. 
 
 
 \subsection{Leaf Parallelization}
@@ -445,7 +479,8 @@ parallelization and so we will refer to Simulations-per-Second speedup simply as
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$LeafParallelizationPlayouts(node)$}
+\caption{$LeafParallelizationPlayouts(node)$ - simulation phase of leaf parallelization
+algorithm}
 \label{alg_leaf_parallelization}
 \KwData{$node$\ldots a node of MCTS tree}
 \KwResult{Array of simulation resulults is returned}
@@ -474,7 +509,7 @@ Master thread traverses the root to the leaf according to selection strategy and
 leaf at first. Then for each available processor core, one simulation is performed from position
 defined by leaf. Master thread then waits until all simulations are finished and backpropagates
 their results up through tree. Algorithm \ref{alg_leaf_parallelization} depicts simulation phase 
-of leaf parallelization. \todo{Popis metod v algoritmu (ThreadSet etc..)}
+of leaf parallelization.
 
 This approach is very easy to implement since no complicated synchronization is used
 which is its main advantage. However, several disadvantages have to be mentioned. First, cores are
@@ -499,10 +534,10 @@ Leaf parallelization is suitable for using in both multi-core and cluster enviro
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$RootParallelizationMaster(random\_seed)$}
+\caption{$RootParallelizationMaster(random\_seed)$ - master thread of root parallelization}
 \label{alg_root_parallelization_master}
 \KwData{$random\_seed$\ldots a random seed distincts from seeds of other threads}
-\KwResult{Best move calculated by root parallelization alrogithm}
+\KwResult{Best action calculated by root parallelization alrogithm}
 
 $tree \leftarrow new\,McTree$ \tcp*[h]{Initialize empty tree}\;
 $MCTSLoop(tree)$ \tcp*[h]{Perform MCTS iterations}\;
@@ -528,11 +563,12 @@ $merged \leftarrow new\,McTree$ \;
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$RootParallelizationSlave(random\_seed,master\_thread)$}
+\caption{$RootParallelizationSlave(random\_seed,master\_thread)$ - slave threads of root
+parallelization}
 \label{alg_root_parallelization_slave}
 \KwData{$random\_seed$\ldots a random seed distincts from seeds of other threads\\
 $master\_thread$\ldots master thread}
-\KwResult{Nothing. Best move is returned by master thread.}
+\KwResult{Nothing. Best action is returned by master thread.}
 $tree \leftarrow new\,McTree$ \tcp*[h]{Initialize empty tree}\;
 $MCTSLoop(tree)$ \tcp*[h]{Perform MCTS iterations}\;
 $root \leftarrow BuildNextActionTreeCut(tree)$ \tcp*[h]{Extract root}\;
@@ -564,33 +600,35 @@ in Section \ref{sec_parallel_mcts_comparison}, the root parallelization performs
 game of Go, approximately equally to plain MCTS having adequately more time for computations
 (time used by root parallelization algorithm times number of processors used).
 
+
+
 \subsection{Tree Parallelization}
 
-\todo{pseudocode}
+\todo{pseudocode?}
 
 The reasons why leaf parallelization wastes too much time leaving cores in sleep are removed by
 \emph{tree parallelization}. It is done by effective tree locking so individual threads can access
 and modify the tree on their own and so particular simulations follow independent selections and
 need not to wait for the end of other simulations. The tree can be locked with \emph{global mutex}
-or with \emph{local mutexes} placed all nodes. The global mutex is simplier method saving costs
+or with \emph{local mutexes} placed in all nodes. The global mutex is simplier method saving costs
 associated with locking but the maximum speedup is significantly reduced because the average
-percentage of time spent in the tree (denoted as $x$ for now) is relatively high ($25\%-50\%$) and
+percentage of time spent in the tree (denoted as $x$ for now) is usually relatively high ($25\%-50\%$) 
+and
 so it is not possible to reach speedup higher than $100/x$. This is because if each of $n$
 threads is
 accessing the tree exclusively and no one have to sleep, percentage of time spent in 
 tree is
 equal to $n x$ and so $n \le \lfloor {100 \over{x}} \rfloor$. Due to this limitation, local mutexes
-are necessary for systems with greater number of cores. To beat the fact of high cost of locking and
+are necessary for systems with greater number of cores. To beat the fact of high costs of locking and
 unlocking, fast-access mutexes should be used (i.e. spinlocks).
 
-One more disadvantage of leaf parallelization should be handled which is parallel evaluation of a
-single node when multiple evaluations are performed even if the first one may mark the node badly
-and so not recomment for further exploitation. To prevent additional evaluations before previous
-ones are currently running \emph{virtual loss} is added to the value of the node being evaluated
-and remove it then during backpropagation.
-If the virtual loss is chosen properly, further evaluations are performed only in case when the
-node's value is good enough even after adding the virtual loss and so weak nodes are not paralelly
-evaluated.
+One more disadvantage of root parallelization should be handled. Tree parallelization may, at
+one time, run multiple evaluations of a single node in situation when firstly finished
+simulations would mark a node with bad value and so other evaluations are not necessary. To
+beat such behaviour, \emph{virtual loss} is added to the value of nodes traversed by selection
+of each thread and then removed during backpropagation phase. Virtual loss suppresses multiple
+simulations on single node in case of weak actual value but for promising positions, more than
+one simulation can be performed at a time.
 
 
 
@@ -599,13 +637,14 @@ evaluated.
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$SimulationResultsPassingLoop(tree)$}
+\caption{$SimulationResultsPassingLoop(tree)$ - a thread of simulation results passing
+algorithm}
 \label{alg_simulation_results_passing}
 \KwData{$tree$ \ldots MCTS tree}
 \KwResult{$tree$ is enlarged by calculated and received simulations}
 
 \While(\tcp*[h]{Main MCTS loop}){$EnoughTime()$}{
-    \While(\tcp*[h]{Receive messages}){Receiving queue $Q$ not empty}{
+    \While(\tcp*[h]{Receive messages}){receiving queue $Q$ not empty}{
         $(path,rewards[\,]) \leftarrow Pop(Q)$ \;
         $node \leftarrow LookupNode(tree,path)$ \tcp*[h]{new node is created if not found}\;
         $Backpropagate(tree,node,rewards)$ \;
@@ -631,7 +670,7 @@ communication which is naturally bigger problem in distributed environment.
 Unlike tree parallelization, the simulation results passing is building search tree separately in
 each thread and synchronizes these trees by broadcasting messages containing identification of
 expanded node and resulting value of performed simulation. This value is then backpropagated in
-trees of receiving threads. Master thread finally returns best move accordingly to its tree.
+trees of receiving threads. Master thread finally returns best action accordingly to its tree.
 Simulation results passing is depicted by Algorithm \ref{alg_simulation_results_passing}.
 
 This algorithm relies on high throughput of the cluster environment. Requirements on the throughput
@@ -656,6 +695,7 @@ parallel MCTS algorithms with different random seeds exploit different local opt
 can be finally chosen. Second best performance showed tree parallelization using virtual loss. Other
 algorithms performed very poorly especially in case of higher number of threads.
 
+\todo{popis}
 \begin{figure}
 \begin{center}
 \includegraphics{img/parallel-mcts.eps}
@@ -664,7 +704,9 @@ algorithms performed very poorly especially in case of higher number of threads.
 \label{fig_parallel_mcts_comparison}
 \end{figure}
 
+\todo{popis}
 \begin{table}[h]
+\label{tab_parallel_mcts_comparison}
 \begin{center}
 \begin{tabular}{|l|rrr|}
 \hline Algorithm & 2 threads & 4 threads & 16 threads\\
@@ -676,6 +718,7 @@ algorithms performed very poorly especially in case of higher number of threads.
 \hline
 \end{tabular}
 \end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
 \end{table}
 
 %\begin{table}[h]

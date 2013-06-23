@@ -4,11 +4,11 @@ library(gplots)
 source(file="r/utils.R")
 
 wanted_cols <- c("score", "ghost_time")
-export=FALSE
+export=TRUE
 
 if (export) {
 	setEPS()
-	postscript(file="../text/img/root-exchange-channel-speed.eps", width=6, height=4.5)
+	postscript(file="../text/img/root-exchange-channel-speed.eps", width=6, height=9)
 }
 
 # reference plain MCTS data
@@ -64,12 +64,14 @@ legend("topright", lty = c(1,1,2,2), pch=c(18,20,-1,-1), col=c("red","green","re
 
 # Strength speedup
 plot(log(distr.scores20$channel_speed), plain_strength_inv(distr.scores20$score)/20,
-	main="Root exchanging agents - strength speedup", axis=FALSE,
+	main="Root exchanging agents - strength speedup", axes=FALSE,
 	type="o", lty=1, col="red", pch=18, xlab="channel speed [bytes per second]", 
 	ylab="strength speedup",
-	ylim=c(0,2))
+	ylim=c(0,4))
+lines(log(distr.scores40$channel_speed), plain_strength_inv(distr.scores40$score)/40,
+	type="o", lty=1, col="green", pch=20)
 abline(h=1,lty=2)
-axis(2, at=seq(600,2000,200))
+axis(2, at=seq(0.0,4.0,0.5))
 axis(1, at=log(2^seq(4,18,2)), labels=2^seq(4,18,2))
 box()
 

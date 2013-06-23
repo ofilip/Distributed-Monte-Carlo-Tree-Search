@@ -8,7 +8,7 @@ export=FALSE
 
 if (export) {
 	setEPS()
-	postscript(file="../text/img/root-exchange-strength.eps", width=6, height=4.5)
+	postscript(file="../text/img/root-exchange-strength.eps", width=6, height=9)
 }
 
 # reference plain MCTS data
@@ -24,7 +24,7 @@ c1 <- coef(lm )["I(1/sqrt(plain_p.scores$ghost_time))"]
 plain_strength <- function(t) { c0 + c1/sqrt(t) }
 plain_strength_inv <- function(s) { (c1 / (s-c0))^2 }
 
-par(mfrow=c(1,2))
+par(mfrow=c(2,1))
 
 # TODO: actualize data
 
@@ -33,8 +33,11 @@ distr.data <- read.delim("results/20130604-1543-root-exchange.txt", row.names=NU
 distr.data2 <- distr.data[c(wanted_cols)]
 distr.data_melted <- melt(distr.data2, id=c("ghost_time"))
 distr.scores <- cast(distr.data_melted, ghost_time~variable, mean)
+
 times <- unique(distr.scores$ghost_time)
 times2 <- seq(min(times),max(times))
+
+distr.scores$speedup <- plain_strength_inv(distr.scores$score)/times
 
 # Absolute strength
 plot(times, distr.scores$score, type="o",

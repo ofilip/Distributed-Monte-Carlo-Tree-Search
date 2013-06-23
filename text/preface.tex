@@ -1,38 +1,53 @@
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-\todo{Zatím jen nápady, přepsat, až bude zbytek hotový}
+Monte-Carlo tree search turned out as an algorithm reaching unprecedent results in playing a
+game of Go \cite{Chaslot2008} and variety of other games. Accordingly to properties of the
+algorithm, Monte-Carlo tree search has been suggested as an algorithm suitable for canonical 
+multi-robot
+application. In our thesis, we aim on design and experimental evaluation of algorithms based on
+Monte-Carlo tree search suitable for the canonical multi-robot application.
 
+For simplicity, we consider a game with a team of cooperative players as an environment
+simulating canonical multi-robot application. But in the cooperation
+of the players, we respect nature of real-life problems, such as limited communication,
+transmission delays or communication failures. On the other hand, we work with fully
+observable discrete environment what .
 
+Initial point of our research was review of parallelization approaches to Monte-Carlo tree 
+search \cites{Cazenave2007}{Chaslot2008}{Teytaud2008} what gave us a solid cornerstone for the
+further work. Second source of initial inspiration, especially for discussion on communication
+between agents, were distributed constraint optimization algorithms \cite{Zivan2009}. Finally,
+the third influence for the thesis were articles dealing with application of Monte-Carlo tree
+search to a domain of a game of Ms Pac-Man \cites{Ikehata2011}{Nguyen2011}.
 
-Problem of the coordination of a team of agents is widely discussed topic.
-Designing of algorithms for such a coordination meets various difficulties 
-including positional information interchanging, distribution of plan computation, 
-communication reliability or system failures.
+The thesis is divided into four chapters. Chapter \ref{chap_mas} contains general notes on games 
+with team
+of cooperative agents, including definition of such games and discussion on inter-agent
+communication. 
 
-Monte-Carlo Tree Search is a best-first search algorithm which has
-reached unprecedent results in playing a game of Go.
-Accordingly to the proven qualities of the algorithms further works have
-been dealing with it finding applications of the algorithm in various
-domains.
-Recently a work on team coordination using MCTS has been published by
-Nguyen and Thawonmas \cite{Nguyen2011}.
-MCTS is applied to controlling a team of ghosts in well-known Pacman
-game in this paper.
-Their computer player won the CEC 2011 Ms Pac-Man vs Ghost Team
-Competition \cite{PacmanVsGhosts}.
+In Chapter \ref{chap_mcts}, relevant research on Monte-Carlo tree search is reviewed. 
+In particular, the algorithm itself is described in Section \ref{sec_mcts_description}
+\todo{konvergence, mcts pro 2 hrace?} and approaches to parallelization of Monte-Carlo tree
+search are reviewed in Section \ref{sec_parallel_mcts}. 
 
-\begin{itemize}
-\item Nguien's ghosts runs simple instance of algorithm sharing tree
-over all agents in team, no communication needed since joint moves are
-calculated and passed to the environment
-\item Our aim is to develop algorithms based on MCTS giving the autonomy
-to agents what brings necessity of communication between agents
-\item We consider the domain of Ms Pac-Man vs Ghost Team Competition
-suitable for evaluation of the algorithms because the game of Ms Pac-Man
-is well-known, frame
-\item
-\end{itemize}
+Once Monte-Carlo tree search is
+reviewed and games with teams are defined, we propose our distributed algorithms Chapter
+\ref{chap_dmcts_design}. Next to simple algorithms serving for comparison (independent agents,
+joint-action exchanging agents), we propose two algorithms based on existing parallel
+algorithms (root exchanging agents, simulation results exchanging agents) and one algorithm
+in which we attempted to create an algorithm having good properties of previous two algorithm
+but suppressing bad ones. General properties and comparison of the algorithms are discussed 
+in Section \ref{sec_dmcts_comparison}.
 
-
+Chapter \ref{chap_evaluation} contains evaluation of proposed algorithms on a domain of a
+game of Ms Pac-Man with usage of Ms Pac-Man vs Ghosts framework \cite{PacmanVsGhosts}. In
+particular, we describe the framework in Section \ref{sec_pacman_vs_ghosts} together with rules
+of the game and simplifications of the game we have done for our purpuses. We give relevant
+notes on implementation of Monte-Carlo tree search on the chosen domain and simulation of
+distributed environment with real-world properties (communication failures etc.) in Section 
+\ref{sec_implementation_notes}. Before we have run evaluational experiments, we devoted some time for
+basic tunings of parameters of Monte-Carlo tree search (Section \ref{sec_mcts_tuning}).
+Finally, we propose results of the experiments together with discussion on them and comparison
+of the algorithms in terms of the results in Section \ref{sec_dmcts_experiments_comparison}.
 

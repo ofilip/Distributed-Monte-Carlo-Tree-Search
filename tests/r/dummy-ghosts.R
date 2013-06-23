@@ -58,7 +58,7 @@ lines(times, sdummy.scores$score, type="o",
 lines(times2, plain_strength(times2), lty=2)
 
 legend("topright", 
-	lty = c(1,2), 
+	lty = c(1,1), 
 	pch = c(18,20), 
 	col = c("red","green"),
 	legend = c("Independent agents (equal random seeds)",
@@ -75,7 +75,7 @@ lines(times, plain_strength_inv(sdummy.scores$score)/times,
 abline(h=1,lty=2)
 
 legend("topright", 
-	lty = c(1,2), 
+	lty = c(1,1), 
 	pch = c(18,20), 
 	col = c("red","green"),
 	legend = c("Independent agents (equal random seeds)",

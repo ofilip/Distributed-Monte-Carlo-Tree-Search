@@ -4,11 +4,11 @@ library(gplots)
 source(file="r/utils.R")
 
 wanted_cols <- c("score", "ghost_time")
-export=TRUE
+export=FALSE
 
 if (export) {
 	setEPS()
-	postscript(file="../text/img/simulation-passing-strength.eps", width=6, height=4.5)
+	postscript(file="../text/img/simulation-passing-strength.eps", width=6, height=9)
 }
 
 # reference plain MCTS data
@@ -24,11 +24,11 @@ c1 <- coef(lm )["I(1/sqrt(plain_p.scores$ghost_time))"]
 plain_strength <- function(t) { c0 + c1/sqrt(t) }
 plain_strength_inv <- function(s) { (c1 / (s-c0))^2 }
 
-par(mfrow=c(1,2))
+par(mfrow=c(2,1))
 
 # Distributed algorithm data
-distr.data <- read.delim("results/20130612-2358-simulation-passing.txt", row.names=NULL)
-distr.data2 <- distr.data[c(wanted_cols)]
+distr.data <- read.delim("results/20130619-2349-simulation-passing.txt", row.names=NULL)
+distr.data2 <- distr.data[c(wanted_cols,"channel_speed")]
 distr.data_melted <- melt(distr.data2, id=c("ghost_time"))
 distr.scores <- cast(distr.data_melted, ghost_time~variable, mean)
 times <- unique(distr.scores$ghost_time)

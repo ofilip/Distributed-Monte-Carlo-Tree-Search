@@ -21,6 +21,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
     private long totalSimulations = 0;
     private long totalReceivedRootsSize = 0;
     private final static GHOST VERBOSE_GHOST = GHOST.SUE;
+    private int last_sent = 0;
 
     public RootExchangingAgent(final DistributedMCTSController controller, final GHOST ghost) {
         super(controller, ghost);
@@ -68,22 +69,25 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
     }
 
     private void sendMessages() {
-        EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> roots = extractRoots();
+        if (last_sent==0) {
+            EnumMap<MOVE, Map<EnumMap<GHOST, MOVE>, Long>> roots = extractRoots();
 
-        /* send messages only if next turn is ghosts turn */
-        if (roots==null) return;
+            /* send messages only if next turn is ghosts turn */
+            if (roots==null) return;
 
-        if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==VERBOSE_GHOST) {
-            System.out.printf("[%s:%s] Sending root: %s\n", ghost, controller.currentVirtualMillis(), roots);
-            System.out.printf("%s", mctree.toString(mctree.root().halfstep()? 2: 1));
+            if (verboseLevel.check(VerboseLevel.DEBUGGING)&&ghost==VERBOSE_GHOST) {
+                System.out.printf("[%s:%s] Sending root: %s\n", ghost, controller.currentVirtualMillis(), roots);
+                System.out.printf("%s", mctree.toString(mctree.root().halfstep()? 2: 1));
+            }
+
+            RootMessage message = new RootMessage(roots);
+            //System.err.printf("[%s:%s] sending %s\n", ghost, controller.currentVirtualMillis(), message);
+            for (MessageSender sender: messageSenders.values()) {
+                sender.sendQueueFlushUnsent(RootMessage.class);
+            }
+            broadcastMessage(Priority.MEDIUM, message, true);
         }
-
-        RootMessage message = new RootMessage(roots);
-        //System.err.printf("[%s:%s] sending %s\n", ghost, controller.currentVirtualMillis(), message);
-        for (MessageSender sender: messageSenders.values()) {
-            sender.sendQueueFlushUnsent(RootMessage.class);
-        }
-        broadcastMessage(Priority.MEDIUM, message, true);
+        last_sent = (last_sent+1)%30; /* Way how to reduce expenses connected with root extraction */
     }
 
     @Override
@@ -97,6 +101,7 @@ public class RootExchangingAgent extends FullMCTSGhostAgent {
 
     @Override
     public MOVE getMove() {
+        last_sent = 0;
         totalReceivedRootsSize += currentReceivedRootsSize();
 
         if (!Utils.ghostsNeedAction(currentGame)) {

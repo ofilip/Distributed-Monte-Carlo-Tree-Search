@@ -59,9 +59,11 @@ public class TreeCutExchangingAgent2 extends FullMCTSGhostAgent {
     }
 
     @Override
-    protected void preTreeAdvancing() {
-        removeAllReceivedSimulations();
-        last_message_received.clear();
+    protected void preTreeAdvancing(boolean willAdvance) {
+        if (willAdvance) {
+            removeAllReceivedSimulations();
+            last_message_received.clear();
+        }
     }
 
     public TreeCutExchangingAgent2(final DistributedMCTSController controller, final GHOST ghost) {
@@ -75,9 +77,11 @@ public class TreeCutExchangingAgent2 extends FullMCTSGhostAgent {
                 }
                 try {
                     /* remove previous cut */
-                    receivedSimulations -= removeReceivedSimulations(agent);
+                    long removed = removeReceivedSimulations(agent);
+                    receivedSimulations -= removed;
 
                     /* apply received cut */
+
                     for (TreeNodeMessage result_message: cut_message.nodeMessages()) {
                         int root_visit_count_before = mctree.root().visitCount();
                         long maskedSimulations = mctree.applyTreeNode(agent.ghost(), result_message.treeMoves(), result_message.simulationResult(), result_message.count());

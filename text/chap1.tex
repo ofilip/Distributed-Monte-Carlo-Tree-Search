@@ -1,19 +1,19 @@
 \chapter{Games with Team of Cooperative Agents}
 \label{chap_mas}
 
-\todo{Název kapitoly, koncepce}
+Before we can start talking about games and coordination of agents playing these games, we need
+to shortly describe what the game is, what forms a team of agents and take a note on the
+coordination of agents of a team. 
 
-\todo{Extraction from the related chapters from \ref{MAS2008}}
-
-\todo{Neúplné algoritmy z DCOP článků}
+In our thesis, we consider fully-observable environment and
+in this chapter, we define perfect-information game, enrich it with teams and discuss the
+coordination of agents.
 
 
 \section{Perfect-Information Game}
 
 
 \label{sec_perfect_information_game}
-
-\todo{Převzato z MAS, doprovodný text}
 
 \todo{Sladit značení a terminologii ve zbytku textu}
 
@@ -24,7 +24,7 @@ environment in which we will talk about \emph{perfect-information game}. Followi
 is based on the definition
 proposed in \cite{MAS2008} and generalized for our purposes (original definition does not
 include posibility of simultaneous play of multiple players and forces a play of exactly one
-player).
+player each turn).
 
 
 \newtheorem*{defgpig}{Definition}
@@ -45,7 +45,7 @@ A (finite) \textbf{perfect-information game} (in extensive form) is a tuple $G =
 
 \item $\chi: S_n \times P \mapsto 2^A \cup \{\lambda\} \setminus \varnothing$ is the action 
  function, which assigns to each choice node and player a set of possible actions, $\lambda \notin
- A$ is a neutral move played by the players not being on turn;
+ A$ is a neutral action played by the players not being on turn;
 
 \item $\sigma: \{(s,a)| s \in S_n, a \in \prod\limits_{i\in P}\chi(s,i)\} \mapsto S$ is the
 successor function, which maps a choice node and an action tuple to a new choice node or
@@ -58,12 +58,12 @@ function for player $i$ on the terminal nodes $S_t$.
 
 \end{itemize}
 
-We say that a perfect-information game is \textbf{turn-based} if each turn at most one player plays a
-move, in other words, if the following restriction on the action function $\chi$ is satisfied:
+We say that a perfect-information game is \textbf{turn-based} if each turn at most one player
+plays an action, in other words, if the following restriction on the action function $\chi$ is satisfied:
 
 \begin{equation}
 \label{eq_turn_based_game}
-\forall s \in S_n |\{i \in P|\chi(s,i) \not= \{\lambda\}\}| \le 1
+\forall s \in S_n \; |\{i \in P|\chi(s,i) \not= \{\lambda\}\}| \le 1
 \end{equation}
 
 Contrariwise we will call a perfect-information game \textbf{simultaneous} if simultaneous
@@ -83,42 +83,53 @@ $u_i(s)$.
 \label{sec_turn_based_game_conversion}
 
 Because Monte-Carlo Tree Search requires turn-based games to ensure the convergence (as discussed in
-section \ref{sec_minimax_convergence}) and our
+Section \ref{sec_minimax_convergence}) and our
 algorithms, which are based on MCTS will be evaluated in the domain of naturally simultaneous game,
 we will need a conversion from a turn-based game to a simultaneous game, which will be described
 here.
 
-We need to expand simultaneous moves to a sequence of single moves. To determine the order of such
-an expansion, we can simply define linear ordering on a set of players. Then each simultaneous move
-is splitted into multiple single-moves, one for each player, which is on turn.
+We need to expand simultaneous actions to a sequence of single actions. To determine the order of such
+an expansion, we can simply define linear ordering on a set of players. Then each simultaneous
+action 
+is splitted into multiple single-actions, one for each player, which is on turn.
 
 There is, of course, a catch in this approach since the turn-based game created by this conversion
 modifies game rules and adds advantage to players which plays later in originally simultaneous turn.
 This is because players playing later have more information than in original simultaneous game
-because they additionally know moves performed by players playing in same simultaneous turn.
+because they additionally know actions performed by players playing in same simultaneous turn.
 
-In MCTS, when playing a simultaneous game, the calculated move will be commited to the simultaneous
+In MCTS, when playing a simultaneous game, the calculated action will be commited to the simultaneous
 game so the imbalance originating from the conversion will not affect the played game but only the
 algorithm itself. We face the decision what ordering on players choose and we distinguish two main
 variants - \emph{optimistic} and \emph{pesimistic expansion}. 
+
+\todo{popis}
+\begin{figure}
+\begin{center}
+\includegraphics[width=12cm]{img/simultaneous_node_expansion.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_simultaneous_node_expansion}
+\end{figure}
 
 Optimistic expansion considers the
 player performing MCTS calculation playing after all other players. This approach is called
 optimistic because the player supposes that other players will play as he expect. On the other hand,
 pesimistic expansion lets the player in MCTS calculations play first and gives other players
-information about his move which is more pesimistic variant for the player.
+information about his action which is more pesimistic variant for the player. Expansion of
+a simultaneous is ilustrated by Figure \ref{fig_simultaneous_node_expansion}.
 
-\todo{Obrazek: rozdil optimistic x pesimistic expansion}
-\todo{TODO}
+
 
 \section{Team Coordination}
 
 \subsection{Games with Teams of Players}
+\label{sec_games_with_teams}
 
 Definition of perferct-information game serves (without further modifications) as an
 environment for \emph{teams of players}. A team of players (or simply a team) is a set of agents
 attempting to reach the best result possible collectively. In other words, agents of a team
-shares the utility. 
+shares the utility function. 
 
 This can be simply applied to a perfect-information game. A team can be represented as a single
 player of a perfect-information game where actions of such a player is joint-action composed of
@@ -128,7 +139,6 @@ with the same utility. Since it is more natural concept allowing the team player
 independent agents, we will use this concept in our thesis. Following definition is a
 formalization of the concept.
 
-\todo{Sjednotit terminologii move vs. action}
 
 \newtheorem*{defpigt}{Definition}
 \begin{defpigt}[Perfect-information game with teams]
@@ -149,9 +159,23 @@ perfect-information game;
 \item $u = (u_1,\ldots,u_m)$, where $u_i: S_t \mapsto \mathbb{R}$ is a real-valued utility
 function for team $i$ on the terminal nodes $S_t$.
 
-\todo{Rozdíl mezi přístupy v předchozím odstavci, komunikace, ...}
+As in case of plain (without teams) perfect-information game, we distinguish turn-based and 
+simultaneous game with teams of players. We say that game with teams is \textbf{turn-based} 
+if only players of a same team play in all nodes. If we consider players of plain game being
+members of virtual distinct teams, such a condition is reneralization of plain turn-based game.
+The condition is formalized by Equation \ref{eq_turn_based_game_with_teams}.
 
-\todo{Simultaneous game pro týmy (pure turn-based x turn-based x simultaneous)}
+\begin{equation}
+\label{eq_turn_based_game_with_teams}
+\forall s \in S_n \; |\{t \in T|\exists i \in \tau^{-1}(t)\;\chi(s,i) \not= \{\lambda\}\}| \le 1
+\end{equation}
+
+Specially, we distinguish 
+\textbf{pure turn-based game} with teams if only one player plays in each node (as requires
+plain turn-based game without teams in Equation \ref{eq_turn_based_game}) and 
+\textbf{weak turn-based game} not satisfying the condition. \textbf{Simultaneous game with
+teams} is a game with teams not satisfying Equation \ref{eq_turn_based_game_with_teams}.
+
 
 \end{itemize}
 
@@ -160,7 +184,23 @@ function for team $i$ on the terminal nodes $S_t$.
 A tuple of actions played by single team $T_a$ in state $S_b$ will be called \emph{joint-action} (formally
 $(a_p^{S_b})_{\tau(p_a)=T_a}$).
 
-\subsection{Communication}
+
 \subsection{Distributed Constraints Optimization (??)}
 
-\section{Conclusion}
+
+\subsection{Communication and Coordination}
+
+Let us consider players of a team as defined in Section \ref{sec_games_with_teams}. Such
+players share the utility function, attempting its maximization. The definifion of
+perfect-information game with teams doesn't talk about the coordination, players are be viewed
+as autonomous agents sharing no information about their intensions or reasoning. But sharing
+such information is natural requirement for a team and is the way how to effectively coordinate
+the players of the team.
+
+Agents can share information by passing messages. In real-world applications, messages are
+transmitted over a communication channel which has limited capacity and may be possibly
+unreliable so it is necessary to consider length of message encoded to a particular form and.
+These properties, in addition, force us considering the delay in transmission.
+
+As an example of usage of message passing between independent agents is the distributed
+constraint optimization problem \cite{Zivan2009}.

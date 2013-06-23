@@ -35,7 +35,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
     }
 
     protected void postTreeInit() {}
-    protected void preTreeAdvancing() {}
+    protected void preTreeAdvancing(boolean willAdvance) {}
     protected void postTreeAdvancing(int steps) {}
 
     private void initializeTree(Game game) {
@@ -73,7 +73,7 @@ public abstract class FullMCTSGhostAgent extends GhostAgent {
             if (mctree.root().ticksToGo()==0) {
                 initializeTree(game);
             } else {
-                preTreeAdvancing();
+                preTreeAdvancing(mctree.root().ticksToGo()==0);
                 int steps = mctree.advanceTree(game.getPacmanLastMoveMade(), lastGhostsMoves);
                 postTreeAdvancing(steps);
             }

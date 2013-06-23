@@ -2,26 +2,18 @@
 \label{chap_dmcts_design}
 
 
-
-\section{Motivation and Problem Definition}
-
-\todo{Upravit podle toho, co bude skutečně v kapitole \ref{chap_mas}}
-
-We have already reviewed the Monte-Carlo Tree Search algorithm and its parallelization in
- Chapter \ref{chap_mcts} and distributed coordination algorithms in Chapter \ref{chap_mas}.
  The purpose of this chapter is design of distributed coordination algorithms based on
  Monte-Carlo Tree Search. Presented algorithms will work with MCTS tree kept indepentently in
- each cooperating agent. The tree will contain full information about actions done by all
- cooperating agents and also agents from opponent teams. This approach is supposed to be
+ each cooperative agent. The tree will contain full information about actions done by all
+ cooperative agents and also agents from opponent teams. This approach is supposed to be
  appropriate for games with small number of players but with increasing of the number of
  players, the branching factor grows and keeping full MCTS tree turns to be ineffective. The
  tree used in distributed algorithms along with general description of common parts of the
- algorithms are described in section \ref{sec_dmcts_common}. Before we will propose the
+ algorithms are described in Section \ref{sec_dmcts_common}. Before we will propose the
  algorithms description, it is necessary to introduce additional notations for this chapter in
  Section \ref{sec_notations_dmcts} and briefly discuss measures used for comparison of
- distributed algorithms in Section \ref{sec_measures_distributed}. \todo{Popis full MCTS stromu
- - zde nebo už v kapitole 1?}
-
+ distributed algorithms in Section \ref{sec_measures_distributed}. 
+ 
 
 
 \section{Useful Notations}
@@ -36,22 +28,24 @@ the team-mates and it will be useful to give a formal definition of one of them,
 
 Let us have a tree $T$ with a set of nodes $N$. \textbf{Tree cut} $C_T$ is a subset of $N$ such that
 there is no path between any ascendant $a$ of a node from $C_T$ and any descendant $d$ of a node from
-$C_T$. In other words, nodes from a tree cut separates a subtree composed of nodes from $C_T$ and
+$C_T$ and no node from $C_T$ is an ascendant of any other node from $C_T$. In other words, nodes from a 
+tree cut separates a subtree composed of nodes from $C_T$ and
 their ascendants from the descendants of nodes from $C_T$. An example of a tree cut is depicted by
 Figure \ref{fig_tree_cut_example}.
 
 \begin{figure}
 \begin{center}
-\missingfigure{Tree Cut Example}
+\includegraphics[width=14cm]{img/tree-cut.eps}
 \end{center}
-\caption{\footnotesize Tree Cut Example}{\footnotesize TODO}
+\caption{\footnotesize Tree Cut Example.}{\footnotesize Yellow nodes form a tree cut which
+separates ascendants and descendants of the nodes of the cut. Each path from root to leaf
+contains exactly one node from the cut.}
 \label{fig_tree_cut_example}
 \end{figure}
 
 \end{deftreecut}
 
 
-\todo{Obrázek}
 
 
 
@@ -86,15 +80,17 @@ MCTS calculate action. Strength measures say how strong is team guided by an alg
 
 \section{Proposed Algorithms}
 
-\todo{Algoritmy s plným stromem x algoritmy inspirované DCOPy...}
-
+In the following subsections, proposed distributed MCTS algorithms for games with team of cooperative agents
+are described together with discussion on their general properties. Since we design algorithms
+for distributed MCTS-planning, the algorithms drive particular agents and so all algorithms
+have the work \emph{agents} in their name.
 
 \subsection{Backbone of the Distributed Algorithms}
 \label{sec_dmcts_common}
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$DistributedMCTSLoop(tree)$\label{alg_dmcts_common}}
+\caption{$DistributedMCTSLoop(tree)$ - general distributed MCTS loop\label{alg_dmcts_common}}
 \KwData{$tree$\ldots MCTS tree}
 \KwResult{$tree$ is enlarged by newly expanded nodes and results of playouts performed are
 added. Additional actions are performed during message receiving.
@@ -125,8 +121,6 @@ seed intialization. Following subsections describe particular distributed algori
 
 
 \subsection{Independent Agents}
-
-\todo{Okomentovat, proč se algoritmy jmenují Agents}
 
 We will first describe the algorithm which is supposed to be the weakest one since no
 communication between agents is performed. It serves as lower bound on performance of the
@@ -170,11 +164,11 @@ which is being already transmitted) are flushed and the recent one is enqueued.
 \subsection{Root Exchanging Agents}
 \label{sec_root_exchanging_agents}
 
-Joint-action exchanging agents are voting for the best joint-move but the tree from which the
-joint-move is calculated contains only simulations done by the winning agent. Root exchanging
+Joint-action exchanging agents are voting for the best joint-action but the tree from which the
+joint-action is calculated contains only simulations done by the winning agent. Root exchanging
 agents increase the strength of chosen action by merging of strengths of all possible 
 joint-actions calculated by
-all agents and so resulting joint-move is based on results from trees of all team-mates. This
+all agents and so resulting joint-action is based on results from trees of all team-mates. This
 strategy is based on root parallelization algorithm described in Section
 \ref{sec_root_parallelization}.
 
@@ -198,18 +192,18 @@ game if current state was created by splitting simultaneous turn (see Section
 \ref{sec_turn_based_game_conversion}). We resolve this situation by extending definition of the
 root for turn-based games with multiple teams. 
 
-For multi-player games, the algorithm will exchange \emph{Next-Action Tree Cut} of a player $P$
-being on turn. The Next-Action Tree Cut is defined as follows:
+For multi-player games, the algorithm will exchange \emph{next-action tree cut} of a player $P$
+being on turn. The next-action tree cut is defined as follows:
 
 \newtheorem*{defnextactiontreecut}{Definition}
-\begin{defnextactiontreecut}[Next-Action Tree cut]
+\begin{defnextactiontreecut}[Next-action tree cut]
 Let us have a tree cut $C_1$ composed of nodes in which player $P$ is on turn and which are the first
 nodes occuring on the path from tree root to its leaves. For all ascendants $C_1$, any player
 different from $P$ is on turn. Then, we will call a set of children of nodes from $C_1$, which
-also composes a tree cut, a \textbf{Next-Action Tree Cut} for a player $P$.
+also composes a tree cut, a \textbf{next-action tree cut} for a player $P$.
 
-Algorithm \ref{alg_next_action_tree_cut_construction} describes construction of Next-Action
-Tree Cut.i \emph{Popsat slovně algoritmus}
+Algorithm \ref{alg_next_action_tree_cut_construction} describes construction of next-action
+tree cut. \todo{Popsat slovně algoritmus}
 
 \end{defnextactiontreecut}
 
@@ -219,19 +213,19 @@ Tree Cut.i \emph{Popsat slovně algoritmus}
 \KwData{$tree$ \ldots MCTS tree \\
 $player$ \ldots player constructing }
 \KwResult{Algorithm returns the Next-Action Tree Cut of $tree$ for a player $P$}
-$cut \leftarrow \{Root(tree)\}$ \tcp*[h]{cut growing from root}\;
-$next\_action\_cut \leftarrow \{\}$ \tcp*[h]{final next action cut}\;
-\While{$cut \not= \{\}$}{
-    \ForEach{$node \in cut$}{
-        $cut \leftarrow cut \setminus \{node\}$\;
+$C_{curr} \leftarrow \{Root(tree)\}$ \tcp*[h]{cut growing from root}\;
+$C_{next\_action} \leftarrow \varnothing$ \tcp*[h]{final next action cut}\;
+\While{$C_{curr} \not= \varnothing$}{
+    \ForEach{$node \in C_{curr}$}{
+        $C_{curr} \leftarrow C_{curr}  \setminus \{node\}$\;
         \eIf{$OnTurn(node)=P$}{
-            $next\_action\_cut \leftarrow next\_action\_cut \cup Children(node)$\;
+            $C_{next\_action} \leftarrow C_{next\_action} \cup Children(node)$\;
         }{
-            $cut \leftarrow cut \cup Children(node)$\;
+            $C_{curr} \leftarrow C_{curr} \cup Children(node)$\;
         }
     }
 }
-\Return{$next\_action\_cut$}
+\Return{$C_{next\_action}$}
 \end{algorithm}
 
 Next-Action Tree Cut is being sent as array containing pairs of visit counts of nodes and
@@ -252,7 +246,7 @@ not on turn can be used with benefit if no communication can be done during the 
 \subsection{Simulation Results Exchanging Agents}
 
 \emph{Simulation Results Exchanging Agents} directly follow the idea of Simulation Results
-Passing algorithm described in \ref{simulation_passing}. Since Simulation Results Passing
+Passing algorithm described in \ref{sec_simulation_passing}. Since Simulation Results Passing
 algorithm is designed for cluster environment, we have to deal with two main differences in
 distributed coordination environment which are agents' independent reasoning and limited
 and potentially unreliable communication. 
@@ -360,9 +354,12 @@ Tree cut is kept even if its maximum byte size is not yet reached and after each
 iteration, the tree cut is enlarged if maximum size has not yet been reached and appropriate
 node in the cut for the expansion exist. To increase the representativeness of expanded node,
 the expansion is not expanded immediately when it has children in the tree but when it reaches
-sufficient visit count, denoted as $C_cut$. Progressive visit count tree cut building is
-depicted by algorithm \ref{alg_progressive_visit_count_tree_cut_construction}. Tree-cut
+sufficient visit count, denoted as $C_{cut}$. Progressive visit count tree cut building is
+depicted by Algorithm \ref{alg_progressive_visit_count_tree_cut_construction}. Tree-cut
 exchange algorithm itself depicts Algorithm \ref{alg_tree_cut_exchange}.
 
 \todo{Popsat mechanismus "přepisování" řezů}
 \todo{pseudocode}
+
+\section{Comparison of the Algorithms}
+\label{sec_dmcts_comparison}
