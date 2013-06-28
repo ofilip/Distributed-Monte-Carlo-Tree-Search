@@ -27,9 +27,13 @@ reward of 200 points for first eaten ghost and 400, 800 and 1600 points for othe
 Eaten ghost starts in lair again. Exact rules of the Ms Pac-Man vs Ghosts game can be found on the project webpage. 
 
 The game was
-additionally modified for purposes of testing of our algorithms. Biggest change of rules is
+additionally modified for purposes of testing of our algorithms. 
+Our goal isn't to create strong player for Ms Pacman vs Ghosts competition but we want to test
+proposed coordination algorithms and for such purposes, simplier testing environment giving
+clearer results suits better.
+Biggest change of rules is
 removing power pills from the mazes together with entire edible ghosts mechanism. Reason for
-this decision is lowering the variability of results. When Pac-Man is pursuing edible ghosts,
+this decision is lowering the variance of results. When Pac-Man is pursuing edible ghosts,
 there is big difference in score when it eats different number of ghosts. For the same reason
 three more modifications have been done. Pac-Man has only one life, game ends after the first
 maze is cleared and random ghosts' reversal is suppressed. Random ghosts' reversal is a rule of
@@ -62,8 +66,6 @@ restricted. Additional rule on ghosts' movement is that ghosts cannot turn back 
 of a path nor at a crossroad. That means that once a ghost chooses one way from a crossroad, it
 has to continue to the end of the path. Despite of that, ghosts have to play an action on each
 segment even though there is only one action to choose from.
-
-\todo{Porovnat Pac-Mana s pursuit-evasion game}
 
 So Pac-Man and ghosts play their actions at each segment of the maze but they, of course, have
 to play an action in a limited time. Ms Pac-Man vs Ghosts framework provides by default 40 ms
@@ -103,10 +105,8 @@ league  in which all controllers commited into the website compete. Thanks to th
 results we were able to contact authors of the league leading Pac-Man and obtained source code
 of ICEP\_IDDFS \cite{IcepIddfs} what is controller based on iterative deepening depth-first
 search approach. We haven't received more details about the controller. However, experiments
-running against it give promising results and so the controller was chosen as an opponent to
+running against it have given promising results and so the controller was chosen as an opponent to
 compare with.
-
-\todo{Porovnat výkonnost starter controllerů}
 
 
 
@@ -115,7 +115,8 @@ compare with.
 
 In this section, we will discuss important implementation details of our controllers. As
 mentioned in previous section, framework used for the experiments is written in Java and so
-controllers are also supposed to be written in this language.
+controllers are also supposed to be written in this language. We provide additional information
+about software work in Attachment 2.
 
 
 \subsection{Tree Construction}
@@ -137,7 +138,7 @@ conversion is not done on the unterlying Ms Pac-Man game itself but only for pur
 expansion of nodes. When a simultaneous node is being expanded, instead of creating of a child
 node for each pacman-ghosts joint-action, only children for each pacman action is created and
 each of this children is immediately expanded with ghosts actions. By this approach,
-simultaneous nodes are splitted accordingly to optimistic expansion since in such a tree the
+simultaneous nodes are splitted according to optimistic expansion since in such a tree the
 ghosts suppose to know the action of Pac-Man played in the simultaneous node. Our
 implementation, in addition, supports the pesimistic expansion where ghosts actions are
 expanded first in simultaneous nodes.
@@ -151,7 +152,7 @@ When computing the MCTS tree for Pac-Man, this reduction does not bring any diff
 the player controlled by the algorithm follows additional rules. But if we consider Pac-Man
 playing against the MCTS algorithm, it may play an action not corresponding with these rules what
 directly leads to desynchronization between game state and built tree. Next time any ghost
-reaches  a crossroad and the desynchronization is detected, ghost play an action accordingly to
+reaches  a crossroad and the desynchronization is detected, ghost play an action according to
 the tree but then instead of using a subtree defined by the action for further computations,
 new tree is built from scratch.
 
@@ -239,8 +240,8 @@ object is modelled as simple hidden Markov model depicted by Figure \ref{fig_hmm
 \begin{center}
 \includegraphics[width=8cm]{img/hmm_reliability.eps}
 \end{center}
-\caption{\footnotesize Communication reliability object modelled using hidden Markov model
-used in our experiments.}{\footnotesize}
+\caption{\footnotesize Communication reliability object.}{\footnotesize Communication 
+reliability is modelled using hidden Markov model.}
 \label{fig_hmm_reliability}
 \end{figure}
 
@@ -269,7 +270,7 @@ U}$ is used in HMM model.
 
 
 
-\section{Methodics}
+\section{Experiments Setup and Methodics}
 \label{sec_methodics}
 
 All experiments were performed in virtualized environment of CentOS release 6.3 (Final) having
@@ -296,7 +297,8 @@ work are also generated with R.
 \begin{center}
 \includegraphics{img/mcts-tuning.eps}
 \end{center}
-\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\caption{\footnotesize Tuning of MCTS parameters.}{\footnotesize Top - tuning of UCT
+coefficient, middle - tuning of maximum simulation depth, bottom - death\_weight tuning.}
 \label{fig_mcts_tuning}
 \end{figure}
 
@@ -311,10 +313,10 @@ We first tuned $C$, with initial setting of simulation depth 200 and death weigh
 showed us significant improvements with $C$ between 0.05 and 0.2 so we decided to use $C=0.1$.
 
 Secondly, we tuned maximum depth of simulations, with already tuned $C=0.1$ and initial
-$death\_weight=0.25$. Accordingly to the test, we set simulation depth to 120.
+$death\_weight=0.25$. According to the test, we set simulation depth to 120.
 
 Finally, we tuned $death\_weight$ parameter used in evaluation formula with already tuned MCTS
-parameters $C$ and simulation depth. Accordingly to the test, best values of the parameter are
+parameters $C$ and simulation depth. According to the test, best values of the parameter are
 between 0.3 and 1.0. During the evaluation of the test, some experiments with
 $death\_weight=0.25$ were performing and a score with this $death\_weight$ didn't differ much,
 we decided not to repeat the experiment with better setting of the parameter and run all tests
@@ -325,18 +327,20 @@ with $death\_weight=0.25$.
 \section{Comparison of the Algorithms}
 \label{sec_dmcts_experiments_comparison}
 
-\todo{Okomentovat hodnoty simulations-per-second}
-
 For distributed MCTS, three basic tests were performed. At first, strength of an algorithm
 depending on computational time (length of single tick) with times from 10 ms to 200 ms, 100\%
 reliable channel and channel speed fixed to a value of expected optimal communication
 requirements. Second
 test was strength in dependence on channel speed with fixed time set to 40 ms. Range of speeds
 used depends on expected requirements on the communication so values
-vary between tests. Channel speeds are scaled exponentially with values from $2^{lb}$ to
+vary between tests. 
+When we talk about average strength-speedup of some algorithm, we mean the average of
+strength-speedups measuress for all measured computational times (10 ms-200 ms, stepping by 10
+ms).
+Channel speeds are scaled exponentially with values from $2^{lb}$ to
 $2^{ub}$ for some algorithm-dependent values $lb,ub \in \mathbb{R}$.
 
-We recall that the aim of the ghosts is minimization of Pac-Man's score so lesser score indicates
+We recall that the aim of the ghosts is minimization of Pac-Man's score so lower score indicates
 better performance of the ghosts.
 
 Next to the final score, we measured various other characteristics, such as average number of simulations
@@ -349,9 +353,12 @@ of communication. These characteristics simplified analysis of behaviour of the 
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=12cm]{img/plain-mcts-strength.eps}
+\includegraphics[width=14cm]{img/plain-mcts-strength.eps}
 \end{center}
-\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\caption{\footnotesize Plain MCTS strength.}{\footnotesize Red and green line shows strength 
+of centralized MCTS with pesimistic and optimistic simultaneous nodes expansion. Dashed line is
+a fit of data of red data to $c_0 + { c_1 \over \sqrt(t) }$. This fit is used for calculation
+of strength-speedup of distributed algorithms.}
 \label{fig_plain_mcts_strength}
 \end{figure}
 
@@ -364,9 +371,9 @@ game. Average number of simulations calculated per second by plain MCTS algorith
 This number will be also used for comparison of algorithm.
 
 Figure \ref{fig_plain_mcts_strength} depicts results of plain MCTS running on single processor.
-We tested both optimistic and pesimistic expansion of simultaneous nodes. Since results didn't 
-show a difference in performance of MCTS using these expansion, we have chosen, without
-additional reasoning, a pesimistic expansion for further experiments.
+We tested both optimistic and pesimistic expansion of simultaneous nodes. Results haven't
+showed a difference in performance of MCTS using these expansion. We have finally chosen
+the pesimistic expansion for further experiments.
 
 A shape of the curve connecting measured points in the figure does not follow decreasing
 progression which is, of course, caused by measurement error and local minima overcame by the
@@ -376,21 +383,22 @@ calculate such a function by polynomial regression. We fitted measured data of p
 pesimistic expansion on polynomial function $S(t) = c_0 + { c_1 \over \sqrt{t} }$, where $S$ stands
 for strength (or score), $c_0,c_1$ are fitted
 coefficients and $t$ is length of tick (time for computation). Form of $S(t)$ were suggested
-accordingly to shape of plotted data. The fitted function is drawn is
+according to shape of plotted data. The fitted function is drawn in
 the figure as dashed curve. Once we know the regression of the plain MCTS strength, we can
 simply calculate strength-speedup with usage of inverse function of $S(t)$.
 
-\begin{multline}
+\begin{equation}
 %\begin{align}
 %    &\begin{aligned}
-        strength\mhyphen speedup(score, time) = {{ S^{-1}(score) } \over time }\;
-        \\
+        strength\mhyphen speedup(score, time) = {{ S^{-1}(score) } \over time }\\
+        \end{equation}
+        \begin{equation}
 %    \end{aligned}\\
 %    &\begin{aligned}
         \mathrm{where}\;\;S^{-1}(score) = {\left({c_1 \over {score - c_0}}\right)}^2
 %    \end{aligned}
 %\end{align}
-\end{multline}
+\end{equation}
 
 
 
@@ -408,8 +416,9 @@ simply calculate strength-speedup with usage of inverse function of $S(t)$.
 Independent agents does not perform any communication. Each of them build an independent MCTS
 tree. The trees are synchronized by having same random seed for a construction of trees and so
 trees are, after same number of interations, equal. For this algorithm, we expected strength
-speedup approximately 1.0 or a bit lesser in case that the same-random-seed synchronization
-doesn't always synchronize agents' actions.
+speedup approximately 1.0 or a bit lower (each agent usually manages to calculate slightly
+different number of simulations what may lead to different calculated action and thus to
+invalid synchronization).
 
 For comparison, we tested also the independent agents algorithm with distinct random seeds.
 Results are depicted by Figure \ref{fig_independent_agents_strength}. Average strength speedups
@@ -418,9 +427,6 @@ expectations.
 
 Since there is no communication in algorithms, no further tests with altering communication
 channel speed and channel reliability were done.
-
-
-\todo{t-test na rozlišení významnosti rozdílu}
 
 
 \subsection{Joint-Action Exchanging Agents}
@@ -433,16 +439,14 @@ channel speed and channel reliability were done.
 \label{fig_action_exchanging_strength}
 \end{figure}
 
-\todo{Doplnit avg strength-speedup}
-
 Joint-action exchanging agents serves for comparing more complex coordination methods with the
 simplest imaginable one. Particular agents use only simulations calculated by themselves and
 the only way how the algorithm can outperform plain MCTS is by choosing the best of local
-minima calculated by agents. However, accordingly to experiments, the algorithm performance was
-at the level of plain MCTS and independent agents, with strength-speedup \emph{XXX}.
-Performance of the algorithm ilustrates Figure \ref{fig_action_exchanging_strength}. Since
-the joint-action exchange doesn't bring performance growth, measures with altering
-communication channel settings were not performed.
+minima calculated by agents. Surprisingly, the algorihm is quite successful and the mechanism
+of voting for the best action reached a strength speedup of 1.73. This result overcame our
+expectations.
+
+\todo{Zavislost na sirce kanalu a reliability}
 
 
 \subsection{Root Exchanging Agents}
@@ -457,15 +461,15 @@ communication channel settings were not performed.
 
 \todo{Vše přepočítat, uvést počet simulací za sekundu,...}
 
-Accordingly to good results of root parallelization algorithm referred in Section
+According to good results of root parallelization algorithm referred in Section
 \ref{sec_parallel_mcts_comparison}, we expected good behaviour of an algorithm based on this
 parallelization. Root exchanging agents reached average strength speedup 2.48 (average strength
 efficiency 0.62)) 
 what is below our
 expectation. Root parallelization tests performed on a domain of the game of Go
 \cite{Chaslot2008} showed results of strength efficiency around 1. The difference may be caused
-by different game played. In both root parallelization and root exchanging agents algorithm,
-each thread/agent compute own tree doing the same exploration of an empty tree. In opposite,
+by different game played. In both root parallelization and root exchanging agents algorithms,
+each thread/agent computes own tree doing the same exploration of an empty tree. In opposite,
 plain MCTS does only one exploration and so remaining computational time is used for deeper
 exploration. The exploration is probably more important for Ms Pac-Man game and so the
 disadvantage of shallower exploitation shows itself by lesser strength efficiency. Expenses of
@@ -486,6 +490,18 @@ handling of messages in our implementation is below 0.2\% of total time so \todo
 
 \subsection{Simulation Results Passing Agents}
 
+The agents share full information about the performed simulations. In our implementation, the
+ghosts need 256kB/s to reach a full performance of the algorithm, which is, expressed as
+strength speedup, 1.60 in average. The algorithm performs worse than joint-action exchanging
+agents. Expenses of such massive sharing among all trees are too high not only for requirements
+on the width of communication channels but also for the amount of calculated simulations which
+is reduced by approximately 1/3. Experimental results confirmed that this approach is robust
+against communication failures. According to the experiments, the strength speedup remains
+over 1.5 for the channel reliability 0.6 and higher. Results are ilustrated by Figures
+\ref{fig_simulation_passing_strength}, \ref{fig_simulation_passing_channel_speed} and
+\ref{fig_simulation_passing_unreliable}.
+
+
 \begin{figure}
 \begin{center}
 \includegraphics{img/simulation-passing-strength.eps}
@@ -496,11 +512,20 @@ handling of messages in our implementation is below 0.2\% of total time so \todo
 
 \begin{figure}
 \begin{center}
-\includegraphics{img/simulation-passing-sims-per-sec.eps}
+\includegraphics{img/simulation-passing-channel-speed.eps}
 \end{center}
 \caption{\footnotesize Lorem ipsum}{\footnotesize }
-\label{fig_simulation_passing_sims_per_sec}
+\label{fig_simulation_passing_channel_speed}
 \end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics{img/simulation-passing-unreliable.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_simulation_passing_unreliable}
+\end{figure}
+
 
 \subsection{Tree-Cut Exchanging Agents}
 
@@ -521,6 +546,38 @@ handling of messages in our implementation is below 0.2\% of total time so \todo
 \label{fig_tree_cut_strength}
 \end{figure}
 
-\subsection{Comparison}
+\begin{figure}
+\begin{center}
+\includegraphics{img/tree-cut-unreliable.eps}
+\end{center}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\label{fig_tree_cut_unreliable}
+\end{figure}
 
-\section{Conclusion}
+\subsection{Comparison and Conclusion}
+
+In Table \ref{tab_dmcts_comparison}, we provide synoptic comparison of the algorithms.
+All algorithms have good robustness against communication failures. What differs is strength of
+the algorithms (compared according to the results of the tests on Ms Pac-Man game) and
+communication requirements. We consider root exchanging agents algorithm as the winner of
+tests since it reached the best value of strength-speedup together with log requirements of
+amount of communication.
+
+\begin{table}[h]
+\label{tab_dmcts_comparison}
+\begin{tabular}{r|p{3cm}|p{3cm}|p{3cm}}
+  & strength (speedup) & \parbox{3cm}{communication \\ requirements} & \parbox{3cm}{failure \\ robustness} \\
+  \hline
+  Independent agents & very bad (0.97) & no & - \\
+  \hline
+  Joint-action ex. ag. & bad (1.73) & very low & very good \\
+  \hline
+  Root ex. agents & good (..) & low & good \\
+  \hline
+  Sim. results passing ag. & bad (1.60) & very high & good \\
+  \hline
+  Tree-cut ex. agents & medium (2.07) & \parbox{3cm}{medium\\(scalable)} & \parbox{3cm}{good\\(scalable)} \\
+  \hline
+\end{tabular}
+\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\end{table}

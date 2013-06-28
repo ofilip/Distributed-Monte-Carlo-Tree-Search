@@ -8,7 +8,7 @@ export=FALSE
 
 if (export) {
 	setEPS()
-	postscript(file="../text/img/root-exchange-channel-speed.eps", width=6, height=4.5)
+	postscript(file="../text/img/root-exchange-unreliable.eps", width=6, height=4.5)
 }
 
 # reference plain MCTS data
@@ -31,7 +31,7 @@ distr.data2 <- distr.data[c(wanted_cols)]
 distr.data_melted <- melt(distr.data2, id=c("ghost_time","ru_prob"))
 distr.scores <- cast(distr.data_melted, ghost_time+ru_prob~variable, mean)
 scores20 <- distr.scores[distr.scores$ghost_time==20,]
-scores40 <- distr.scores[distr.scores$ghost_time==20,]
+scores40 <- distr.scores[distr.scores$ghost_time==20,]	
 
 # Absolute strength
 ##plot(times, distr.scores$score, type="o",

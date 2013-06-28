@@ -18,7 +18,7 @@ data <- data[c("score", "ghost_ucb_coef", "ghost_sims_per_sec")]
 melted_data <- melt(data, id=c("ghost_ucb_coef"))
 scores <- cast(melted_data, ghost_ucb_coef~variable, mean)
 plot(scores$ghost_ucb_coef, scores$score, log="x", type="o",
-	main="Tuning of UCB1 coefficient",
+	main="Tuning of UCT coefficient",
 	xlab="UCB1 coefficient",
 	ylab="Average score",
 	ylim=c(800,1600),

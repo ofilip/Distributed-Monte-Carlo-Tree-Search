@@ -7,13 +7,12 @@ export=TRUE
 
 if (export) {
 	setEPS()
-	postscript(file="../text/img/parallel-mcts.eps", width=6, height=4)
+	postscript(file="../text/img/parallel-mcts.eps", width=6, height=3.5)
 }
 
 data <- read.delim("r/parallel-mcts-matrix.txt", row.names=NULL)
-
-barplot(t(as.matrix(data))[2:6,], beside=TRUE, col=rainbow(5),
-	main="Parallel MCTS - strength speedup",
+colors <- c("red", "blue", "green", "yellow", "brown")
+barplot(t(as.matrix(data))[2:6,], beside=TRUE, col=colors,
 	ylab="strength speedup",
 	ylim=c(0,15.5),
 	xlab="thread count",
@@ -26,7 +25,7 @@ legend("topleft", c(
 	"Root parallelization",
 	"Tree parallelization (global mutex)",
 	"Tree parallelization (local mutex)",
-	"Tree parallelization (virtual loss)"), bty="n", fill=rainbow(5)
+	"Tree parallelization (virtual loss)"), bty="n", fill=colors
 )
 box()
 

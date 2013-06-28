@@ -4,7 +4,7 @@ library(gplots)
 source(file="r/utils.R")
 
 wanted_cols <- c("score", "ghost_time")
-export=FALSE
+export=TRUE
 
 if (export) {
 	setEPS()
@@ -27,10 +27,12 @@ plain_strength_inv <- function(s) { (c1 / (s-c0))^2 }
 par(mfrow=c(2,1))
 
 # Distributed algorithm data
+#distr.data <- read.delim("results/20130619-2349-simulation-passing.txt", row.names=NULL)
 distr.data <- read.delim("results/20130619-2349-simulation-passing.txt", row.names=NULL)
 distr.data2 <- distr.data[c(wanted_cols,"channel_speed")]
 distr.data_melted <- melt(distr.data2, id=c("ghost_time"))
 distr.scores <- cast(distr.data_melted, ghost_time~variable, mean)
+distr.scores$speedup <- plain_strength_inv(distr.scores$score)/distr.scores$ghost_time
 times <- unique(distr.scores$ghost_time)
 times2 <- seq(min(times),max(times))
 

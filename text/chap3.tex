@@ -90,7 +90,8 @@ have the work \emph{agents} in their name.
 
 \begin{algorithm}
 \DontPrintSemicolon
-\caption{$DistributedMCTSLoop(tree)$ - general distributed MCTS loop\label{alg_dmcts_common}}
+\caption{$DistributedMCTSLoop(tree)$\label{alg_dmcts_common}}
+\tcc{general distributed MCTS loop}
 \KwData{$tree$\ldots MCTS tree}
 \KwResult{$tree$ is enlarged by newly expanded nodes and results of playouts performed are
 added. Additional actions are performed during message receiving.
@@ -210,6 +211,7 @@ tree cut. \todo{Popsat slovně algoritmus}
 \begin{algorithm}
 \DontPrintSemicolon
 \caption{$BuildNextActionTreeCut(tree, player)$\label{alg_next_action_tree_cut_construction}}
+\tcc{construction of next-action tree cut}
 \KwData{$tree$ \ldots MCTS tree \\
 $player$ \ldots player constructing }
 \KwResult{Algorithm returns the Next-Action Tree Cut of $tree$ for a player $P$}
@@ -294,25 +296,21 @@ directly in MCTS trees but aggregates them adequately to fit the width of the co
 channel. As a side effect of this approach, less calculation with received simulation results
 is required.
 
-\todo{Nepsat v textu názvy zbytečně s velkými písmeny}
 
 Root exchanging agents algorithm constructs and sends the next-action tree cut. Similarly the
 tree-cut exchanging agents algorithm sends a \emph{visit count tree cut} having following
-properties: entire tree cut can be transmitted during time of one game step and visit counts of
-nodes of the tree cut are similar. To add robustness to the algorithm, size of the tree cut is
-chosen to a value such that the tree cut can be transmitted multiple times during the
-one step calculation. We will denote the ratio between the byte size of the tree cut and bytes
-transmitted during a turn as $C_{red}$ (\emph{red} for redundancy).
+properties: entire tree cut can be transmitted multiple times during time of one game step and 
+visit counts of nodes of the tree cut are similar. Let us denote $C_{cut}$ the number of tree
+cuts transmitted per a game step. Then more cuts transmitted per a game step, more
+robust our algorithm is and more recent simulations are transmitted - last cut has to be sent
+at most $t = {game step length \over C_{cut}}$ seconds before the end of the game step thus 
+algorithm regrets transmission of
+simulations performed during last $t$ seconds (at least ${ 1 \over C_{cut} }\%$ of simulations
+is not transmitted).
 
-Tree-cut exchanging ghosts use different way of transmission of the tree cut. Root exchanging
-ghosts send entire tree cut in one message while tree-cut exchanging ghosts send the tree cut
-node by node what again increases the robustness because if one message is lost, only a small
-part of information is lost which can be received next time the tree cut is transmitted or it
-is calculated afterwards by receiving agent because the visit count node to which the lost node 
-would be
-applied is lesser and so UCT mechanism will lead the selection to subtree below this node. Each
-node of the tree cut is transmitted as the triplet of path leading to the node, its value and
-the visit count.
+Similarly as root exchanging agents, tree-cut exchanging agents send a tree cut once a sending
+queue is almost empty (all messages would be sent during next simulation). At that moment, a
+tree cut is constructed and pushed at the end of the queue.
 
 We define the visit count tree cut by introducing pseudocode for its construction, Algorithm
 \ref{alg_visit_count_tree_cut_construction}. Algorithm starts with a tree cut containing only
@@ -323,6 +321,7 @@ is reached.
 \begin{algorithm}
 \DontPrintSemicolon
 \caption{$BuildVisitCountTreeCut(tree,byte\_size)$\label{alg_visit_count_tree_cut_construction}}
+\tcc{construction of visit count tree cut}
 \KwData{$tree\ldots MCTS tree$\\
 $byte\_size\ldots desired size of the tree cut in bytes$}
 \KwResult{Visit count tree cut of a given tree possible to transmit using less than
@@ -341,25 +340,58 @@ $curr\_byte\_size \leftarrow ByteSize(Root(tree))$\;
 \Return{$cut$}
 \end{algorithm}
 
-Algorithm \ref{alg_visit_count_tree_cut_construction} builds a visit count tree cut for a
-particular tree. Since the tree is changing after each iteration of MCTS, the tree cut is also
-changing. For the sake of simplicity, the tree cut is fixed once it is built except of visit
-counts of the nodes of the cut. This can lead to situation when transmitted tree cut is not the
-visit count tree cut anymore because later simulation can focus on new undiscovered paths in
-the tree. This property is a payment for a simplicity of the construction.
+Each agent has to keep information about last received tree cut. Once a new tree cut is
+received, an algorithm removes previous one from the tree and applies the new one.
 
-Other difficulty of the construction of visit count tree cut during the MCTS tree construction
-is that the tree may not have enough size. To face this, the tree cut is built progressively.
-Tree cut is kept even if its maximum byte size is not yet reached and after each MCTS
-iteration, the tree cut is enlarged if maximum size has not yet been reached and appropriate
-node in the cut for the expansion exist. To increase the representativeness of expanded node,
-the expansion is not expanded immediately when it has children in the tree but when it reaches
-sufficient visit count, denoted as $C_{cut}$. Progressive visit count tree cut building is
-depicted by Algorithm \ref{alg_progressive_visit_count_tree_cut_construction}. Tree-cut
-exchange algorithm itself depicts Algorithm \ref{alg_tree_cut_exchange}.
 
-\todo{Popsat mechanismus "přepisování" řezů}
-\todo{pseudocode}
-
-\section{Comparison of the Algorithms}
+\section{Conclusion}
 \label{sec_dmcts_comparison}
+
+\todo{Okomentovat scalability trade-off jednotlivých alg.}
+
+In this chapter, we have proposed a total of five synchronization algorithms with various
+communication requirements.
+
+\emph{Independent agents} work with no communication at all, being
+synchronized only by keeping same random seed for building trees. Such agents cannot exceed
+strength speedup value of 1.0 but can be seen as a very simple and unpretentions way of
+coordination without sharing of calculated results.
+
+\emph{Joint-Action exchanging agents} are based on very simple idea of coordination based only
+on exchanging the best currently calculated action requiring only a little amount of
+communication. In addition, the ghosts vote for the action
+being played. Thanks to voting mechanism, algorithm, in addition to simple coordination,
+chooses between local minima and the best one is chosen. So strength speedup may reach a value
+of strength speedup over 1.0 with almost no regret on number of simulations calculated per
+second (joint-action exchanging is very trivial operation taking very little time compared to
+one simulation).
+
+\emph{Root exchanging agents} is an algorithm strongly inspired by \emph{root parallelization}
+of MCTS. Each agent is receiving a list of next joint-actions together visit counts of
+corresponding nodes. Just before the end of turn, the visit counts of individual joint actions
+are summed (also with agent's visit counts) and the best joint-action is played. This algorithm
+is similar to joint-action exchanging agents in the timing of usage of the information.
+Joint-action exchanging agetns vote the best action at the end of the turn same as root
+exchanging agents does. The difference is in complexity of the information transmitted. 
+More complex information transmission requires more communication but the requirements on the
+communication channel are still quite low for this algorithm.
+Root
+exchanging agents are supposed to reach high value of strength speedup since previous
+experiments with root parallelization in \cite{Chaslot2008} shows such a results.
+
+First algorithm projecting received messages immediately after their transmission is
+\emph{simulation results passing}. The algorithm is exchanging information about each
+simulation backpropagating it to all trees. Thanks to it, the trees grow faster and deeper
+exploitation can be performed. On the other hand multiple backpropagation of each simulation
+brings some regret on the amount of simulations calculated per second. This approach also
+requires high amount of communication.
+
+\emph{Tree-cut exchanging agents} is a trial of compromise between previous two algorithm.
+Agents are exchanging the results of simulations in aggregated form of \emph{visit count tree
+cut}, propagating them to the tree. Aggregation reduces the amount of communication and regret
+on simulation calculation in comparison with simulation results exchanging agents. On the other
+hand, received simulations are usually backpropagated multiple times so the simulation
+calculation regret depends on the parametrization of the algorithm.
+
+In the next chapter, the algorithms are applied to a specific domain of Ms Pac-Man and compared
+and evaluated according to the obtained results.

@@ -257,7 +257,7 @@ research on Monte-Carlo tree search algorithm, its parallelization and distribut
 algorithms for disbtributed coordination of autonomous agents. Designed algorithms are tested
 in the environment of the game of Ms Pac-Man. Quality of the algorithms is tested in dependence
 on computational time, the amount of communication and the robustness against communication
-failures. Particular algorithms are compared accordingly to these characteristics.
+failures. Particular algorithms are compared according to these characteristics.
 % abstrakt v rozsahu 80-200 slov v angličtině; nejedná se však o překlad
 % zadání diplomové práce
 
@@ -278,7 +278,6 @@ Multi-agent systems, Monte-Carlo Tree Search, distributed algorithms
 \setcounter{page}{1}
 \tableofcontents
 
-\listoftodos
 
 %%% Jednotlivé kapitoly práce jsou pro přehlednost uloženy v samostatných souborech
 \include{preface}
@@ -296,21 +295,42 @@ Multi-agent systems, Monte-Carlo Tree Search, distributed algorithms
 \include{bibliography}
 %\include{bibl}
 
-\chapwithtoc{List of Algorithms}
-\listofalgorithms
+\listoftodos
+
+%\chapwithtoc{List of Algorithms}
 
 %%% Tabulky v diplomové práci, existují-li.
-\chapwithtoc{List of Tables}
+%\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+
+%\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+
+\listofalgorithms
+\addcontentsline{toc}{chapter}{List of Algorithms}
 
 %%% Použité zkratky v diplomové práci, existují-li, včetně jejich vysvětlení.
 \chapwithtoc{List of Abbreviations}
+
+\begin{tabular}{ll}
+MCTS & Monte-Carlo tree search \\
+UCB & Upper-confidence bound \\
+UCT & UCB for trees \\
+\end{tabular}
 
 %%% Přílohy k diplomové práci, existují-li (různé dodatky jako výpisy programů,
 %%% diagramy apod.). Každá příloha musí být alespoň jednou odkazována z vlastního
 %%% textu práce. Přílohy se číslují.
 
-\chapwithtoc{Attachment 1 --- CD Contents}
+
+\chapwithtoc{Attachment 1 -- DVD Contents}
+\label{att_dvd_contents}i
+\todo{Refer here from Preface or summary}
 \todo{!}
+
+\chapwithtoc{Attachment 2 -- Software Work}
+\label{att_software}
+\todo{Attachment - software documentation, cite it in Implementatin Details section}
 
 \openright
 \end{document}

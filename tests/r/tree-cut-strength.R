@@ -4,7 +4,7 @@ library(gplots)
 source(file="r/utils.R")
 
 wanted_cols <- c("score", "ghost_time")
-export=TRUE
+export=FALSE
 
 if (export) {
 	setEPS()
@@ -26,7 +26,6 @@ plain_strength_inv <- function(s) { (c1 / (s-c0))^2 }
 
 par(mfrow=c(2,1))
 
-# TODO: actualize data
 
 # Distributed algorithm data
 distr.data <- read.delim("results/20130622-0306-tree-cut-2.txt", row.names=NULL)
@@ -42,7 +41,7 @@ distr.scores$speedup <- plain_strength_inv(distr.scores$score)/times
 
 # Absolute strength
 plot(times, distr.scores$score, type="o",
-	main="Root exchanging agents - strength",
+	main="Tree cut exchanging agents - strength",
 	lty=1,
 	col="red",
 	pch=18,
@@ -54,7 +53,7 @@ lines(times2, plain_strength(times2), lty=2)
 
 # Strength speedup
 plot(times, plain_strength_inv(distr.scores$score)/times,
-	main="Root exchanging agents - strength speedup",
+	main="Tree cut exchanging agents - strength speedup",
 	type="o", lty=1, col="red", pch=18, xlab="time [ms]", 
 	ylab="strength speedup",
 	ylim=c(0,6))

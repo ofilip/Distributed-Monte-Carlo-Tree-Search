@@ -1,4 +1,75 @@
 \chapter*{Conclusion}
-\section*{Summary}
-\section*{Future Work}
 \addcontentsline{toc}{chapter}{Conclusion}
+
+
+\section*{Summary}
+\addcontentsline{toc}{section}{Summary}
+
+This work investigates possibilities of usage of Monte-Carlo tree search for distributed
+multi-agent 
+coordination. Specially we have considered the problems of inter-agent information
+transmission, such as communication failures.
+
+We have reviewed the
+perfect-information game and proposed the definition enriching such game with teams.
+Additionally, we have reviewed general coordination and communication issues together with
+approaches to the distributed team coordination inspired with distributed constraints
+optimization problems. One chapter is devoted to description of Monte-Carlo tree search and its
+variant (UCT) and to existing MCTS parallelization algorithms.
+
+Main result is a set of distributed algorithms based on MCTS dedicated to action planning in
+the environment of perfect-information games with teams. We have designed several algorithms of
+various levels of complexity, communication requirements and scalability trade-offs. We have
+put detailed description of the design of the proposed algorithms. 
+
+For the
+evaluation, we have used the domain of a simplified game of Ms Pac-Man. It provided us testing 
+environment with four cooperative agents. The quality of particular algorithms have been
+measured in dependence on computational time, amount of communication and communication
+failures. In terms of the properties, we have compiled a comparison of the algorithms and
+suggested the best candidates suitable for the solution of team coordination problem.
+\emph{Root exchanging agents} algorithm, based on existing parallel MCTS algorithm,
+showed up as the best of such candidates. It reached 
+the overall best
+performace, with small communication requirements and good robustness against communication
+failures. The second adaptation of existing parallel algorithms is \emph{simulation results
+passing agents} which, in opposite to root exchanging agents, performed worst (if we don't
+consider \emph{independent agents} algorithm proposed for comparison purposes) and requiring
+the highest amount of communication. The algorithm has still some good general properties such
+as deeper insight of the tree so we developed third algorithm as a trial of integration of good
+properties of previous two algorithms - \emph{tree-cut exchanging agents}. The algorithm
+requires more communication than root exchanging agents and performs bit worse, yet some open 
+questions of the algorithm design retains (see Future Work). The last algorithm,
+\emph{joint-action exchanging agents}, showed unexpectedly good results. With its simplicity
+and very low communication requirements and good robustness, it outperformed simulation results 
+passing algorithm.
+
+Part of this thesis is also DVD containing source codes of implemented algorithms, experimental
+data, source codes of this thesis and other tools used for performing experiments (see
+Attachment 1).
+
+
+\section*{Future Work}
+\addcontentsline{toc}{section}{Future Work}
+
+\begin{enumerate}
+\item The algorithms can be used for coordination of large-scale
+teams. Scalability of algorithm proposed in our thesis is limited since
+agents' trees contain information. If the tree would contain information reduced to some
+neighbourhood of the agent, it would lead to better scalability. Algorithms solving distributed 
+constraints optimization problems could also bring new ideas to improvement of the scalability.
+
+\item Algorithm of \emph{tree-cut exchanging agents} can be further enquired. Especially, (1)
+tuning of number of cuts transmitted per a game step may be tuned and (2) the way of
+transmission of the cuts may be adjusted. In original algorithm, cuts are transmitted in one
+message so if the communication failure occurs in the middle of the message, whole cut is lost.
+But cuts may be transmitted node by node what would lead to better robustness of the algorithm.
+(3) The algorithm has also a special property that its performance starts decreasing with
+certain amount of communication (what caused by too much redundant communication leading to
+unadequate repetitiveness of applying of the almost same tree cuts). This property may be
+also further enquired and some dynamic balancing of the communication may be performed by the
+algorithm to avoid decrease of the performance.
+
+\end{enumerate}
+
+

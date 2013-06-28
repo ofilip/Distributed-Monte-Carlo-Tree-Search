@@ -26,11 +26,10 @@ plain_p.scores <- cast(plain_p.data_melted, ghost_time~variable, mean)
 i <- i+1
 legend = c(legend, "Plain MCTS (pesimistic)")
 plot(plain_p.scores$ghost_time, plain_p.scores$score, type="o",
-	main="Plain MCTS strength",
 	xlab="time [ms]",
 	ylab="average score",
 	ylim=c(500,2200),
-	lty = linetype[i],
+	lty = 1,
 	col = colors[i],
 	pch = plotchar[i])
 
@@ -42,7 +41,7 @@ plain_o.data2 <- plain_o.data[c(wanted_cols)]
 plain_o.melted_data <- melt(plain_o.data2, id=c("ghost_time"))
 plain_o.scores <- cast(plain_o.melted_data, ghost_time~variable, mean)
 lines(plain_o.scores$ghost_time, plain_o.scores$score, type="o",
-	lty = linetype[i],
+	lty = 1,
 	col = colors[i],
 	pch = plotchar[i])
 
@@ -56,7 +55,7 @@ plain_strength <- function(t) { c0 + c1/sqrt(t) }
 lines(plain_p.scores$ghost_time, plain_strength(plain_p.scores$ghost_time), lty=2)
 
 
-legend("topright", lty = linetype, pch = plotchar, col = colors, legend = legend)
+legend("topright", lty = c(1,1), pch = c(18,20), col = colors, legend = legend)
 
 if (export) dev.off()
 

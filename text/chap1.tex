@@ -1,13 +1,11 @@
 \chapter{Games with Team of Cooperative Agents}
 \label{chap_mas}
 
-Before we can start talking about games and coordination of agents playing these games, we need
-to shortly describe what the game is, what forms a team of agents and take a note on the
-coordination of agents of a team. 
 
-In our thesis, we consider fully-observable environment and
-in this chapter, we define perfect-information game, enrich it with teams and discuss the
-coordination of agents.
+
+In this chapter, we define perfect-information game in extensive form and perfect-information
+game with teams in extensive form and discuss the coordination of agents and inter-agent
+communication.
 
 
 \section{Perfect-Information Game}
@@ -15,11 +13,9 @@ coordination of agents.
 
 \label{sec_perfect_information_game}
 
-\todo{Sladit značení a terminologii ve zbytku textu}
-
 This thesis deals with the problem of coordination of agents in games. Before we will review
 work on this topic and propose our algorithms, it is necessary to define what the game in our
-context is. We will consider finite, discrete, full observable, deterministic and static
+context is. We will consider finite, discrete, fully-observable, deterministic and static
 environment in which we will talk about \emph{perfect-information game}. Following definition
 is based on the definition
 proposed in \cite{MAS2008} and generalized for our purposes (original definition does not
@@ -66,15 +62,19 @@ plays an action, in other words, if the following restriction on the action func
 \forall s \in S_n \; |\{i \in P|\chi(s,i) \not= \{\lambda\}\}| \le 1
 \end{equation}
 
+Note that our definition allows nodes with no player being on turn. This is reason why Equation
+\ref{eq_turn_based_game} contains non-strict inequality.
+
 Contrariwise we will call a perfect-information game \textbf{simultaneous} if simultaneous
 plays of multiple players are permitted and a state forcing a play of at least two players
 exists (and so Equation \ref{eq_turn_based_game} is not satisfied).
 
 \end{defgpig}
 
-Because this thesis works only with perfect-information games, we will usually refer to
+Because we deal only with perfect-information games in our thesis, we will usually refer to
 perfect-information game and its variants as to \emph{game}, \emph{turn-based game} and
-\emph{simultaneous game}. We will also bound a utility function to $[0,1]$.
+\emph{simultaneous game}. We will also bound a utility function to $[0,1]$ (without loss of
+generality).
 
 The aim of a player $i$ is reaching a terminal node $s$ with the greatest possible utility
 $u_i(s)$.
@@ -82,11 +82,15 @@ $u_i(s)$.
 \subsection{Conversion between Turn-Based and Simultaneous Games}
 \label{sec_turn_based_game_conversion}
 
-Because Monte-Carlo Tree Search requires turn-based games to ensure the convergence (as discussed in
+Because a variant of MCTS used in this thesis requires turn-based games to ensure the
+convergence (as discussed in
 Section \ref{sec_minimax_convergence}) and our
-algorithms, which are based on MCTS will be evaluated in the domain of naturally simultaneous game,
+algorithms, which are based on this specific MCTS variant, will be evaluated in the domain
+of naturally simultaneous game,
 we will need a conversion from a turn-based game to a simultaneous game, which will be described
-here.
+here. Simultaneous nodes expansion modifies the game but our goal is not to develop the strongest 
+possible players  for chosen domain but to study coordination algorithm related to MCTS and so
+we choose retaining of algorithm properties.
 
 We need to expand simultaneous actions to a sequence of single actions. To determine the order of such
 an expansion, we can simply define linear ordering on a set of players. Then each simultaneous
@@ -103,12 +107,14 @@ game so the imbalance originating from the conversion will not affect the played
 algorithm itself. We face the decision what ordering on players choose and we distinguish two main
 variants - \emph{optimistic} and \emph{pesimistic expansion}. 
 
-\todo{popis}
 \begin{figure}
 \begin{center}
 \includegraphics[width=12cm]{img/simultaneous_node_expansion.eps}
 \end{center}
-\caption{\footnotesize Lorem ipsum}{\footnotesize }
+\caption{\footnotesize Simultaneous node expansion.}{\footnotesize Left - the node represents
+simultaneous play of players $A$ and $B$ with sets of moves $\{a_1,_a2\}$ and $\{b_1,b_2\}$.
+Right - expanded simultaneous node. Player $A$ is chosen to play first. If the player $A$ is an
+owner of the tree, the expansion is pesimistic, otherwise, the expansion is optimistic.}
 \label{fig_simultaneous_node_expansion}
 \end{figure}
 
@@ -134,8 +140,9 @@ shares the utility function.
 This can be simply applied to a perfect-information game. A team can be represented as a single
 player of a perfect-information game where actions of such a player is joint-action composed of
 all actions played by team members. The second possibility how to model a team in
-perfect-information game is simply applying the definition of a team and considering players
-with the same utility. Since it is more natural concept allowing the team player to be viewed as
+perfect-information game is adding teams as new entities in the game and considering players of
+a single team sharing the same utility. Since it is more natural concept allowing the team 
+player to be viewed as
 independent agents, we will use this concept in our thesis. Following definition is a
 formalization of the concept.
 
@@ -162,7 +169,7 @@ function for team $i$ on the terminal nodes $S_t$.
 As in case of plain (without teams) perfect-information game, we distinguish turn-based and 
 simultaneous game with teams of players. We say that game with teams is \textbf{turn-based} 
 if only players of a same team play in all nodes. If we consider players of plain game being
-members of virtual distinct teams, such a condition is reneralization of plain turn-based game.
+members of virtual distinct teams, such a condition is generalization of plain turn-based game.
 The condition is formalized by Equation \ref{eq_turn_based_game_with_teams}.
 
 \begin{equation}
@@ -186,6 +193,8 @@ $(a_p^{S_b})_{\tau(p_a)=T_a}$).
 
 
 \subsection{Distributed Constraints Optimization (??)}
+
+\todo{?}
 
 
 \subsection{Communication and Coordination}

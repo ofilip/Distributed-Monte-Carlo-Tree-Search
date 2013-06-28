@@ -2,18 +2,21 @@
 \addcontentsline{toc}{chapter}{Introduction}
 
 Monte-Carlo tree search turned out as an algorithm reaching unprecedent results in playing a
-game of Go \cite{Chaslot2008} and variety of other games. Accordingly to properties of the
-algorithm, Monte-Carlo tree search has been suggested as an algorithm suitable for canonical 
-multi-robot
-application. In our thesis, we aim on design and experimental evaluation of algorithms based on
-Monte-Carlo tree search suitable for the canonical multi-robot application.
+game of Go \cite{Chaslot2008} and variety of other games. According to properties of the
+algorithm, Monte-Carlo tree search has been suggested as an algorithm suitable for multi-agent
+coordination, such as in pursuit-evasion games. Special class of multi-agent coordination problems
+is coordination of team of robots, for example in a contest environment or
+autonomous fighting robots, such as unmanned aerial vehicles. Common algorithms for team
+coordination consider reliable inter-agent communication. In our thesis, we, in opposite to
+previous approaches, face the nature of real-world communication problems such as limited
+communication, transmission delays or communication failures.
 
+In our thesis, we aim on design and experimental evaluation of algorithms based on Monte-Carlo 
+tree search suitable for
+distributed planning of actions of a team of autonomous agents.
 For simplicity, we consider a game with a team of cooperative players as an environment
-simulating canonical multi-robot application. But in the cooperation
-of the players, we respect nature of real-life problems, such as limited communication,
-transmission delays or communication failures. On the other hand, we work with fully
-observable discrete environment what .
-
+for team coordination with respect to the real-world communication problems.
+    
 Initial point of our research was review of parallelization approaches to Monte-Carlo tree 
 search \cites{Cazenave2007}{Chaslot2008}{Teytaud2008} what gave us a solid cornerstone for the
 further work. Second source of initial inspiration, especially for discussion on communication
@@ -21,15 +24,13 @@ between agents, were distributed constraint optimization algorithms \cite{Zivan2
 the third influence for the thesis were articles dealing with application of Monte-Carlo tree
 search to a domain of a game of Ms Pac-Man \cites{Ikehata2011}{Nguyen2011}.
 
-The thesis is divided into four chapters. Chapter \ref{chap_mas} contains general notes on games 
-with team
-of cooperative agents, including definition of such games and discussion on inter-agent
-communication. 
+The thesis is divided into four chapters. Chapter \ref{chap_mas} contains 
+general notes on perfect-information games with teams in extensive form, including 
+definition of such games and discussion on inter-agent
+coordination and communication. 
 
-In Chapter \ref{chap_mcts}, relevant research on Monte-Carlo tree search is reviewed. 
-In particular, the algorithm itself is described in Section \ref{sec_mcts_description}
-\todo{konvergence, mcts pro 2 hrace?} and approaches to parallelization of Monte-Carlo tree
-search are reviewed in Section \ref{sec_parallel_mcts}. 
+In Chapter \ref{chap_mcts}, relevant research on Monte-Carlo tree search is reviewed, together
+with MCTS parallelization.
 
 Once Monte-Carlo tree search is
 reviewed and games with teams are defined, we propose our distributed algorithms Chapter
@@ -41,7 +42,7 @@ but suppressing bad ones. General properties and comparison of the algorithms ar
 in Section \ref{sec_dmcts_comparison}.
 
 Chapter \ref{chap_evaluation} contains evaluation of proposed algorithms on a domain of a
-game of Ms Pac-Man with usage of Ms Pac-Man vs Ghosts framework \cite{PacmanVsGhosts}. In
+game of Ms Pac-Man. In
 particular, we describe the framework in Section \ref{sec_pacman_vs_ghosts} together with rules
 of the game and simplifications of the game we have done for our purpuses. We give relevant
 notes on implementation of Monte-Carlo tree search on the chosen domain and simulation of

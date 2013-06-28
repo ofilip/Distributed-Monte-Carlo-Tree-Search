@@ -4,7 +4,7 @@ library(gplots)
 source(file="r/utils.R")
 
 wanted_cols <- c("score", "ghost_time")
-export=TRUE
+export=FALSE
 
 if (export) {
 	setEPS()

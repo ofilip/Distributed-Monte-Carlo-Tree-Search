@@ -14,7 +14,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="simultaneous_node_extraction.svg">
+   sodipodi:docname="simultaneous_node_expansion.svg">
   <defs
      id="defs4">
     <inkscape:path-effect
@@ -69,9 +69,9 @@
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1148"
-     inkscape:window-x="1672"
+     inkscape:window-width="1680"
+     inkscape:window-height="998"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:snap-global="true" />
@@ -220,8 +220,8 @@
          y="131.14603">[a<tspan
    style="font-size:6px;baseline-shift:sub"
    id="tspan3141-2">1</tspan>,b<tspan
-   style="font-size:6px;baseline-shift:sub"
-   id="tspan3143-4">1</tspan>]</tspan></text>
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan3054">2</tspan>]</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
@@ -233,8 +233,8 @@
          id="tspan3139-8-5"
          x="240.40263"
          y="128.87318">[a<tspan
-   style="font-size:6px;baseline-shift:sub"
-   id="tspan3141-2-1">1</tspan>,b<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan3056">2</tspan>,b<tspan
    style="font-size:6px;baseline-shift:sub"
    id="tspan3143-4-7">1</tspan>]</tspan></text>
     <text
@@ -248,10 +248,10 @@
          id="tspan3139-8-5-1"
          x="269.69708"
          y="123.82243">[a<tspan
-   style="font-size:6px;baseline-shift:sub"
-   id="tspan3141-2-1-5">1</tspan>,b<tspan
-   style="font-size:6px;baseline-shift:sub"
-   id="tspan3143-4-7-2">1</tspan>]</tspan></text>
+   style="font-size:65.00091553%;baseline-shift:sub"
+   id="tspan3058">2</tspan>,b<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan3060">2</tspan>]</tspan></text>
     <path
        sodipodi:type="arc"
        style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
