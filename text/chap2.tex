@@ -321,7 +321,7 @@ heuristic has to be chosen.
 
 In original Monte-Carlo tree search, the simulation is terminated at the end of simulated game.
 To spare time spent in simulations, we can also terminate it earlier on certain condition
-\ref{Ikehata2011} (e.g. number of simulation can be limited). After the termination, player's
+\cite{Ikehata2011} (e.g. number of simulation can be limited). After the termination, player's
 position score is returned (chosen, without loss of generality, from interval $[0;1]$).
 Additionally, to speed up the simulation, the simulation steps can be performed in
 simplified game environment.
@@ -405,9 +405,10 @@ objects and opponents.
 \section{Convergence of UCT for Two-Player Games}
 \label{sec_minimax_convergence}
 
-The UCT selection strategy has been suggested as converging to optimal solution for the
+The UCT algorithm (as a variant of MCTS) has been suggested as converging to optimal solution for the
 single-player games \cite{Kocsis2006}, the counter-example of the convergence for two-player
-games with simultaneous moves has been proposed in \cite{Shafiei2009}. For this reasons, we
+games with simultaneous moves has been proposed in \cite{Shafiei2009}. In order to make the
+convergence to the optimal strategy possible in general, we
 consider turn-based games (weak turn-based turn-based games with teams eventually) for the 
 building of a MCTS tree using UCT
 selection and for purposes of playing simultaneous games, we perform expansion of simultaneous
